@@ -87,7 +87,7 @@ interface GoldenAnswer {
   requiredContradictingPaths: string[][];
   requiredDependencies: string[];
   requiredTensions: string[];
-  currentHarvestId: string | null;
+  currentHarvestIds: string[];
   acceptableChangeEvidence: string[];
   forbiddenCollapses: string[];
 }
@@ -161,7 +161,7 @@ Both conditions must return:
 2. The claims relied upon, with source IDs.
 3. The relevant lineage in chronological order.
 4. Supporting and contradicting evidence.
-5. The current harvest, or an explicit statement that no harvest exists.
+5. The current harvest, an explicit statement that no harvest exists, or all competing current harvests.
 6. Unresolved tensions.
 7. Evidence or events that could change the conclusion.
 
@@ -182,10 +182,13 @@ interface ClaimEvaluation {
   contradictingPaths: EvidencePath[];
   dependencies: TranchNode[];
   unresolvedTensions: TranchNode[];
+  currentHarvests: TranchNode[];
   epistemicState: EpistemicState;
   sourceCoverage: number;
 }
 ```
+
+`currentHarvests` is plural by design. An empty array means that no current form exists. More than one entry means the record contains competing current forms; the evaluator must return all of them and surface the plurality as a tension rather than silently choosing the newest.
 
 For this evaluation, an `EvidencePath` is an ordered, cycle-safe sequence of node IDs and edge IDs connecting a claim to source material. Its polarity is determined by the typed relationships in the path, not by embedding similarity or model sentiment.
 
