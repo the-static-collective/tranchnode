@@ -1,0 +1,15 @@
+{
+  "name": "@the-static-collective/tranchnode",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "mint:fixture": "node --experimental-strip-types scripts/mint-fixture.ts",
+    "verify:fixtures": "node --experimental-strip-types scripts/verify-fixtures.ts",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "check": "npm run verify:fixtures && npm test"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  }
+}
