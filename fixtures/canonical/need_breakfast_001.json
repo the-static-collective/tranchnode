@@ -1,0 +1,30 @@
+{
+  "canonicalHash": "sha256:fbf5737f8edb7f77637648b5b7810c73647ae46e62d0a8ffe7d225ec71a4c5ec",
+  "createdAt": "2026-07-31T00:00:00Z",
+  "createdBy": "actor_fixture",
+  "disclosurePolicy": {
+    "audience": "circle",
+    "basis": "aggregate_only",
+    "permittedFields": {
+      "artifacts": false,
+      "coarsePlace": true,
+      "coarseTime": true,
+      "exactPlace": false,
+      "participantIdentity": false,
+      "quantity": true,
+      "summary": true
+    }
+  },
+  "environment": "test",
+  "id": "fixture_need_breakfast_001",
+  "kind": "meal",
+  "note": "Fixture only - not a live Need. Live Need requires authorized circle, accountable recorder, scoped request.",
+  "requestedQuantity": {
+    "unit": "meal",
+    "value": 33
+  },
+  "summary": "Breakfast capacity requested for a local morning meal table.",
+  "type": "NEED_DECLARED",
+  "version": 1,
+  "visibility": "circle"
+}
