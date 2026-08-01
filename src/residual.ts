@@ -3,12 +3,20 @@ import canonicalize from "canonicalize";
 
 export type Hash = `sha256:${string}`;
 export type Claim = "creative_realization" | "semantic_reconstruction" | "historical_reproduction";
-export type HistoricalStatus = "exact" | "referential" | "altered_disclosed" | "not_historical" | "violated";
+export type HistoricalStatus = "EXACT_SOURCE_BYTES" | "EXACT_REQUIRED_RESIDUALS_REFERENCED" | "ALTERED_WITH_DISCLOSURE" | "NOT_HISTORICAL" | "VIOLATED";
 export type Outcome = "preserved_exactly" | "preserved_by_reference" | "transformed_with_disclosure" | "omitted_with_disclosure" | "violated";
 
 export interface Addressed<T> { hash: Hash; value: T }
 export interface ArtifactRef { hash: Hash; mediaType: string; byteLength: number }
-export interface SampleLocator { artifactHash: Hash; sampleRate: number; channels: number; sampleFormat: string; startSample: number; endSampleExclusive: number }
+export interface SampleLocator {
+  locatorVersion: "sample-v1";
+  sourceArtifact: Hash;
+  sampleRateHz: number;
+  channels: number;
+  sampleFormat: string;
+  startSample: number;
+  endSampleExclusive: number;
+}
 export interface ResidualBinding {
   id: string;
   source: SampleLocator;
@@ -57,6 +65,16 @@ export function addressJson<T>(value: T): Addressed<T> {
   return { hash: sha256(Buffer.from(encoded, "utf8")), value };
 }
 
+function sameLocator(a: SampleLocator, b: SampleLocator): boolean {
+  return a.locatorVersion === b.locatorVersion
+    && a.sourceArtifact === b.sourceArtifact
+    && a.sampleRateHz === b.sampleRateHz
+    && a.channels === b.channels
+    && a.sampleFormat === b.sampleFormat
+    && a.startSample === b.startSample
+    && a.endSampleExclusive === b.endSampleExclusive;
+}
+
 export function verifyReconstruction(field: Addressed<FieldNode>, receipt: ReconstructionReceipt): Verification {
   if (receipt.fieldHash !== field.hash) throw new Error("Receipt does not address this field");
   const evidence = new Map(receipt.evidence.map((item) => [item.residualId, item]));
@@ -66,8 +84,8 @@ export function verifyReconstruction(field: Addressed<FieldNode>, receipt: Recon
     if (proof.outputLocator && proof.extractedOutputHash === residual.extractedPayloadHash) {
       return { residualId: residual.id, outcome: "preserved_exactly", reason: "Verifier-extracted output payload matches source payload" };
     }
-    if (proof.sourceReference && proof.sourceReference.artifactHash === residual.source.artifactHash) {
-      return { residualId: residual.id, outcome: "preserved_by_reference", reason: "Immutable source artifact and locator retained by reference" };
+    if (proof.sourceReference && sameLocator(proof.sourceReference, residual.source)) {
+      return { residualId: residual.id, outcome: "preserved_by_reference", reason: "Exact immutable source artifact and locator retained by reference" };
     }
     if (proof.transformationReceiptHash) {
       return { residualId: residual.id, outcome: "transformed_with_disclosure", reason: "Transformation is explicitly receipted" };
@@ -85,11 +103,11 @@ export function verifyReconstruction(field: Addressed<FieldNode>, receipt: Recon
   const disclosedAlteration = outcomes.some((o) => o === "transformed_with_disclosure" || o === "omitted_with_disclosure");
 
   let historicalStatus: HistoricalStatus;
-  if (hasViolation) historicalStatus = "violated";
-  else if (allExact) historicalStatus = "exact";
-  else if (allHistorical) historicalStatus = "referential";
-  else if (disclosedAlteration) historicalStatus = "altered_disclosed";
-  else historicalStatus = "not_historical";
+  if (hasViolation) historicalStatus = "VIOLATED";
+  else if (allExact) historicalStatus = "EXACT_SOURCE_BYTES";
+  else if (allHistorical) historicalStatus = "EXACT_REQUIRED_RESIDUALS_REFERENCED";
+  else if (disclosedAlteration) historicalStatus = "ALTERED_WITH_DISCLOSURE";
+  else historicalStatus = "NOT_HISTORICAL";
 
   const admissible = !hasViolation && (receipt.claim !== "historical_reproduction" || allHistorical);
   return { historicalStatus, admissible, residualResults };
