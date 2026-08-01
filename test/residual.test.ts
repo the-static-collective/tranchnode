@@ -20,8 +20,9 @@ const field = addressJson<FieldNode>({
   residuals: Object.entries(slices).map(([id, bytes], index) => ({
     id,
     source: {
-      artifactHash: sourceHash,
-      sampleRate: 48_000,
+      locatorVersion: "sample-v1",
+      sourceArtifact: sourceHash,
+      sampleRateHz: 48_000,
       channels: 1,
       sampleFormat: "s16le",
       startSample: index * 100,
@@ -45,9 +46,10 @@ function receipt(claim: ReconstructionReceipt["claim"], evidence: Reconstruction
   };
 }
 
-test("JCS addressing excludes any caller-supplied envelope hash", () => {
+test("JCS addressing excludes caller-supplied envelope hashes", () => {
   assert.match(field.hash, /^sha256:[0-9a-f]{64}$/);
   assert.equal("fieldHash" in field.value, false);
+  assert.equal("receiptHash" in field.value, false);
 });
 
 test("exactly preserved residuals admit historical reproduction", () => {
@@ -57,8 +59,15 @@ test("exactly preserved residuals admit historical reproduction", () => {
     extractedOutputHash: r.extractedPayloadHash
   }));
   const result = verifyReconstruction(field, receipt("historical_reproduction", evidence));
-  assert.equal(result.admissible, true);
-  assert.equal(result.historicalStatus, "exact");
+  assert.deepEqual(result, {
+    historicalStatus: "EXACT_SOURCE_BYTES",
+    admissible: true,
+    residualResults: field.value.residuals.map((r) => ({
+      residualId: r.id,
+      outcome: "preserved_exactly",
+      reason: "Verifier-extracted output payload matches source payload"
+    }))
+  });
 });
 
 test("disclosed omissions remain creative but cannot enter historical path", () => {
@@ -66,17 +75,21 @@ test("disclosed omissions remain creative but cannot enter historical path", () 
   const creative = verifyReconstruction(field, receipt("creative_realization", evidence));
   const historical = verifyReconstruction(field, receipt("historical_reproduction", evidence));
   assert.equal(creative.admissible, true);
-  assert.equal(creative.historicalStatus, "altered_disclosed");
+  assert.equal(creative.historicalStatus, "ALTERED_WITH_DISCLOSURE");
   assert.equal(historical.admissible, false);
+  assert.equal(historical.historicalStatus, "ALTERED_WITH_DISCLOSURE");
 });
 
-test("missing or contradictory evidence is a violation under every claim", () => {
+test("adversarial smoothing is VIOLATED and inadmissible under every claim", () => {
   const result = verifyReconstruction(field, receipt("semantic_reconstruction", [
     { residualId: "breath", omissionReason: "Removed" },
     { residualId: "correction", extractedOutputHash: sha256(Buffer.from("I said the door was locked.")) }
   ]));
   assert.equal(result.admissible, false);
-  assert.equal(result.historicalStatus, "violated");
-  assert.ok(result.residualResults.some((r) => r.residualId === "correction" && r.outcome === "violated"));
-  assert.ok(result.residualResults.some((r) => r.residualId === "click" && r.outcome === "violated"));
+  assert.equal(result.historicalStatus, "VIOLATED");
+  assert.deepEqual(result.residualResults.map(({ residualId, outcome }) => ({ residualId, outcome })), [
+    { residualId: "breath", outcome: "omitted_with_disclosure" },
+    { residualId: "correction", outcome: "violated" },
+    { residualId: "click", outcome: "violated" }
+  ]);
 });
