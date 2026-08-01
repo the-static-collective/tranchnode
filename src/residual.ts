@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
-import canonicalize from "canonicalize";
+import canonicalizeModule from "canonicalize";
+
+const canonicalize = canonicalizeModule.default ?? canonicalizeModule;
 
 export type Hash = `sha256:${string}`;
 export type Claim = "creative_realization" | "semantic_reconstruction" | "historical_reproduction";
