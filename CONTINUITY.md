@@ -155,11 +155,13 @@ The existing TranchNode kinds remain useful semantic projections:
 - a **source** anchors material or attributable input;
 - an **observation** records a bounded projection;
 - a **claim** proposes a truth-bearing structure;
+- an **inference** records a conclusion derived from other nodes rather than directly observed;
 - a **proposal** describes a possible future realization;
 - a **tension** preserves unresolved incompatibility;
-- a **rejection** records a refused or defeated path without deleting it;
-- a **witness** adds attributable observation under a defined authority;
+- a **witness** adds an accountable attestation that another node, event, or state was encountered or accepted; it grants no authority;
 - a **harvest** stabilizes a current form for a bounded purpose.
+
+A refused or defeated path remains preserved through tensions, contradictions, responses, supersession, and lineage. TranchNode v0.1 does not encode `rejection` as a node kind; Project 0's compatibility mapping preserves that mismatch explicitly rather than silently aliasing it.
 
 These kinds are not presumed to be the atoms of reality. They are canonical forms through which a continuity system observes, constrains, reconstructs, and continues.
 
