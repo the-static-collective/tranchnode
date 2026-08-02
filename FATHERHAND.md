@@ -2,7 +2,7 @@
 
 ## Status
 
-Design note for TranchNode. This document defines the authority seam, purpose declaration lifecycle, witness roles, provisional activation boundary, and the minimum invariants required before implementation.
+Design note for TranchNode. This document defines the authority seam, purpose declaration lifecycle, witness roles, provisional activation boundary, Covenant Circuit, and the minimum invariants required before implementation.
 
 ## Core distinction
 
@@ -302,6 +302,152 @@ A new policy version does not reinterpret old receipts. Each receipt remains a s
 - Silent activation under unresolved ambiguity is forbidden.
 - No activation result may be derived from graph frequency, majority reference, or emergent pattern alone.
 - No purpose may be evaluated apart from the commitments it would displace.
+
+## The Covenant Circuit
+
+Fatherhand and purpose describe how capacity travels toward an act. They are incomplete without the return path by which the exercise of capacity is witnessed, challenged, and reconciled to the need or originating charge that called it forth.
+
+```text
+Need or originating charge
+  -> Fatherhand grant
+  -> witnessed governing purpose
+  -> stewardship commission
+  -> authorized act
+  -> observed consequence
+  -> reckoning
+  -> renew, repair, narrow, suspend, revoke, or close
+```
+
+> Capacity descends. Witness persists. Consequence returns. Stewardship answers.
+
+### Stewardship
+
+Authority asks whether a hand may act. Purpose asks toward what declared construction. Stewardship records what answerability attaches when capacity is joined to a governing purpose.
+
+```ts
+interface StewardshipCommission {
+  id: string;
+  stewardId: string;
+  terminalGrantId: string;
+  governingPurposeId: string;
+  originatingNeedId?: string;
+  originatingChargeId?: string;
+
+  beneficiaryRefs: string[];
+  affectedScopes: unknown[];
+  duties: string[];
+  protectedCommitments: string[];
+  prohibitedConsequences: string[];
+
+  reviewConditions: string[];
+  expiresAt?: string;
+  surrenderConditions: string[];
+}
+```
+
+Every hand that receives capacity also receives answerability for its exercise. Capacity may narrow downstream; answerability for the capacity actually exercised may not disappear downstream.
+
+A purpose need not arise from deprivation, but it must disclose the need, charge, beneficiary, commitment, or other rightful claim it purports to serve. A coherent purpose with no disclosed call to govern remains incomplete.
+
+### Standing
+
+Standing is the capacity to introduce a challenge that the governance system must hear. It is not authority to govern, amend purpose, or decide the challenge.
+
+> Authority permits action. Standing permits challenge.
+
+A beneficiary, affected party, protected-commitment holder, receiving steward, or other party named by policy may have standing to claim that:
+
+- an act affected them;
+- a protected commitment was displaced;
+- a consequence escaped its declared envelope;
+- a purpose no longer serves its originating need or charge;
+- capacity was exercised outside the witnessed construction.
+
+Witness artifacts may support standing claims. They do not decide them, and graph frequency cannot vote a challenge into truth.
+
+### Independent reckoning judgments
+
+Reckoning keeps three judgments independent:
+
+| Judgment | Question |
+| --- | --- |
+| Authorization | Was the hand lawfully permitted to act? |
+| Fidelity | Did the act remain aligned with purpose, duties, and protected commitments? |
+| Fulfillment | What occurred relative to the originating need or charge? |
+
+No result launders another:
+
+- beneficial consequence does not authorize an unauthorized act;
+- failed outcome does not retroactively invalidate a properly authorized act;
+- purpose alignment does not erase harmful consequence;
+- successful fulfillment does not prove faithful stewardship;
+- faithful stewardship does not fabricate fulfillment.
+
+```ts
+interface StewardshipReckoningReceipt {
+  commissionId: string;
+  actId: string;
+
+  authorityReceiptId: string;
+  purposeCompatibilityReceiptId: string;
+  consequenceWitnessIds: string[];
+
+  authorizationResult: "valid" | "invalid" | "indeterminate";
+  fidelityResult: "faithful" | "drifted" | "breached" | "indeterminate";
+  fulfillmentResult:
+    | "attempted"
+    | "partial"
+    | "scoped_complete"
+    | "scope_uncertain";
+
+  benefitsObserved: string[];
+  harmsObserved: string[];
+  displacedCommitments: string[];
+  standingClaimIds: string[];
+
+  requiredResponse:
+    | "none"
+    | "review"
+    | "repair"
+    | "narrow"
+    | "suspend"
+    | "revoke"
+    | "renew";
+}
+```
+
+The reckoning receipt witnesses the traversal and evidence. It does not itself punish, renew, revoke, or close. Those responses require their own authorized acts.
+
+### Root capacity basis
+
+Fatherhand identifies the originating hand for a chain. It does not prove universal ownership or rightful jurisdiction over everything that hand purports to grant.
+
+```ts
+type RootCapacityBasis =
+  | "inherent"
+  | "created"
+  | "entrusted"
+  | "consented"
+  | "custodial"
+  | "contracted"
+  | "necessity"
+  | "indeterminate";
+```
+
+> No Fatherhand may originate transferable capacity over what was never within its rightful hand.
+
+Overlapping root claims produce jurisdictional tension. They require consent, covenant, precedence, partition, or an honest `indeterminate`; cryptographic perfection cannot settle rightful basis by itself.
+
+### Circuit laws
+
+- No hand may inherit authority while severing the return path by which its exercise is witnessed, challenged, and reconciled to its governing purpose and originating need or charge.
+- No witness artifact may be used as a grant, sanction, or substitute for the response act it recommends.
+- No renewal may widen capacity, scope, or purpose without fresh originating authority.
+- No favorable fulfillment result may erase unauthorized action, fidelity breach, displaced commitment, harm, or standing claim.
+- No adverse fulfillment result may by itself prove breach.
+- No child or other beneficiary may be converted into evidence machinery merely because fulfillment matters.
+
+The first canonical design fixture for this circuit is `fixtures/specs/nanaspork-meal-covenant.md`. It is deliberately a fixture specification, not a hashed canonical runtime artifact. Jules must turn it into explicit inputs and expected receipts only after the repository's canonical serialization and hashing discipline is adopted.
 
 ## Integration boundary with Floor 1.0 and ontology v0.1
 
