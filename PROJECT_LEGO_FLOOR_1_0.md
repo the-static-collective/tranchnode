@@ -59,7 +59,7 @@ Owned by:
 
 - `VISION.md`
 - `INVARIANTS.md`
-- `CONTINUITY.md` when adopted
+- `CONTINUITY.md`
 - this integration document
 
 This layer defines why the system exists and what no implementation may quietly alter.
@@ -175,6 +175,8 @@ Current node kinds:
 - `harvest`
 
 These are not asserted to be metaphysical atoms. They are durable semantic forms through which the system records projections and evaluates claims.
+
+Project 0's canonical ontology now contains nine kinds, adding `rejection` as a substantive node. TranchNode v0.1 has no lossless `rejection` representation. This is an explicit cross-project incompatibility, not permission to alias rejection into tension, disposition, receipt, or an existing edge. Any adapter must report the mapping as unavailable or explicitly lossy until a separately versioned TranchNode ontology change is adopted.
 
 Current graph law includes:
 
@@ -436,9 +438,9 @@ The current tension between local-first language and later authoritative-kernel 
 
 ### `main`
 
-Contains the frozen initial meaning contract and deterministic graph/evaluation design.
+Contains the frozen initial meaning contract, deterministic graph/evaluation design, and adopted continuity constitution.
 
-Status: foundation of Floor 1.0.
+Status: constitutional foundation of Floor 1.0.
 
 ### PR #1 — Fulfillment minimum lawful slice
 
@@ -463,25 +465,25 @@ Status: priority mechanical slice. Merge only after CI is green and verifier bou
 
 ### PR #3 — Continuity constitution
 
-Contains the proposed Layer 1 explanation beneath the ontology.
+Merged after aligning its node-kind discussion with the frozen TranchNode v0.1 ontology and preserving Project 0's `rejection` mismatch explicitly.
 
-Status: constitutional candidate. Review for compatibility with the frozen ontology, then merge before implementing ProjectionReceipt machinery.
+Status: adopted Layer 1 doctrine.
 
 ### This PR — Project Lego Floor 1.0
 
-Status: integration map. It should be revised as needed, then adopted as the present development map after the constitutional and mechanical branch ordering is resolved.
+Status: present integration and anti-drift map. Adoption governs development order; it does not claim that the mechanical floor is complete. Later corrections must preserve versioned lineage and name changed dependencies.
 
 ## 8. Merge and development sequence
 
 Recommended sequence:
 
-1. Review and merge PR #3, establishing continuity doctrine.
-2. Rebase PR #2 onto the new constitutional base.
+1. Freeze one canonical addressing contract across Project 0 issue #5 and TranchNode issue #5, including cross-runtime conformance vectors.
+2. Rebase PR #2 onto the adopted continuity base and the shared addressing contract.
 3. Make PR #2 green and merge it as the first executable residual law.
 4. Rebase and reconcile PR #1 against the merged package, canonicalization, and test infrastructure.
 5. Split generic substrate mechanics from fulfillment-specific ontology where necessary.
 6. Merge the lawful fulfillment module only after its hashing and envelope semantics agree with the residual foundation.
-7. Adopt this Floor 1.0 map with updated commit and PR references.
+7. Reconcile Fatherhand and Covenant Circuit against this map without changing ontology v0.1 or creating a second hash chain.
 8. Cut ProjectionReceipt + closure-set machinery as the next new executable slice.
 9. Add immutable artifact store.
 10. Add real WAV extraction without automated residual detection.
