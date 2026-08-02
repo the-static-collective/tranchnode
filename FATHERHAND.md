@@ -217,8 +217,7 @@ interface PurposeCompatibilityReceipt {
   unresolvedTensions: string[];
   result: "compatible" | "incompatible" | "indeterminate";
   evaluatedAt: string;
-  evaluatorVersion: string;
-}
+  evaluatorVersion: string;}
 ```
 
 ```ts
@@ -303,6 +302,67 @@ A new policy version does not reinterpret old receipts. Each receipt remains a s
 - Silent activation under unresolved ambiguity is forbidden.
 - No activation result may be derived from graph frequency, majority reference, or emergent pattern alone.
 - No purpose may be evaluated apart from the commitments it would displace.
+
+## Integration boundary with Floor 1.0 and ontology v0.1
+
+This proposal is a constitutional authority candidate, not permission to expand the frozen semantic ontology by implication.
+
+The current ontology v0.1 owns eight node kinds and nine edge kinds. Fatherhand grants, purpose declarations, construction contexts, policies, and evaluation receipts do not become new universal `NodeKind` or `EdgeKind` values merely because this document gives them typed shapes. Until an explicit ontology-version decision is adopted, they belong in an authority/governance module whose durable artifacts may be referenced by canonical nodes without changing the meanings of `source`, `witness`, `proposal`, `tension`, or `harvest`.
+
+| Fatherhand concept | Current v0.1 relationship | Forbidden shortcut |
+| --- | --- | --- |
+| Grant or revocation record | Authority-module artifact with immutable lineage | Treating `actorId` as proof of authority |
+| Human witness receipt | Accountable attestation; may project as a `witness` node | Treating witness as permission or verification |
+| AI semantic receipt | Model-attributed bounded analysis | Elevating model coherence to truth or acceptance |
+| Hive state receipt | Snapshot-bound contextual evidence | Inferring governing intent from graph density |
+| Purpose declaration | Authorized governance act; may project as `proposal` until activated | Adding a free-floating `purpose` node kind on this branch |
+| Activation receipt | Versioned evaluation artifact | Treating the receipt as the act that grants or activates |
+| Purpose relations | Contextual authority-module relations | Smuggling them into an existing edge kind by semantic alias |
+
+Any future substrate promotion must name the new ontology version, exact direction and endpoint law, admission predicates, traversal behavior, dispute and supersession behavior, scope semantics, compatibility mapping, and adversarial fixtures. Unknown or lossless-unavailable relations must be rejected or preserved externally; they must not be coerced into a nearby v0.1 edge.
+
+### Accepted-event and scope seam
+
+The v0.1 `AcceptedEvent.actorId` identifies the principal accountable for acceptance. It does not prove a Fatherhand chain. An implementation may require a valid authority receipt before emitting an accepted event, but replay must continue to derive durable order from `sequence`, not from signatures, timestamps, display seals, model output, or graph frequency.
+
+`scopeId` remains both a meaning and authorization boundary. Fatherhand validation must not create an implicit cross-scope edge or leak the existence of inaccessible grants, purposes, receipts, identities, counts, or tensions. Cross-scope authority requires an explicit bridge design and receipt envelope under a later adopted contract.
+
+### Receipt and hashing seam
+
+All durable Fatherhand artifacts must use the repository's eventual single canonical addressing discipline. The grant seal binds `parentSeal` and canonical `grantBody`; it does not replace the artifact's canonical address. Receipt identity, signature validity, provenance closure, authority validity, purpose compatibility, activation, admissibility, fulfillment, and epistemic truth remain distinct judgments.
+
+## Jules handoff
+
+Jules should treat this PR as a bounded specification and adversarial-review assignment, not as authority to invent ontology.
+
+### First assignment
+
+1. Compare this document against `ONTOLOGY.md`, `INVARIANTS.md`, the Project Lego Floor 1.0 integration PR, and any adopted canonical receipt/hash implementation.
+2. Produce a contradiction and compatibility report before writing production code.
+3. Turn the minimum tests below into fixture specifications with explicit inputs, snapshot/policy versions, expected receipts, and expected failure codes.
+4. Propose the smallest module boundary that keeps Fatherhand governance outside the frozen v0.1 node/edge unions.
+5. Identify every place where an implementation could accidentally collapse:
+   - provenance into authority;
+   - witness into permission;
+   - signature validity into authority;
+   - `actorId` into a grant;
+   - graph frequency into purpose;
+   - provisional activation into ordinary activation;
+   - receipt production into the governed act itself.
+6. Stop at any ontology, edge-law, cross-scope, or canonical-hashing conflict. Record it as a tension with alternatives; do not resolve it by choosing the most convenient representation.
+
+### Implementation order after review
+
+1. Pure schemas and validators with no storage side effects.
+2. Canonical grant-body hashing and signature-chain verification using the repository's one adopted hasher.
+3. Pure `isAuthorized` traversal with revocation, expiry, consumption, delegation, scope, and purpose checks.
+4. Heterogeneous witness schemas that are structurally incapable of granting capability.
+5. Purpose-compatibility evaluation against an authorized, snapshot-bound construction context.
+6. Activation-policy evaluation and provisional-envelope validation.
+7. Append-only receipt persistence and deterministic replay integration.
+8. Only then, adapters into semantic projections or application surfaces.
+
+Do not modify `NodeKind`, `EdgeKind`, evidence traversal, or cross-scope behavior in the implementation PR unless a separately reviewed ontology contract explicitly authorizes that change.
 
 ## Minimum executable tests
 
