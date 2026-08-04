@@ -57,8 +57,8 @@ ok 8 - adversarial smoothing is VIOLATED and inadmissible under every claim
 | Attribution versus authority | Lossless | `authorId` vs `actorId` vs `sourceModel`. Model origination grants no authority. Authority resides in policy checks. |
 | Append-only lineage | Lossless | Changes via explicitly validated operations `create_node`, `create_edge`, `dispute_edge`, `supersede_edge`. No in-place modification. |
 | Canonical-address compatibility | Lossless | JCS RFC 8785 strict sort format used. |
-| Numeric boundaries and unsafe integers | Lossy with declared information loss | Node JS/JCS truncates precision over `MAX_SAFE_INTEGER` boundaries unless serialized as string. |
-| Timestamp rules | Lossless | `createdAt` stored as RFC 3339 strings but do not determine graph sorting (sequence dictates). |
+| Numeric boundaries and unsafe integers | Unavailable | TranchNode v0.1 natively serializes unsafe integers with silent precision loss (legacy behavior). Project0 strictly rejects unsafe integer-valued JSON numbers. Unsafe integer transfer is therefore unavailable for Project0 identity-bearing addresses. |
+| Timestamp rules | Lossless | `createdAt` stored as RFC 3339 strings but do not determine graph sorting (sequence dictates). Mapping is strictly conditional on perfect UTC grammar compatibility. |
 | Raw artifacts versus semantic addresses | Lossless | Kept strictly distinct. Raw media are bytes; JSON objects are hashed by structural representation. |
 | Receipt identity and domain separation | Lossless | Receipt `fieldHash` distinct from structural body properties. Caller does not set the enclosing address. |
 
@@ -110,4 +110,4 @@ ok 8 - adversarial smoothing is VIOLATED and inadmissible under every claim
 ## Explicit Incompatibilities and Unresolved Tensions
 - **Rejection Nodes:** Project0 adds `rejection` as a node type; TranchNode v0.1 lacks this type, preventing lossless graph representations of rejection without introducing custom conventions not backed by the core kernel validation checks.
 - **Cross-Scope Relations:** Any multi-context references (cross-scope) requested by Project0 are impossible in TranchNode v0.1 and cannot be creatively bypassed.
-- **Numbers:** Extreme precision (unsafe integer) numbers risk silent transformation during canonical serialization.
+- **Numbers:** Extreme precision (unsafe integer) numbers risk silent transformation during canonical serialization in TranchNode's legacy numeric serialization behavior. Project0 enforces a semantic-admission rule rejecting unsafe integer-valued JSON numbers entirely.
