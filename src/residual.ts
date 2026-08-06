@@ -61,7 +61,79 @@ export function sha256(bytes: Uint8Array): Hash {
   return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
 }
 
+// Strict pre-canonicalization validation imported from Project0 PR #28
+export function validateForCanonicalization(obj: any, seen = new WeakSet()): void {
+  if (obj === undefined) throw new Error("UNDEFINED_VALUE");
+  if (typeof obj === 'number') {
+    if (Number.isNaN(obj) || !Number.isFinite(obj)) throw new Error("NON_FINITE_NUMBER");
+    if (Number.isInteger(obj)) {
+      if (obj > Number.MAX_SAFE_INTEGER || obj < Number.MIN_SAFE_INTEGER) {
+        throw new Error("UNSAFE_INTEGER");
+      }
+    }
+  }
+  if (typeof obj === 'bigint' || typeof obj === 'symbol' || typeof obj === 'function') {
+    throw new Error("UNSUPPORTED_TYPE");
+  }
+
+  if (typeof obj === 'string') {
+    for (let i = 0; i < obj.length; i++) {
+      const code = obj.charCodeAt(i);
+      if (code >= 0xD800 && code <= 0xDFFF) {
+        if (code <= 0xDBFF) { // High surrogate
+          if (i === obj.length - 1) throw new Error("LONE_SURROGATE");
+          const next = obj.charCodeAt(i + 1);
+          if (next < 0xDC00 || next > 0xDFFF) throw new Error("LONE_SURROGATE");
+          i++; // Skip low surrogate
+        } else { // Low surrogate without preceding high
+          throw new Error("LONE_SURROGATE");
+        }
+      }
+    }
+  }
+
+  if (typeof obj === 'object' && obj !== null) {
+    const proto = Object.getPrototypeOf(obj);
+    if (proto !== Object.prototype && proto !== Array.prototype && proto !== null) {
+      throw new Error("CUSTOM_PROTOTYPE");
+    }
+
+    if (Object.getOwnPropertySymbols(obj).length > 0) {
+      throw new Error("SYMBOL_KEYED_PROPERTY");
+    }
+
+    const descriptors = Object.getOwnPropertyDescriptors(obj);
+    const keys = Object.keys(descriptors);
+    for (const key of keys) {
+      const desc = descriptors[key];
+      if (desc && (desc.get || desc.set)) throw new Error("ACCESSOR_PROPERTY");
+      // Arrays have a non-enumerable 'length' property, so we skip checking 'length' for enumerability on Arrays
+      if (desc && !desc.enumerable && !(Array.isArray(obj) && key === 'length')) {
+        throw new Error("NON_ENUMERABLE_PROPERTY");
+      }
+    }
+
+    if (seen.has(obj)) throw new Error("CYCLIC_VALUE");
+    seen.add(obj);
+
+    if (Array.isArray(obj)) {
+      if (Object.keys(obj).length !== obj.length) throw new Error("SPARSE_ARRAY");
+      for (let i = 0; i < obj.length; i++) {
+        if (!Object.prototype.hasOwnProperty.call(obj, i)) throw new Error("SPARSE_ARRAY");
+        validateForCanonicalization(obj[i], seen);
+      }
+    } else {
+      for (const key of Object.keys(obj)) {
+        if ((obj as any)[key] === undefined) throw new Error("UNDEFINED_VALUE");
+        validateForCanonicalization((obj as any)[key], seen);
+      }
+    }
+    seen.delete(obj);
+  }
+}
+
 export function addressJson<T>(value: T): Addressed<T> {
+  validateForCanonicalization(value);
   const encoded = canonicalize(value);
   if (encoded === undefined) throw new Error("Value is not JCS-serializable");
   return { hash: sha256(Buffer.from(encoded, "utf8")), value };

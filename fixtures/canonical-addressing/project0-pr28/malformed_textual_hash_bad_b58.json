@@ -1,0 +1,8 @@
+{
+  "name": "malformed_textual_hash_bad_b58",
+  "type": "Node",
+  "malformedTextualAddress": true,
+  "input_address": "node-0OIl",
+  "expectedErrorCode": "INVALID_ADDRESS_ALPHABET",
+  "expectedStatus": "rejected"
+}

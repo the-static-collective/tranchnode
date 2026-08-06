@@ -1,0 +1,8 @@
+{
+  "name": "nan_and_infinities",
+  "type": "Node",
+  "operation": "reject_transport_state",
+  "constructOp": "nan_and_infinities",
+  "expectedErrorCode": "NON_FINITE_NUMBER",
+  "expectedStatus": "rejected"
+}

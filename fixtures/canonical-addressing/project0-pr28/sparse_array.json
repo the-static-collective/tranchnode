@@ -1,0 +1,8 @@
+{
+  "name": "sparse_array",
+  "type": "Node",
+  "operation": "reject_transport_state",
+  "constructOp": "sparse_array",
+  "expectedErrorCode": "SPARSE_ARRAY",
+  "expectedStatus": "rejected"
+}

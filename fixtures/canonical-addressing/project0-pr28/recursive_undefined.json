@@ -1,0 +1,8 @@
+{
+  "name": "recursive_undefined",
+  "type": "Node",
+  "operation": "reject_transport_state",
+  "constructOp": "nested_undefined",
+  "expectedErrorCode": "UNDEFINED_VALUE",
+  "expectedStatus": "rejected"
+}

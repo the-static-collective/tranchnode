@@ -1,0 +1,14 @@
+{
+  "name": "lone_surrogate",
+  "type": "Node",
+  "input": {
+    "kind": "claim",
+    "body": "\ud800",
+    "createdAt": "2026-08-01T22:17:39Z",
+    "createdBy": "u1",
+    "provenance": [],
+    "disclosure": "public"
+  },
+  "expectedStatus": "rejected",
+  "expectedErrorCode": "LONE_SURROGATE"
+}

@@ -5,9 +5,57 @@ import { createHash } from "node:crypto";
 
 test("characterization: numeric boundaries and unsafe integers", () => {
   const safe = addressJson({ n: Number.MAX_SAFE_INTEGER });
-  // JCS/canonicalize in Node might just serialize it.
-  const unsafe = addressJson({ n: 9007199254740992 }); // MAX_SAFE_INTEGER + 1
-  assert.equal(safe.hash !== unsafe.hash, true, "Hashes should differ for different numbers");
+
+  assert.throws(() => {
+    addressJson({ n: 9007199254740992 }); // MAX_SAFE_INTEGER + 1
+  }, /UNSAFE_INTEGER/);
+
+  assert.throws(() => {
+    addressJson({ n: Number.MIN_SAFE_INTEGER - 1 });
+  }, /UNSAFE_INTEGER/);
+});
+
+test("characterization: rejects explicitly prohibited values", () => {
+  assert.throws(() => addressJson(undefined), /UNDEFINED_VALUE/);
+  assert.throws(() => addressJson({ a: undefined }), /UNDEFINED_VALUE/);
+  assert.throws(() => addressJson({ a: NaN }), /NON_FINITE_NUMBER/);
+  assert.throws(() => addressJson({ a: Infinity }), /NON_FINITE_NUMBER/);
+  assert.throws(() => addressJson({ a: -Infinity }), /NON_FINITE_NUMBER/);
+  assert.throws(() => addressJson({ a: BigInt(1) }), /UNSUPPORTED_TYPE/);
+  assert.throws(() => addressJson({ a: Symbol('test') }), /UNSUPPORTED_TYPE/);
+  assert.throws(() => addressJson({ a: () => {} }), /UNSUPPORTED_TYPE/);
+});
+
+test("characterization: rejects structurally invalid objects", () => {
+  class CustomClass { a = 1; }
+  assert.throws(() => addressJson(new CustomClass()), /CUSTOM_PROTOTYPE/);
+
+  const objWithSymbolKey = {};
+  Object.defineProperty(objWithSymbolKey, Symbol('test'), { value: 1, enumerable: true });
+  assert.throws(() => addressJson(objWithSymbolKey), /SYMBOL_KEYED_PROPERTY/);
+
+  const objWithAccessor = {};
+  Object.defineProperty(objWithAccessor, 'a', { get: () => 1, enumerable: true });
+  assert.throws(() => addressJson(objWithAccessor), /ACCESSOR_PROPERTY/);
+
+  const objWithNonEnumerable = {};
+  Object.defineProperty(objWithNonEnumerable, 'a', { value: 1, enumerable: false });
+  assert.throws(() => addressJson(objWithNonEnumerable), /NON_ENUMERABLE_PROPERTY/);
+
+  const cyclicObj: any = {};
+  cyclicObj.a = cyclicObj;
+  assert.throws(() => addressJson(cyclicObj), /CYCLIC_VALUE/);
+
+  const sparseArray = [1];
+  sparseArray[2] = 3;
+  assert.throws(() => addressJson(sparseArray), /SPARSE_ARRAY/);
+});
+
+test("characterization: lone surrogate string validation", () => {
+  assert.throws(() => addressJson({ a: "\uD800" }), /LONE_SURROGATE/);
+  assert.throws(() => addressJson({ a: "\uDFFF" }), /LONE_SURROGATE/);
+  assert.throws(() => addressJson({ a: "test\uD800test" }), /LONE_SURROGATE/);
+  assert.doesNotThrow(() => addressJson({ a: "\uD800\uDC00" })); // Valid surrogate pair
 });
 
 test("characterization: canonical-address compatibility", () => {
