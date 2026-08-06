@@ -1,0 +1,17 @@
+{
+  "name": "valid_timestamp",
+  "type": "Node",
+  "input": {
+    "kind": "claim",
+    "body": "Hello",
+    "createdAt": "2026-08-01T22:17:39.123Z",
+    "createdBy": "u1",
+    "provenance": [],
+    "disclosure": "public"
+  },
+  "domainPrefixHex": "50726f6a656374302d4e6f64652d76317c",
+  "preimageHex": "50726f6a656374302d4e6f64652d76317c7b22626f6479223a2248656c6c6f222c22637265617465644174223a22323032362d30382d30315432323a31373a33392e3132335a222c22637265617465644279223a227531222c22646973636c6f73757265223a227075626c6963222c226b696e64223a22636c61696d222c2270726f76656e616e6365223a5b5d7d",
+  "digestHex": "86d82073672266f56e67d8742f360f586d147e70d9c5fb59c7d5020cb6bb3382",
+  "textualAddress": "node-A5NmxStomvRWvR4PT2NWko5dKZDYFrbM14ZmXe5Fkw7w",
+  "expectedStatus": "accepted"
+}

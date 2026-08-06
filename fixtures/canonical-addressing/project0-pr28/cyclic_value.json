@@ -1,0 +1,8 @@
+{
+  "name": "cyclic_value",
+  "type": "Node",
+  "operation": "reject_transport_state",
+  "constructOp": "cyclic_value",
+  "expectedErrorCode": "CYCLIC_VALUE",
+  "expectedStatus": "rejected"
+}

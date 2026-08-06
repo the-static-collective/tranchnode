@@ -1,0 +1,21 @@
+{
+  "name": "exponent_boundaries",
+  "type": "Node",
+  "input": {
+    "kind": "claim",
+    "body": {
+      "a": 100000000000000000000,
+      "b": 0.000001
+    },
+    "createdAt": "2026-08-01T22:17:39Z",
+    "createdBy": "u1",
+    "provenance": [],
+    "disclosure": "public"
+  },
+  "domainPrefixHex": "50726f6a656374302d4e6f64652d76317c",
+  "preimageHex": "50726f6a656374302d4e6f64652d76317c7b22626f6479223a7b2261223a3130303030303030303030303030303030303030302c2262223a302e3030303030317d2c22637265617465644174223a22323032362d30382d30315432323a31373a33395a222c22637265617465644279223a227531222c22646973636c6f73757265223a227075626c6963222c226b696e64223a22636c61696d222c2270726f76656e616e6365223a5b5d7d",
+  "digestHex": "289edb7cc2c4aaa84ff89f10508721cbaf801eb02d94b231b80f3bbd64338580",
+  "textualAddress": "node-3jZoXX9xJzd3jDifGzBzakgMc4H7TRXbhNE5Ga3JwtHu",
+  "expectedStatus": "rejected",
+  "expectedErrorCode": "UNSAFE_INTEGER"
+}

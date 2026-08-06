@@ -1,0 +1,14 @@
+{
+  "name": "invalid_timestamp_precision",
+  "type": "Node",
+  "input": {
+    "kind": "claim",
+    "body": "Hello",
+    "createdAt": "2026-08-01T22:17:39.12Z",
+    "createdBy": "u1",
+    "provenance": [],
+    "disclosure": "public"
+  },
+  "expectedStatus": "rejected",
+  "expectedErrorCode": "INVALID_TIMESTAMP"
+}
