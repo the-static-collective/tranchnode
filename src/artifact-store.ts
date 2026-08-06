@@ -1,11 +1,11 @@
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import {
   constants as fsConstants,
+  link,
   mkdir,
   open,
   readFile,
   realpath,
-  rename,
   rm,
 } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve } from "node:path";
@@ -53,8 +53,8 @@ export class FilesystemArtifactStore {
   private readonly objectsRoot: string;
 
   constructor(root: string) {
-    if (!root || !isAbsolute(resolve(root))) {
-      throw new ArtifactStoreError("PATH_ESCAPE", "Artifact store root must resolve to an absolute path");
+    if (!root) {
+      throw new ArtifactStoreError("PATH_ESCAPE", "Artifact store root is required");
     }
     this.root = resolve(root);
     this.objectsRoot = resolve(this.root, "objects", "sha256");
@@ -73,10 +73,11 @@ export class FilesystemArtifactStore {
     const destination = this.pathFor(address);
     const directory = dirname(destination);
     await mkdir(directory, { recursive: true });
+    await this.assertDirectoryInsideRoot(directory);
 
     const temporary = resolve(
       directory,
-      `.${parseArtifactAddress(address)}.${process.pid}.${cryptoRandomSuffix()}.tmp`,
+      `.${parseArtifactAddress(address)}.${process.pid}.${randomBytes(8).toString("hex")}.tmp`,
     );
     this.assertInsideRoot(temporary);
 
@@ -89,7 +90,7 @@ export class FilesystemArtifactStore {
       file = undefined;
 
       try {
-        await rename(temporary, destination);
+        await link(temporary, destination);
         await this.syncDirectory(directory);
         return { address, created: true, byteLength: payload.byteLength };
       } catch (error) {
@@ -141,6 +142,15 @@ export class FilesystemArtifactStore {
     throw new ArtifactStoreError("PATH_ESCAPE", "Resolved artifact path escapes the store root");
   }
 
+  private async assertDirectoryInsideRoot(directory: string): Promise<void> {
+    this.assertInsideRoot(directory);
+    const [realRoot, realDirectory] = await Promise.all([realpath(this.root), realpath(directory)]);
+    const rel = relative(realRoot, realDirectory);
+    if (rel.startsWith("..") || isAbsolute(rel)) {
+      throw new ArtifactStoreError("PATH_ESCAPE", "Artifact directory resolves outside the store root");
+    }
+  }
+
   private async assertExistingPathInsideRoot(candidate: string): Promise<void> {
     this.assertInsideRoot(candidate);
     const [realRoot, realCandidate] = await Promise.all([realpath(this.root), realpath(candidate)]);
@@ -164,15 +174,8 @@ export class FilesystemArtifactStore {
   }
 }
 
-function cryptoRandomSuffix(): string {
-  return createHash("sha256")
-    .update(`${process.hrtime.bigint()}:${Math.random()}`)
-    .digest("hex")
-    .slice(0, 16);
-}
-
 function isAlreadyExists(error: unknown): boolean {
-  return isNodeError(error) && (error.code === "EEXIST" || error.code === "ENOTEMPTY");
+  return isNodeError(error) && error.code === "EEXIST";
 }
 
 function isNotFound(error: unknown): boolean {
