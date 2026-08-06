@@ -8,7 +8,6 @@
     "test": "node --test --import tsx test/**/*.test.ts"
   },
   "dependencies": {
-    "bs58": "^6.0.0",
     "canonicalize": "^2.1.0"
   },
   "devDependencies": {

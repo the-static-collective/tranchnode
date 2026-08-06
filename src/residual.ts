@@ -1,25 +1,9 @@
 import { createHash } from "node:crypto";
 import canonicalizeModule from "canonicalize";
-import bs58 from "bs58";
 
 const canonicalize = canonicalizeModule.default ?? canonicalizeModule;
 
 export type Hash = `sha256:${string}`;
-
-export const DOMAIN_PREFIXES = {
-  Node: 'Project0-Node-v1|',
-  Edge: 'Project0-Edge-v1|',
-  Receipt: 'Project0-Receipt-v1|',
-  Request: 'Project0-Request-v1|',
-} as const;
-
-export type SemanticAddressKind = keyof typeof DOMAIN_PREFIXES;
-
-const TIMESTAMP_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/;
-export function validateTimestamp(ts: any): void {
-  if (typeof ts !== 'string') throw new Error("INVALID_TYPE");
-  if (!TIMESTAMP_REGEX.test(ts)) throw new Error("INVALID_TIMESTAMP");
-}
 export type Claim = "creative_realization" | "semantic_reconstruction" | "historical_reproduction";
 export type HistoricalStatus = "EXACT_SOURCE_BYTES" | "EXACT_REQUIRED_RESIDUALS_REFERENCED" | "ALTERED_WITH_DISCLOSURE" | "NOT_HISTORICAL" | "VIOLATED";
 export type Outcome = "preserved_exactly" | "preserved_by_reference" | "transformed_with_disclosure" | "omitted_with_disclosure" | "violated";
@@ -148,60 +132,11 @@ export function validateForCanonicalization(obj: any, seen = new WeakSet()): voi
   }
 }
 
-/**
- * @deprecated Use `computeSemanticAddress` to adopt the Project0 canonical-addressing identity floor.
- */
 export function addressJson<T>(value: T): Addressed<T> {
   validateForCanonicalization(value);
   const encoded = canonicalize(value);
   if (encoded === undefined) throw new Error("Value is not JCS-serializable");
   return { hash: sha256(Buffer.from(encoded, "utf8")), value };
-}
-
-export function computeSemanticAddress(type: SemanticAddressKind, obj: any): { canonicalBytes: Buffer, textualId: string, digestHex: string } {
-  validateForCanonicalization(obj);
-  const jcsString = canonicalize(obj);
-  if (jcsString === undefined) throw new Error("Value is not JCS-serializable");
-
-  const prefix = DOMAIN_PREFIXES[type];
-  const canonicalBytes = Buffer.concat([
-    Buffer.from(prefix, 'utf8'),
-    Buffer.from(jcsString, 'utf8')
-  ]);
-
-  const hashBuffer = createHash('sha256').update(canonicalBytes).digest();
-  const digestHex = hashBuffer.toString('hex');
-  const b58 = bs58.encode(hashBuffer);
-
-  const prefixMap: Record<SemanticAddressKind, string> = {
-    Node: 'node-',
-    Edge: 'edge-',
-    Receipt: 'rect-',
-    Request: 'reqt-'
-  };
-
-  return { canonicalBytes, textualId: `${prefixMap[type]}${b58}`, digestHex };
-}
-
-export function parseSemanticAddress(type: SemanticAddressKind, textualId: string): Buffer {
-  const prefixMap: Record<SemanticAddressKind, string> = {
-    Node: 'node-',
-    Edge: 'edge-',
-    Receipt: 'rect-',
-    Request: 'reqt-'
-  };
-  const prefix = prefixMap[type];
-  if (!textualId.startsWith(prefix)) throw new Error(`INVALID_ADDRESS_PREFIX`);
-  const encodedDigest = textualId.slice(prefix.length);
-  if (encodedDigest.length === 0) throw new Error("Missing address digest");
-  let digest: Uint8Array;
-  try {
-    digest = bs58.decode(encodedDigest);
-  } catch {
-    throw new Error(`INVALID_ADDRESS_ALPHABET`);
-  }
-  if (digest.length !== 32) throw new Error(`INVALID_ADDRESS_LENGTH`);
-  return Buffer.from(digest);
 }
 
 function sameLocator(a: SampleLocator, b: SampleLocator): boolean {
