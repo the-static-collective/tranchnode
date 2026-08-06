@@ -10,7 +10,7 @@ hash chain.
 """
 
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime
 import hashlib
 import json
 
@@ -23,16 +23,11 @@ FULFILLMENT_BY_DISPOSITION = {
     "not_made_available": "attempted",
     "outcome_unknown": "scope_uncertain",
 }
-
 PURPOSE_COMPATIBLE = {"identical", "narrows", "operationalizes", "preserves"}
 PURPOSE_INCOMPATIBLE = {"expands", "reinterprets", "replaces", "conflicts", "diverts"}
 PROTECTED_EFFECTS = {
-    "coercion",
-    "unauthorized_disclosure",
-    "demanded_photo",
-    "publication",
-    "dietary_constraint_breach",
-    "return_path_suppressed",
+    "coercion", "unauthorized_disclosure", "demanded_photo", "publication",
+    "dietary_constraint_breach", "return_path_suppressed",
 }
 
 
@@ -41,11 +36,8 @@ def stable_bytes(value):
 
 
 def canonical_grant_body(grant):
-    return {
-        key: grant[key]
-        for key in sorted(grant)
-        if key not in {"seal", "grantorSignature", "displayPath"}
-    }
+    excluded = {"seal", "parentSeal", "grantorSignature", "grantorSignatureValid", "displayPath"}
+    return {key: grant[key] for key in sorted(grant) if key not in excluded}
 
 
 def expected_seal(parent_seal, grant):
@@ -66,12 +58,9 @@ def scope_subset(child, parent):
 
 
 def is_authorized(grants, terminal_grant_id, act, evaluated_at):
-    """Validate one explicit Fatherhand grant chain without trusting witnesses."""
     by_id = {grant["id"]: grant for grant in grants}
-    failures = []
-    chain = []
+    failures, chain, seen = [], [], set()
     current_id = terminal_grant_id
-    seen = set()
     now = iso_time(evaluated_at)
 
     while current_id is not None:
@@ -90,10 +79,6 @@ def is_authorized(grants, terminal_grant_id, act, evaluated_at):
         return {"result": "indeterminate", "failures": failures, "chain": [g["id"] for g in chain]}
 
     chain.reverse()
-    root = chain[0]
-    if root.get("parentGrantId") is not None:
-        failures.append("authority.root_has_parent")
-
     previous = None
     for grant in chain:
         parent_seal = previous.get("seal") if previous else grant.get("parentSeal")
@@ -124,25 +109,20 @@ def is_authorized(grants, terminal_grant_id, act, evaluated_at):
         previous = grant
 
     terminal = chain[-1]
-    exercised = set(act.get("capabilitiesExercised", []))
     held = set(terminal.get("capabilities", [])) - set(terminal.get("consumedCapabilities", []))
-    outside = sorted(exercised - held)
-    failures.extend(f"authority.capability_not_held:{capability}" for capability in outside)
+    failures.extend(
+        f"authority.capability_not_held:{capability}"
+        for capability in sorted(set(act.get("capabilitiesExercised", [])) - held)
+    )
     if not scope_subset(act.get("scope", {}), terminal.get("scope", {})):
         failures.append("authority.act_outside_scope")
 
     invalid_prefixes = (
-        "authority.invalid_",
-        "authority.revoked",
-        "authority.expired",
-        "authority.not_yet_valid",
-        "authority.parent_not_transferable",
-        "authority.broken_handoff",
-        "authority.fatherhand_changed",
-        "authority.capability_enlargement",
-        "authority.scope_enlargement",
-        "authority.purpose_changed",
-        "authority.capability_not_held",
+        "authority.invalid_", "authority.revoked", "authority.expired",
+        "authority.not_yet_valid", "authority.parent_not_transferable",
+        "authority.broken_handoff", "authority.fatherhand_changed",
+        "authority.capability_enlargement", "authority.scope_enlargement",
+        "authority.purpose_changed", "authority.capability_not_held",
         "authority.act_outside_scope",
     )
     result = "invalid" if any(item.startswith(invalid_prefixes) for item in failures) else "valid"
@@ -150,14 +130,11 @@ def is_authorized(grants, terminal_grant_id, act, evaluated_at):
 
 
 def is_purpose_compatible(grant_purpose_id, active_purpose_id, context):
-    """Preserve indeterminate where protected commitments or precedence conflict."""
-    relations = context.get("relations", {})
-    relation = relations.get(f"{grant_purpose_id}->{active_purpose_id}", "indeterminate")
+    relation = context.get("relations", {}).get(f"{grant_purpose_id}->{active_purpose_id}", "indeterminate")
     conflicts = sorted(context.get("conflicts", []))
-    tensions = sorted(context.get("unresolvedTensions", []))
+    tensions = context.get("unresolvedTensions", [])
     displaced = sorted(context.get("displacedCommitments", []))
-
-    if conflicts or displaced or any(t.get("blocking", False) for t in tensions):
+    if conflicts or displaced or any(tension.get("blocking", False) for tension in tensions):
         result = "indeterminate"
     elif relation in PURPOSE_COMPATIBLE:
         result = "compatible"
@@ -165,7 +142,6 @@ def is_purpose_compatible(grant_purpose_id, active_purpose_id, context):
         result = "incompatible"
     else:
         result = "indeterminate"
-
     return {
         "relation": relation,
         "result": result,
@@ -176,34 +152,27 @@ def is_purpose_compatible(grant_purpose_id, active_purpose_id, context):
 
 
 def reckon_stewardship(graph, context):
-    authorization_receipt = is_authorized(
-        graph.get("grants", []),
-        graph["commission"]["terminalGrantId"],
-        graph["provisionAct"],
-        context["evaluatedAt"],
+    authority = is_authorized(
+        graph.get("grants", []), graph["commission"]["terminalGrantId"],
+        graph["provisionAct"], context["evaluatedAt"],
     )
-    purpose_receipt = is_purpose_compatible(
-        graph["terminalGrantPurposeId"],
-        graph["commission"]["governingPurposeId"],
+    purpose = is_purpose_compatible(
+        graph["terminalGrantPurposeId"], graph["commission"]["governingPurposeId"],
         graph.get("purposeContext", {}),
     )
-
-    reasons = []
-    reasons.extend(authorization_receipt["failures"])
-    reasons.extend(f"purpose.conflict:{item}" for item in purpose_receipt["conflicts"])
-    reasons.extend(f"purpose.displaced_commitment:{item}" for item in purpose_receipt["displacedCommitments"])
+    reasons = list(authority["failures"])
+    reasons.extend(f"purpose.conflict:{item}" for item in purpose["conflicts"])
+    reasons.extend(f"purpose.displaced_commitment:{item}" for item in purpose["displacedCommitments"])
 
     act = graph["provisionAct"]
-    effects = set(act.get("effects", []))
-    breaches = sorted(effects & PROTECTED_EFFECTS)
-
+    breaches = sorted(set(act.get("effects", [])) & PROTECTED_EFFECTS)
     if breaches:
         fidelity = "breached"
         reasons.extend(f"fidelity.protected_commitment_breached:{item}" for item in breaches)
-    elif purpose_receipt["result"] == "incompatible":
+    elif purpose["result"] == "incompatible":
         fidelity = "drifted"
         reasons.append("fidelity.purpose_incompatible")
-    elif purpose_receipt["result"] == "indeterminate":
+    elif purpose["result"] == "indeterminate":
         fidelity = "indeterminate"
         reasons.append("fidelity.purpose_indeterminate")
     elif not context.get("returnPathPresent", True):
@@ -225,29 +194,25 @@ def reckon_stewardship(graph, context):
         fulfillment = FULFILLMENT_BY_DISPOSITION.get(disposition, "scope_uncertain")
         reasons.append(f"fulfillment.disposition:{disposition}")
 
+    execution = "complete"
     if not context.get("returnPathPresent", True):
         execution = "incomplete_execution"
     elif context.get("closeRequested", False) and not witness:
         execution = "incomplete_execution"
         reasons.append("execution.close_without_disposition_witness")
-    else:
-        execution = "complete"
 
-    response = "none"
-    if authorization_receipt["result"] == "invalid":
+    if authority["result"] == "invalid":
         response = "suspend"
     elif fidelity == "breached":
         response = "repair"
-    elif execution == "incomplete_execution" or fulfillment == "scope_uncertain":
+    elif execution == "incomplete_execution" or fulfillment in {"scope_uncertain", "partial"}:
         response = "review"
-    elif fulfillment == "partial":
-        response = "review"
-    elif fulfillment == "scoped_complete":
+    else:
         response = "none"
 
     return {
-        "authorization": authorization_receipt["result"],
-        "purposeCompatibility": purpose_receipt["result"],
+        "authorization": authority["result"],
+        "purposeCompatibility": purpose["result"],
         "fidelity": fidelity,
         "fulfillment": fulfillment,
         "execution": execution,
@@ -256,8 +221,9 @@ def reckon_stewardship(graph, context):
     }
 
 
-def make_grant(grant_id, parent, grantor, grantee, capabilities, scope, purpose, transferable=True,
-               delegable_capabilities=None, delegable_scope=None, revoked=False, expires_at=None):
+def make_grant(grant_id, parent, grantor, grantee, capabilities, scope, purpose,
+               transferable=True, delegable_capabilities=None, delegable_scope=None,
+               revoked=False, expires_at=None):
     grant = {
         "id": grant_id,
         "parentGrantId": parent["id"] if parent else None,
@@ -301,15 +267,18 @@ def base_graph():
         "grants": [deepcopy(ROOT), deepcopy(TERMINAL)],
         "terminalGrantPurposeId": PURPOSE,
         "commission": deepcopy(BASE_COMMISSION),
-        "purposeContext": {"relations": {f"{PURPOSE}->{PURPOSE}": "identical"}, "conflicts": [], "unresolvedTensions": [], "displacedCommitments": []},
+        "purposeContext": {
+            "relations": {f"{PURPOSE}->{PURPOSE}": "identical"},
+            "conflicts": [], "unresolvedTensions": [], "displacedCommitments": [],
+        },
         "provisionAct": {
             "capabilitiesExercised": ["prepare_meal", "offer_meal"],
-            "scope": deepcopy(SCOPE),
-            "safeSuitable": True,
-            "voluntary": True,
+            "scope": deepcopy(SCOPE), "safeSuitable": True, "voluntary": True,
             "effects": [],
         },
-        "dispositionWitness": {"eligible": True, "role": "receiving_caregiver", "disposition": "consumed"},
+        "dispositionWitness": {
+            "eligible": True, "role": "receiving_caregiver", "disposition": "consumed",
+        },
         "diagnostics": {"mealReferenceCount": 1},
     }
 
@@ -317,7 +286,15 @@ def base_graph():
 def case(name, mutate, expected, context=None):
     graph = base_graph()
     mutate(graph)
-    return {"name": name, "graph": graph, "context": {"evaluatedAt": "2026-08-05T12:00:00Z", "returnPathPresent": True, **(context or {})}, "expected": expected}
+    return {
+        "name": name,
+        "graph": graph,
+        "context": {
+            "evaluatedAt": "2026-08-05T12:00:00Z", "returnPathPresent": True,
+            **(context or {}),
+        },
+        "expected": expected,
+    }
 
 
 CASES = [
@@ -337,11 +314,10 @@ CASES = [
 def main():
     results = []
     for item in CASES:
-        before_graph = stable_bytes(item["graph"])
-        before_context = stable_bytes(item["context"])
+        graph_before, context_before = stable_bytes(item["graph"]), stable_bytes(item["context"])
         receipt = reckon_stewardship(item["graph"], item["context"])
-        assert stable_bytes(item["graph"]) == before_graph, f"{item['name']}: graph mutated"
-        assert stable_bytes(item["context"]) == before_context, f"{item['name']}: context mutated"
+        assert stable_bytes(item["graph"]) == graph_before, f"{item['name']}: graph mutated"
+        assert stable_bytes(item["context"]) == context_before, f"{item['name']}: context mutated"
         for field, expected in item["expected"].items():
             assert receipt[field] == expected, f"{item['name']}: expected {field}={expected}, got {receipt[field]}"
         results.append({"case": item["name"], "receipt": receipt})
