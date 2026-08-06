@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { addressJson, sha256, verifyReconstruction, type FieldNode, type ReconstructionReceipt } from "../src/residual.js";
+import { computeSemanticAddress, addressJson, sha256, verifyReconstruction, type FieldNode, type ReconstructionReceipt } from "../src/residual.js";
 
 const sourceBytes = Buffer.from("[breath] I never said the door was locked— No. Wait. I did. [metallic click]");
 const sourceHash = sha256(sourceBytes);
@@ -12,7 +12,7 @@ const slices = {
   click: Buffer.from("[metallic click]")
 };
 
-const field = addressJson<FieldNode>({
+const fieldObj: FieldNode = {
   kind: "field",
   fieldClass: "MATERIAL",
   sources: [artifact],
@@ -32,7 +32,9 @@ const field = addressJson<FieldNode>({
     preservationBasis: id === "correction" ? "testimonial" : "historical",
     preservationMode: "exact_samples"
   }))
-});
+};
+const fieldAddr = computeSemanticAddress("Node", fieldObj);
+const field = { hash: fieldAddr.textualId as any, value: fieldObj };
 
 function receipt(claim: ReconstructionReceipt["claim"], evidence: ReconstructionReceipt["evidence"]): ReconstructionReceipt {
   return {
@@ -47,7 +49,7 @@ function receipt(claim: ReconstructionReceipt["claim"], evidence: Reconstruction
 }
 
 test("JCS addressing excludes caller-supplied envelope hashes", () => {
-  assert.match(field.hash, /^sha256:[0-9a-f]{64}$/);
+  assert.match(field.hash, /^node-[1-9A-HJ-NP-Za-km-z]+$/);
   assert.equal("fieldHash" in field.value, false);
   assert.equal("receiptHash" in field.value, false);
 });
