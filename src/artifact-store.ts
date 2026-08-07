@@ -39,13 +39,14 @@ export function artifactAddress(bytes: Uint8Array): Hash {
 
 export function parseArtifactAddress(address: Hash | string): string {
   const match = SHA256_ADDRESS.exec(address);
-  if (!match) {
+  const digest = match?.[1];
+  if (!digest) {
     throw new ArtifactStoreError(
       "INVALID_ARTIFACT_ADDRESS",
       "Artifact addresses must be lowercase sha256:<64 hex characters>",
     );
   }
-  return match[1];
+  return digest;
 }
 
 export class FilesystemArtifactStore {
