@@ -1,0 +1,11 @@
+{
+  "type": "NEED_DECLARED",
+  "version": 1,
+  "id": "fixture_need_breakfast_001",
+  "summary": "Breakfast capacity requested for a local morning meal table.",
+  "kind": "meal",
+  "requestedQuantity": {
+    "value": 33,
+    "unit": "meal"
+  }
+}
