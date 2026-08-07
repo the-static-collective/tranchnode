@@ -12,7 +12,10 @@ import {
   type FulfillmentRecorded,
   type NeedDeclared,
 } from "../src/fulfillment.js";
-import { verifyFulfillmentAgainstSubstrate } from "../src/fulfillment-substrate.js";
+import {
+  FulfillmentKernelError,
+  verifyFulfillmentAgainstSubstrate,
+} from "../src/fulfillment-substrate.js";
 import {
   addressFieldRootAdmission,
   addressProjectionReceipt,
@@ -126,13 +129,14 @@ test("origin law preserves unknown provenance and derived Need state", async () 
   assert.equal("status" in need, false);
 });
 
-test("fulfillment verifies through identity, immutable storage, root closure, and real WAV residuals", async (t) => {
+test("fulfillment crossing binds observation, root closure, and exact WAV residual evidence without mutating source", async (t) => {
   const store = await storeFor(t);
   const need = await canonicalNeedFixture();
   const needHash = addressJson(need).hash;
 
   const wav = wav16([100, -100, 200, -200]);
   const storedWav = await store.put(wav);
+  const sourceBefore = await store.get(storedWav.address);
   const locator: SampleLocator = {
     locatorVersion: "sample-v1",
     sourceArtifact: storedWav.address,
@@ -150,6 +154,7 @@ test("fulfillment verifies through identity, immutable storage, root closure, an
     preservationBasis: "testimonial",
     preservationMode: "exact_samples",
   };
+  const residualHash = addressJson(residual).hash;
 
   const material = await store.put(Buffer.from("fixture material receipt", "utf8"));
   const purposeHash = addressJson({ purpose: "fulfillment evidence fixture" }).hash;
@@ -170,7 +175,7 @@ test("fulfillment verifies through identity, immutable storage, root closure, an
     questionPurposeHash: purposeHash,
     contextHashes: [],
     outputNodeHashes: [material.address],
-    residualHashes: [extracted.payloadHash],
+    residualHashes: [residualHash],
     uncertainty: "Fixture observation only; witness does not certify objective success.",
     creationOrder: 2,
   });
@@ -207,7 +212,56 @@ test("fulfillment verifies through identity, immutable storage, root closure, an
 
   assert.equal(verified.need.hash, needHash);
   assert.equal(verified.fulfillment.hash, addressJson(receipt).hash);
+  assert.notEqual(verified.fulfillment.hash, storedWav.address);
   assert.deepEqual(verified.materialArtifactHashes, [material.address]);
   assert.deepEqual(verified.fieldRoots, [storedWav.address]);
   assert.deepEqual(verified.residualIds, [residual.id]);
+  assert.deepEqual(await store.get(storedWav.address), sourceBefore);
+
+  const proposal = addressProjectionReceipt({
+    ...projection.value,
+    projectionKind: "proposal",
+  });
+  const proposalReceipt: FulfillmentRecorded = {
+    ...receipt,
+    projectionReceiptHash: proposal.hash,
+  };
+  await assert.rejects(
+    () => verifyFulfillmentAgainstSubstrate(
+      need,
+      proposalReceipt,
+      {
+        projection: {
+          target: proposal,
+          graph: {
+            projections: new Map([[proposal.hash, proposal]]),
+            admissions: new Map([[admission.hash, admission]]),
+          },
+        },
+        residualBindings: [residual],
+      },
+      store,
+    ),
+    (error: unknown) => error instanceof FulfillmentKernelError
+      && error.code === "EVIDENCE_NOT_OBSERVATION",
+  );
+
+  const uncitedResidual: ResidualBinding = {
+    ...residual,
+    id: "uncited-but-byte-exact-audio",
+  };
+  const uncitedReceipt: FulfillmentRecorded = {
+    ...receipt,
+    residualIds: [uncitedResidual.id],
+  };
+  await assert.rejects(
+    () => verifyFulfillmentAgainstSubstrate(
+      need,
+      uncitedReceipt,
+      { projection: { target: projection, graph }, residualBindings: [uncitedResidual] },
+      store,
+    ),
+    (error: unknown) => error instanceof FulfillmentKernelError
+      && error.code === "RESIDUAL_NOT_IN_PROJECTION",
+  );
 });

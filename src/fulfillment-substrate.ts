@@ -34,8 +34,10 @@ export class FulfillmentKernelError extends Error {
       | "NEED_SNAPSHOT_MISMATCH"
       | "PROJECTION_EVIDENCE_MISSING"
       | "PROJECTION_REFERENCE_MISMATCH"
+      | "EVIDENCE_NOT_OBSERVATION"
       | "RESIDUAL_EVIDENCE_MISSING"
       | "RESIDUAL_REFERENCE_MISMATCH"
+      | "RESIDUAL_NOT_IN_PROJECTION"
       | "DUPLICATE_RESIDUAL_ID",
     message: string,
   ) {
@@ -92,6 +94,12 @@ export async function verifyFulfillmentAgainstSubstrate(
         `Fulfillment ${receipt.id} references ${receipt.projectionReceiptHash}, evidence supplied ${evidence.projection.target.hash}`,
       );
     }
+    if (evidence.projection.target.value.projectionKind !== "observation") {
+      throw new FulfillmentKernelError(
+        "EVIDENCE_NOT_OBSERVATION",
+        `Fulfillment ${receipt.id} evidence must be an observation projection, not ${evidence.projection.target.value.projectionKind}`,
+      );
+    }
     fieldRoots = [...await verifyProjectionWithMaterialRoots(
       evidence.projection.target,
       evidence.projection.graph,
@@ -135,6 +143,17 @@ export async function verifyFulfillmentAgainstSubstrate(
         `Residual ${id} was referenced but not supplied`,
       );
     }
+
+    if (
+      evidence.projection
+      && !evidence.projection.target.value.residualHashes.includes(addressJson(binding).hash)
+    ) {
+      throw new FulfillmentKernelError(
+        "RESIDUAL_NOT_IN_PROJECTION",
+        `Residual ${id} is exact material evidence but is not cited by observation projection ${evidence.projection.target.hash}`,
+      );
+    }
+
     await verifyExactPcmResidual(store, binding);
   }
 
