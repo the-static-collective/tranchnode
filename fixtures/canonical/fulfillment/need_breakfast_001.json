@@ -1,0 +1,27 @@
+{
+  "type": "NEED_DECLARED",
+  "version": 1,
+  "id": "fixture_need_breakfast_001",
+  "createdAt": "2026-07-31T00:00:00Z",
+  "createdBy": "actor_fixture",
+  "visibility": "circle",
+  "summary": "Breakfast capacity requested for a local morning meal table.",
+  "kind": "meal",
+  "requestedQuantity": {
+    "value": 33,
+    "unit": "meal"
+  },
+  "disclosurePolicy": {
+    "audience": "circle",
+    "permittedFields": {
+      "summary": true,
+      "quantity": true,
+      "coarseTime": true,
+      "coarsePlace": true,
+      "exactPlace": false,
+      "participantIdentity": false,
+      "artifacts": false
+    },
+    "basis": "aggregate_only"
+  }
+}
