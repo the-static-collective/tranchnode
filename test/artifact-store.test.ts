@@ -37,7 +37,9 @@ test("duplicate writes are idempotent and concurrent identical writes converge",
     const results = await Promise.all(Array.from({ length: 12 }, () => store.put(bytes)));
     assert.equal(new Set(results.map((result) => result.address)).size, 1);
     assert.equal(results.filter((result) => result.created).length, 1);
-    assert.deepEqual(await store.get(results[0].address), bytes);
+    const first = results[0];
+    assert.ok(first);
+    assert.deepEqual(await store.get(first.address), bytes);
   });
 });
 
