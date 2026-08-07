@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { chmod, mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -57,7 +57,9 @@ test("verified reads detect addressed-path corruption", async () => {
   await withStore(async (store) => {
     const bytes = Buffer.from("original", "utf8");
     const { address } = await store.put(bytes);
-    await writeFile(store.pathFor(address), Buffer.from("tampered", "utf8"));
+    const objectPath = store.pathFor(address);
+    await chmod(objectPath, 0o644);
+    await writeFile(objectPath, Buffer.from("tampered", "utf8"));
     await assert.rejects(
       store.get(address),
       (error: unknown) => error instanceof ArtifactStoreError && error.code === "ARTIFACT_CORRUPTION",
