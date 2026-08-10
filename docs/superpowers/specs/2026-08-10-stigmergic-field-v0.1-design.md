@@ -31,7 +31,7 @@ Consequences:
 - participants may ignore field conditions;
 - inhibition reduces recruitment pressure but cannot delete, forbid, or rewrite source material;
 - no hidden global chooser, assignment service, or consensus engine may be introduced to make the specimen succeed;
-- inaccessible scope material contributes nothing and cannot be inferred through counts, magnitudes, fingerprints, or timing;
+- inaccessible scope material contributes nothing and cannot be inferred through counts, magnitudes, fingerprints, sequence gaps, or timing;
 - wall-clock time does not affect field decay or durable ordering.
 
 ## 3. Repository boundaries
@@ -86,7 +86,9 @@ interface FieldSourceEvent {
 }
 ```
 
-`sequence` is the only decay clock. Wall-clock timestamps, arrival order, database row order, and model output order are irrelevant.
+`sequence` is the **scope-local accepted-event sequence** for `scopeId`, using the same causal ordering rule as the source system. It must not be a global cross-scope counter. `throughSequence` uses that same scope-local sequence domain.
+
+This is the only decay clock. Wall-clock timestamps, arrival order, database row order, global activity elsewhere, and model output order are irrelevant.
 
 ### 4.3 Generic trace
 
@@ -117,9 +119,9 @@ Validation:
 - `magnitude` is an integer from 0 through 1000;
 - `decayWindowEvents` is an integer from 1 through 10000;
 - `sourceSequence` is a positive safe integer;
-- every trace must name an accepted source event in the same scope and must exactly match its sequence;
+- every trace must name an accepted source event in the same scope and must exactly match its scope-local sequence;
 - `subjectRef` is opaque to TranchNode and must be non-empty;
-- duplicate byte-identical traces are idempotent; conflicting duplicate identities are rejected by the addressed representation used in implementation;
+- traces have **no caller-supplied identity**: each trace is content-addressed from its canonical body, and repeated identical trace hashes collapse idempotently;
 - adapters may not emit traces from inaccessible events.
 
 ### 4.4 Event-distance decay
@@ -190,7 +192,7 @@ It therefore binds at minimum:
 
 - schema version;
 - scope;
-- causal cut;
+- scope-local causal cut;
 - policy version;
 - adapter identity/version;
 - authority literal;
@@ -223,16 +225,18 @@ band-runtime/stigmergic-adapter@0.1
 
 The adapter maps only already-committed runtime events to traces. It does not read future events, model confidence, hidden participant state, or mutable UI state.
 
+The adapter table must declare fixed integer magnitudes and decay windows as part of its versioned contract. v0.1 does not permit learned, probabilistic, or wall-clock-dependent weights.
+
 The exact event-to-channel table is implementation-plan work, but v0.1 must include at least:
 
 - one positive recruitment/attention source;
 - one receptivity source;
-- one saturation or latency-derived source;
+- one saturation or interaction-latency-derived source;
 - one explicit inhibitory/refusal source;
 - one unresolved-tension source;
 - one return/revisit source.
 
-Latency-derived signals must be defined in accepted-event distance or another replay-stable event relation, not elapsed wall time.
+Latency-derived signals must be defined in scope-local accepted-event distance or another replay-stable event relation, not elapsed wall time.
 
 ### 5.2 Coordinatorless encounter
 
@@ -244,9 +248,10 @@ The fixture must create a sequence in which:
 2. additional encounters make X saturated and/or inhibited;
 3. subject Y remains comparatively under-attended and receptive;
 4. at least one participant independently chooses Y after observing the field projection;
-5. no event equivalent to `assign participant B to Y` exists;
-6. protected silence and refusal remain legal participant outcomes;
-7. replay from the same accepted sequence yields byte-identical field fingerprints at each asserted causal cut.
+5. that choice is produced by a participant-local decision rule whose inputs are limited to that participant's allowed local state plus the visible field projection;
+6. no event equivalent to `assign participant B to Y` exists;
+7. protected silence and refusal remain legal participant outcomes;
+8. replay from the same accepted sequence yields byte-identical field fingerprints at each asserted causal cut.
 
 The participant action may be deterministic in the test fixture. The architectural proof is that its inputs are bounded local state plus non-authoritative field state, not a central assignment.
 
@@ -272,9 +277,12 @@ TranchNode will publish a canonical fixture containing:
 - derived generic traces;
 - projection request(s);
 - expected active cells;
-- expected fingerprints.
+- expected fingerprints;
+- a canonical fixture content hash/address.
 
-Band Runtime will carry or consume the same fixture body in its conformance test and prove that its adapter output matches the generic trace contract before applying its own encounter behavior.
+Band Runtime will vendor the exact v0.1 fixture body under its own conformance fixtures, record the TranchNode fixture address it was copied from, and assert that its pinned fixture bytes still hash to that address before using it. Its adapter test then proves that accepted Band Runtime events produce the generic traces required by the pinned contract.
+
+The copied fixture is conformance evidence, not a second authority: if the TranchNode fixture changes, it necessarily receives a new content address and Band Runtime must deliberately repin or remain on the previous contract.
 
 If later work needs direct code reuse, package distribution can be designed separately. It is not part of this vertical.
 
@@ -336,7 +344,7 @@ Required tests:
 
 1. same inputs + same causal cut => byte-identical projection/fingerprint;
 2. input array permutation does not change projection;
-3. decay is based on event distance, not timestamps;
+3. decay is based on scope-local event distance, not timestamps;
 4. trace expires exactly at its event window boundary;
 5. multiple contributors aggregate while remaining attributable;
 6. inhibition remains visible and never deletes positive traces;
@@ -344,8 +352,8 @@ Required tests:
 8. cross-scope traces are rejected;
 9. unsafe numbers and overflow are rejected;
 10. adapter id/version and policy version change the fingerprint;
-11. inaccessible/omitted events contribute nothing;
-12. canonical JSON fixture reproduces expected cells and fingerprint.
+11. inaccessible/omitted events contribute nothing and unrelated scopes cannot create visible sequence gaps;
+12. canonical JSON fixture reproduces expected cells, fixture address, and projection fingerprint.
 
 ### 9.2 Band Runtime tests
 
@@ -355,9 +363,11 @@ Required tests:
 2. no unaccepted or future event contributes;
 3. protected-silence/refusal events remain non-mutating except for attributable residue allowed by existing law;
 4. coordinatorless fixture redistributes activity from X toward Y;
-5. removing field visibility prevents the fixture from claiming stigmergic coordination success;
-6. inserting a central assignment causes an anti-cheat assertion failure;
-7. replay produces the same sequence of asserted fingerprints and participant-visible field states.
+5. the participant choosing Y does so from local state plus visible field, with no assignment input;
+6. removing field visibility prevents the fixture from claiming stigmergic coordination success;
+7. inserting a central assignment causes an anti-cheat assertion failure;
+8. replay produces the same sequence of asserted fingerprints and participant-visible field states;
+9. the vendored TranchNode conformance fixture still matches its pinned canonical address.
 
 ### 9.3 Notebook specimen
 
@@ -382,7 +392,7 @@ The vertical succeeds only if all of the following hold:
 3. Event-distance decay reproduces exactly under replay.
 4. Band Runtime demonstrates useful activity redistribution with no central assignment.
 5. Refusal and protected silence remain available.
-6. Scope boundaries reveal no side-channel information.
+6. Scope boundaries reveal no side-channel information, including through sequence numbering.
 7. Machine receipts make the field evolution inspectable.
 8. The notebook captures the portable law and specimen without claiming canonical authority.
 
@@ -402,7 +412,7 @@ The vertical fails or must be redesigned if:
 - aggregate pressure hides source attribution;
 - inhibition suppresses source history;
 - a participant is compelled by field state;
-- hidden scope activity affects visible pressure/fingerprints;
+- hidden scope activity affects visible pressure, sequence gaps, or fingerprints;
 - the specimen only works because a coordinator secretly performs allocation;
 - Band Runtime must duplicate or reinterpret TranchNode field math;
 - the abstraction requires a Project0 ontology change before the specimen can run.
@@ -410,7 +420,7 @@ The vertical fails or must be redesigned if:
 ## 12. Planned PR order
 
 1. **TranchNode:** generic Stigmergic Field v0.1 projection + conformance fixture.
-2. **Band Runtime:** versioned adapter + coordinatorless encounter specimen consuming the v0.1 contract.
+2. **Band Runtime:** versioned adapter + coordinatorless encounter specimen consuming the pinned v0.1 contract.
 3. **What-is-the-static-collective-:** graduate the bee incubator into `patterns/stigmergic-field.md` and preserve `specimens/stigmergic-field-v0.1.md` with links and verdict.
 
 The notebook PR should reference the merged or final implementation PRs. A Project0 proposal, if any, comes only after the specimen verdict.
