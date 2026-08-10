@@ -21,7 +21,7 @@ import {
 const scopeId = "session-linked-vertical";
 const adapter = { id: "band-runtime/stigmergic-adapter", version: "0.1" };
 const policyVersion = "band-runtime-field-policy/v0.1";
-const fixtureRawHash = "sha256:189d21bbf5035d1a3a388431a74933eb65c6556bc349e90e24990457df5dbbff";
+const fixtureRawHash = "sha256:5c05959b4a340e5a7f9f81f69323cf81c8b9fcc0cda852263a96ebcd538bdd97";
 
 function makeTrace(overrides: Partial<FieldTrace> = {}): FieldTrace {
   return {
