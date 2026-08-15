@@ -6,6 +6,7 @@ import {
   BenchmarkError,
   FixtureReconstructionEngine,
   ReferenceReconstructionEngine,
+  diffConstitutionalState,
   evaluateBenchmarkResult,
   normalizeReconstructionResult,
   validateBenchmarkManifest,
@@ -208,4 +209,94 @@ test("reconstruction result is deterministic across manifest evidence insertion 
     addressJson(normalizeReconstructionResult(original)).hash,
     addressJson(normalizeReconstructionResult(reordered)).hash,
   );
+});
+
+test("constitutional diff classifies later witness as new history and a new projection", async () => {
+  const manifest = await manifestFixture();
+  const reference = new ReferenceReconstructionEngine();
+  const cutA = await reference.reconstruct({
+    manifest,
+    cut: cutById(manifest, "cut-a-before-witness"),
+  });
+  const cutB = await reference.reconstruct({
+    manifest,
+    cut: cutById(manifest, "cut-b-after-witness"),
+  });
+
+  assert.deepEqual(diffConstitutionalState(cutA, cutB), {
+    historyDelta: "new_history",
+    addedHistoryIds: ["witness.receiving-caregiver.consumed"],
+    rewrittenHistoryIds: [],
+    occurrenceDelta: "unchanged",
+    projectionDelta: "new_projection",
+    tensionDelta: "unchanged",
+  });
+});
+
+test("constitutional diff exposes rewritten history and changed occurrence", async () => {
+  const manifest = await manifestFixture();
+  const cutA = await new ReferenceReconstructionEngine().reconstruct({
+    manifest,
+    cut: cutById(manifest, "cut-a-before-witness"),
+  });
+  const changedOccurrenceAddress = addressJson({ rewrittenOccurrence: true }).hash;
+  const rewritten: ReconstructionResult = {
+    ...cutA,
+    constitutional: {
+      ...cutA.constitutional,
+      occurrenceAddress: changedOccurrenceAddress,
+      projectionAddress: addressJson({ rewrittenProjection: true }).hash,
+      history: cutA.constitutional.history.map((item) =>
+        item.id === "provision.meal.child-c.window-w"
+          ? { ...item, address: changedOccurrenceAddress }
+          : { ...item }),
+    },
+  };
+
+  const diff = diffConstitutionalState(cutA, rewritten);
+  assert.equal(diff.historyDelta, "rewritten_history");
+  assert.deepEqual(diff.rewrittenHistoryIds, ["provision.meal.child-c.window-w"]);
+  assert.deepEqual(diff.addedHistoryIds, []);
+  assert.equal(diff.occurrenceDelta, "changed_occurrence");
+  assert.equal(diff.projectionDelta, "not_comparable_after_occurrence_change");
+});
+
+test("constitutional diff distinguishes resolved tension from silenced tension", async () => {
+  const manifest = await manifestFixture();
+  const base = await new ReferenceReconstructionEngine().reconstruct({
+    manifest,
+    cut: cutById(manifest, "cut-a-before-witness"),
+  });
+  const before: ReconstructionResult = {
+    ...base,
+    constitutional: {
+      ...base.constitutional,
+      tensions: [
+        { id: "tension.care-plan", status: "open", resolutionEvidenceIds: [] },
+      ],
+    },
+  };
+  const resolved: ReconstructionResult = {
+    ...before,
+    constitutional: {
+      ...before.constitutional,
+      tensions: [
+        {
+          id: "tension.care-plan",
+          status: "resolved",
+          resolutionEvidenceIds: ["witness.resolution"],
+        },
+      ],
+    },
+  };
+  const silenced: ReconstructionResult = {
+    ...before,
+    constitutional: {
+      ...before.constitutional,
+      tensions: [],
+    },
+  };
+
+  assert.equal(diffConstitutionalState(before, resolved).tensionDelta, "resolved_tension");
+  assert.equal(diffConstitutionalState(before, silenced).tensionDelta, "silenced_tension");
 });
