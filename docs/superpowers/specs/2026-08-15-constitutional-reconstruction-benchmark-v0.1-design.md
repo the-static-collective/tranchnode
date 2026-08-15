@@ -2,7 +2,7 @@
 
 Date: 2026-08-15
 Issue: #20 — Build constitutional reconstruction benchmark and semantic diff prototype
-Status: design approved in conversation; written-spec review pending
+Status: implemented in PR #39; executable vertical under review
 
 ## Purpose
 
