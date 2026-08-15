@@ -147,6 +147,15 @@ export interface BenchmarkEvaluation {
   findings: BenchmarkFinding[];
 }
 
+export interface ConstitutionalDiff {
+  historyDelta: "unchanged" | "new_history" | "rewritten_history";
+  addedHistoryIds: string[];
+  rewrittenHistoryIds: string[];
+  occurrenceDelta: "unchanged" | "changed_occurrence";
+  projectionDelta: "unchanged" | "new_projection" | "not_comparable_after_occurrence_change";
+  tensionDelta: "unchanged" | "resolved_tension" | "silenced_tension";
+}
+
 export class BenchmarkError extends Error {
   constructor(
     public readonly code:
@@ -365,6 +374,46 @@ export function normalizeReconstructionResult(result: ReconstructionResult): Rec
   };
 }
 
+export function diffConstitutionalState(
+  before: ReconstructionResult,
+  after: ReconstructionResult,
+): ConstitutionalDiff {
+  const beforeHistory = new Map(before.constitutional.history.map((item) => [item.id, item.address]));
+  const afterHistory = new Map(after.constitutional.history.map((item) => [item.id, item.address]));
+  const addedHistoryIds = [...afterHistory.keys()]
+    .filter((id) => !beforeHistory.has(id))
+    .sort();
+  const rewrittenHistoryIds = [...beforeHistory.keys()]
+    .filter((id) => !afterHistory.has(id) || afterHistory.get(id) !== beforeHistory.get(id))
+    .sort();
+
+  const historyDelta: ConstitutionalDiff["historyDelta"] = rewrittenHistoryIds.length > 0
+    ? "rewritten_history"
+    : addedHistoryIds.length > 0
+      ? "new_history"
+      : "unchanged";
+  const occurrenceDelta: ConstitutionalDiff["occurrenceDelta"] =
+    before.constitutional.occurrenceAddress === after.constitutional.occurrenceAddress
+      ? "unchanged"
+      : "changed_occurrence";
+  const projectionDelta: ConstitutionalDiff["projectionDelta"] = occurrenceDelta === "changed_occurrence"
+    ? "not_comparable_after_occurrence_change"
+    : before.constitutional.projectionAddress === after.constitutional.projectionAddress
+      ? "unchanged"
+      : "new_projection";
+
+  const tensionDelta = diffTensions(before.constitutional.tensions, after.constitutional.tensions);
+
+  return {
+    historyDelta,
+    addedHistoryIds,
+    rewrittenHistoryIds,
+    occurrenceDelta,
+    projectionDelta,
+    tensionDelta,
+  };
+}
+
 export function validateBenchmarkManifest(value: unknown): BenchmarkManifest {
   const root = requireRecord(value, "benchmark manifest");
   const schemaVersion = requireString(root.schemaVersion, "schemaVersion");
@@ -425,6 +474,26 @@ export function validateBenchmarkManifest(value: unknown): BenchmarkManifest {
     evidence,
     cuts,
   };
+}
+
+function diffTensions(
+  before: readonly TensionState[],
+  after: readonly TensionState[],
+): ConstitutionalDiff["tensionDelta"] {
+  const afterById = new Map(after.map((item) => [item.id, item]));
+  let resolved = false;
+
+  for (const tension of before) {
+    if (tension.status !== "open") continue;
+    const next = afterById.get(tension.id);
+    if (!next) return "silenced_tension";
+    if (next.status === "resolved") {
+      if (next.resolutionEvidenceIds.length === 0) return "silenced_tension";
+      resolved = true;
+    }
+  }
+
+  return resolved ? "resolved_tension" : "unchanged";
 }
 
 function fulfillmentFromWitness(
