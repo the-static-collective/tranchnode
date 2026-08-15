@@ -177,12 +177,9 @@ export class ReferenceReconstructionEngine implements ReconstructionEngine {
 
   async reconstruct(input: ReconstructionInput): Promise<ReconstructionResult> {
     const manifest = validateBenchmarkManifest(input.manifest);
-    const cut = manifest.cuts.find((candidate) => candidate.id === input.cut.id);
-    if (!cut || cut.projectionAt !== input.cut.projectionAt) {
-      throw reconstructionError(`Temporal cut ${input.cut.id} is not declared by benchmark ${manifest.id}`);
-    }
-
+    const cut = requireDeclaredCut(manifest, input.cut);
     const cutInstant = parseInstant(cut.projectionAt, `cut ${cut.id} projectionAt`);
+
     const admitted = [...manifest.evidence]
       .filter((item) => parseInstant(item.admittedAt, `${item.id}.admittedAt`) <= cutInstant)
       .sort(compareEvidence);
@@ -200,15 +197,15 @@ export class ReferenceReconstructionEngine implements ReconstructionEngine {
     const provision = provisions[0];
     if (!provision) throw reconstructionError(`Cut ${cut.id} has no provision occurrence`);
 
-    const witnesses = admitted
+    const witness = admitted
       .filter(
         (item): item is Extract<BenchmarkEvidence, { kind: "disposition_witness" }> =>
           item.kind === "disposition_witness"
           && item.eligible
           && item.subjectOccurrenceId === provision.id,
       )
-      .sort(compareWitnessRecency);
-    const witness = witnesses.at(-1);
+      .sort(compareWitnessRecency)
+      .at(-1);
 
     const fulfillment = fulfillmentFromWitness(witness);
     const operational: ReconstructionResult["operational"] = {
@@ -272,9 +269,16 @@ export class FixtureReconstructionEngine implements ReconstructionEngine {
   ) {}
 
   async reconstruct(input: ReconstructionInput): Promise<ReconstructionResult> {
-    const stored = this.results.get(input.cut.id);
+    const manifest = validateBenchmarkManifest(input.manifest);
+    const cut = requireDeclaredCut(manifest, input.cut);
+    const stored = this.results.get(cut.id);
     if (!stored) {
-      throw reconstructionError(`Fixture adapter ${this.id} has no result for cut ${input.cut.id}`);
+      throw reconstructionError(`Fixture adapter ${this.id} has no result for cut ${cut.id}`);
+    }
+    if (stored.cutId !== cut.id) {
+      throw reconstructionError(
+        `Fixture adapter ${this.id} result cut ${stored.cutId} does not match declared cut ${cut.id}`,
+      );
     }
     return normalizeReconstructionResult({
       ...stored,
@@ -402,15 +406,13 @@ export function diffConstitutionalState(
       ? "unchanged"
       : "new_projection";
 
-  const tensionDelta = diffTensions(before.constitutional.tensions, after.constitutional.tensions);
-
   return {
     historyDelta,
     addedHistoryIds,
     rewrittenHistoryIds,
     occurrenceDelta,
     projectionDelta,
-    tensionDelta,
+    tensionDelta: diffTensions(before.constitutional.tensions, after.constitutional.tensions),
   };
 }
 
@@ -430,9 +432,7 @@ export function validateBenchmarkManifest(value: unknown): BenchmarkManifest {
     gitBlobSha: requireGitBlobSha(sourceRecord.gitBlobSha),
     sourceCases: requireStringArray(sourceRecord.sourceCases, "source.sourceCases"),
   };
-  if (source.sourceCases.length === 0) {
-    throw invalid("source.sourceCases must not be empty");
-  }
+  if (source.sourceCases.length === 0) throw invalid("source.sourceCases must not be empty");
 
   const evidence = requireArray(root.evidence, "evidence").map(parseEvidence);
   const evidenceIds = new Set<string>();
@@ -476,13 +476,22 @@ export function validateBenchmarkManifest(value: unknown): BenchmarkManifest {
   };
 }
 
+function requireDeclaredCut(manifest: BenchmarkManifest, requested: BenchmarkCut): BenchmarkCut {
+  const cut = manifest.cuts.find((candidate) => candidate.id === requested.id);
+  if (!cut || cut.projectionAt !== requested.projectionAt) {
+    throw reconstructionError(
+      `Temporal cut ${requested.id} is not declared by benchmark ${manifest.id}`,
+    );
+  }
+  return cut;
+}
+
 function diffTensions(
   before: readonly TensionState[],
   after: readonly TensionState[],
 ): ConstitutionalDiff["tensionDelta"] {
   const afterById = new Map(after.map((item) => [item.id, item]));
   let resolved = false;
-
   for (const tension of before) {
     if (tension.status !== "open") continue;
     const next = afterById.get(tension.id);
@@ -492,7 +501,6 @@ function diffTensions(
       resolved = true;
     }
   }
-
   return resolved ? "resolved_tension" : "unchanged";
 }
 
@@ -500,8 +508,7 @@ function fulfillmentFromWitness(
   witness: Extract<BenchmarkEvidence, { kind: "disposition_witness" }> | undefined,
 ): FulfillmentStatus {
   if (!witness || witness.disposition === "outcome_unknown") return "scope_uncertain";
-  if (witness.disposition === "consumed") return "scoped_complete";
-  return "attempted";
+  return witness.disposition === "consumed" ? "scoped_complete" : "attempted";
 }
 
 function compareEvidence(left: BenchmarkEvidence, right: BenchmarkEvidence): number {
@@ -525,14 +532,10 @@ function compareFinding(left: BenchmarkFinding, right: BenchmarkFinding): number
 
 function readFact(result: ReconstructionResult, path: FactPath): string {
   switch (path) {
-    case "operational.authorization":
-      return result.operational.authorization;
-    case "operational.purposeCompatibility":
-      return result.operational.purposeCompatibility;
-    case "operational.fidelity":
-      return result.operational.fidelity;
-    case "operational.fulfillment":
-      return result.operational.fulfillment;
+    case "operational.authorization": return result.operational.authorization;
+    case "operational.purposeCompatibility": return result.operational.purposeCompatibility;
+    case "operational.fidelity": return result.operational.fidelity;
+    case "operational.fulfillment": return result.operational.fulfillment;
   }
 }
 
@@ -714,7 +717,9 @@ function requireIsoTime(value: unknown, label: string): string {
 
 function requireGitBlobSha(value: unknown): string {
   const text = requireString(value, "source.gitBlobSha");
-  if (!/^[0-9a-f]{40}$/.test(text)) throw invalid("source.gitBlobSha must be 40 lowercase hex characters");
+  if (!/^[0-9a-f]{40}$/.test(text)) {
+    throw invalid("source.gitBlobSha must be 40 lowercase hex characters");
+  }
   return text;
 }
 
