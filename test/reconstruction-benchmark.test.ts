@@ -191,6 +191,27 @@ test("fixture adapter is replaceable behind the same ReconstructionEngine contra
   assert.notDeepEqual(fixtureResult.engine, referenceResult.engine);
 });
 
+test("fixture adapter refuses a tampered temporal cut instead of returning a cached answer", async () => {
+  const manifest = await manifestFixture();
+  const cut = cutById(manifest, "cut-a-before-witness");
+  const referenceResult = await new ReferenceReconstructionEngine().reconstruct({ manifest, cut });
+  const fixture = new FixtureReconstructionEngine(
+    "fixture-adapter",
+    "0.1-test",
+    new Map([[cut.id, referenceResult]]),
+  );
+  const tamperedCut: BenchmarkCut = {
+    ...cut,
+    projectionAt: "2026-08-05T12:19:59Z",
+  };
+
+  await assert.rejects(
+    () => fixture.reconstruct({ manifest, cut: tamperedCut }),
+    (error: unknown) => error instanceof BenchmarkError
+      && error.code === "INVALID_RECONSTRUCTION_INPUT",
+  );
+});
+
 test("reconstruction result is deterministic across manifest evidence insertion order", async () => {
   const manifest = await manifestFixture();
   const reference = new ReferenceReconstructionEngine();
