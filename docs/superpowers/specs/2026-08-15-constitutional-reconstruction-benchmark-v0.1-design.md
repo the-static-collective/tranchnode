@@ -140,7 +140,7 @@ The case input must reserve distinct semantics for at least:
 - receipt/admission time;
 - reconstruction/projection cut.
 
-The selected case should demonstrate that later knowledge may change a later reconstruction without rewriting what was knowable at an earlier cut.
+The selected case demonstrates that later admitted testimony may change a later reconstruction without rewriting what was knowable at an earlier cut.
 
 No generalized bitemporal database is required.
 
@@ -156,15 +156,67 @@ Required v0.1 delta classes:
 
 The output is deterministic and machine-readable. Unsupported later delta classes remain absent rather than being guessed.
 
-## Initial calibration case
+## Initial calibration case — pinned
 
-Use one existing Covenant Circuit case rather than minting a new philosophical fixture.
+Use the landed Covenant Circuit source fixture:
 
-Preferred calibration is the already-proven distinction where faithful logistics/authorized conduct coexist with fulfillment remaining unknown or where a later responsible witness changes the current projection without rewriting the earlier occurrence.
+`fixtures/covenant-circuit/02-complete-circuit/evaluate.py`
 
-The exact case should be chosen from the landed Covenant Circuit data during implementation, based on which fixture exposes the required temporal distinction with the least translation.
+The benchmark manifest must pin the exact source fixture bytes during implementation and name the source case(s) it projects. The benchmark-owned JSON/TypeScript representation is a bounded conformance projection of that fixture, not a replacement authority.
 
-The implementation must not silently strengthen fixture semantics. If the existing fixture cannot express an explicit temporal cut without new invented evidence, stop and select another already-landed case.
+### Cut A — graph density without witness
+
+Project the landed `graph_density_without_witness` case:
+
+- authorization remains `valid`;
+- purpose compatibility remains `compatible`;
+- fidelity remains `faithful`;
+- no eligible disposition witness is admitted;
+- fulfillment therefore remains `scope_uncertain`;
+- a diagnostic field may contain 10,000 meal references, but graph density supplies no fulfillment evidence.
+
+The required unresolved conclusion at Cut A is:
+
+```text
+fulfillment = scope_uncertain
+```
+
+The prohibited compression is:
+
+```text
+graph density is high
+therefore
+fulfillment = scoped_complete
+```
+
+That assertion must fail as `prohibited`, not merely as a low-confidence or unresolved answer.
+
+### Cut B — later eligible disposition witness
+
+Admit the existing eligible receiving-caregiver disposition-witness shape already present in the same Covenant Circuit fixture, with `disposition = consumed`, while preserving the provision act and its authority/fidelity facts from Cut A.
+
+The later reconstruction may now report:
+
+```text
+fulfillment = scoped_complete
+```
+
+because new responsible testimony has been admitted, not because the earlier occurrence was rewritten or because graph density became evidence.
+
+The benchmark scenario is explicit synthetic chronology for conformance testing. It does not claim that the two pre-existing fixture cases were historical observations of one real event.
+
+Required temporal law:
+
+```text
+Cut A knowledge remains: scope_uncertain
+Cut B knowledge becomes: scoped_complete
+original provision occurrence remains unchanged
+later witness is new history
+```
+
+This one scenario proves the first `new_history` versus `rewritten_history` and `new_projection` versus `changed_occurrence` distinctions.
+
+The `resolved_tension` versus `silenced_tension` branch of ConstitutionalDiff may use minimal structured result fixtures in unit tests; it must not fabricate a tension into this calibration case merely to reuse one specimen for every delta class.
 
 ## Data and identity boundaries
 
@@ -174,6 +226,7 @@ The implementation must not silently strengthen fixture semantics. If the existi
 - Engine identity/version is metadata for reproducibility, not authority.
 - Storage order and map insertion order must not affect normalized benchmark findings.
 - Fixture prose is never substituted for referenced evidence.
+- Any benchmark projection of Covenant Circuit fixture data must preserve a pinned source-fixture reference and source case name.
 
 ## Error and refusal behavior
 
@@ -195,14 +248,16 @@ Implementation follows test-first development.
 Focused tests should prove, in order:
 
 1. a versioned manifest is parsed/validated deterministically;
-2. both adapters satisfy the same engine contract;
-3. the reference engine reconstructs the selected case from admitted fixture data;
-4. an explicit earlier cut excludes later knowledge without mutating the earlier occurrence;
-5. the benchmark distinguishes exact, plural/unresolved, and prohibited outcomes;
-6. a seductive prohibited conclusion fails distinctly from unresolved output;
-7. ConstitutionalDiff distinguishes the three required v0.1 delta pairs;
-8. reordering input collections does not change normalized findings;
-9. current ontology and source fixtures remain byte-identical/unmodified by benchmark execution.
+2. the manifest pins the Covenant Circuit source fixture and named source cases;
+3. both adapters satisfy the same engine contract;
+4. the reference engine reconstructs Cut A as authorized + faithful + `scope_uncertain` despite high graph density;
+5. the prohibited `graph density => scoped_complete` compression fails distinctly from unresolved output;
+6. Cut B admits later eligible testimony and reconstructs `scoped_complete` without changing the original provision occurrence;
+7. the earlier Cut A result remains byte-for-byte stable after Cut B is evaluated;
+8. ConstitutionalDiff distinguishes `new_history` from `rewritten_history` and `new_projection` from `changed_occurrence` on the calibration case;
+9. ConstitutionalDiff distinguishes `resolved_tension` from `silenced_tension` on minimal structured diff fixtures;
+10. reordering input collections does not change normalized findings;
+11. current ontology and source fixtures remain byte-identical/unmodified by benchmark execution.
 
 Repository-wide verification remains:
 
@@ -214,7 +269,7 @@ No browser or deployment verification is required because this slice adds no UI,
 
 ## Vercel boundary
 
-Vercel is not part of the first executable proof unless repository/project inspection reveals an existing TranchNode deployment whose build is a required repository gate.
+Repository/project inspection found no existing TranchNode project in the connected Vercel team. The current Vercel projects are unrelated product surfaces, so Vercel is explicitly out of scope for this first proof.
 
 The benchmark is a local/CI conformance library. Creating a new Vercel project or public benchmark UI would add a product surface that #20 explicitly defers.
 
@@ -242,7 +297,7 @@ PR completion should shepherd CI/review to verified readiness, but landing remai
 
 ## Success condition
 
-The first PR succeeds when one real landed case can be reconstructed through two replaceable adapters, evaluated against one versioned manifest, compared across an explicit temporal cut, and shown mechanically to preserve this distinction:
+The first PR succeeds when one real landed fixture law can be reconstructed through two replaceable adapters, evaluated against one versioned manifest, compared across an explicit temporal cut, and shown mechanically to preserve this distinction:
 
 ```text
 lawful plurality / unresolved evidence
