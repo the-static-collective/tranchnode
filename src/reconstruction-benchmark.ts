@@ -1,4 +1,4 @@
-import type { Hash } from "./residual.js";
+import { addressJson, type Hash } from "./residual.js";
 
 const MANIFEST_VERSION = "constitutional-reconstruction-benchmark/v0.1" as const;
 
@@ -133,18 +133,236 @@ export interface ReconstructionEngine {
   reconstruct(input: ReconstructionInput): Promise<ReconstructionResult>;
 }
 
+export interface BenchmarkFinding {
+  class: "exact" | "plural" | "unresolved" | "prohibited";
+  key: string;
+  ok: boolean;
+  actual?: string;
+  expected?: readonly string[];
+  reason?: string;
+}
+
+export interface BenchmarkEvaluation {
+  pass: boolean;
+  findings: BenchmarkFinding[];
+}
+
 export class BenchmarkError extends Error {
   constructor(
     public readonly code:
       | "INVALID_MANIFEST"
       | "UNSUPPORTED_MANIFEST_VERSION"
       | "DUPLICATE_CUT_ID"
-      | "BROKEN_EVIDENCE_REFERENCE",
+      | "BROKEN_EVIDENCE_REFERENCE"
+      | "INVALID_RECONSTRUCTION_INPUT",
     message: string,
   ) {
     super(message);
     this.name = "BenchmarkError";
   }
+}
+
+export class ReferenceReconstructionEngine implements ReconstructionEngine {
+  readonly id = "tranchnode-reference";
+  readonly version = "0.1.0";
+
+  async reconstruct(input: ReconstructionInput): Promise<ReconstructionResult> {
+    const manifest = validateBenchmarkManifest(input.manifest);
+    const cut = manifest.cuts.find((candidate) => candidate.id === input.cut.id);
+    if (!cut || cut.projectionAt !== input.cut.projectionAt) {
+      throw reconstructionError(`Temporal cut ${input.cut.id} is not declared by benchmark ${manifest.id}`);
+    }
+
+    const cutInstant = parseInstant(cut.projectionAt, `cut ${cut.id} projectionAt`);
+    const admitted = [...manifest.evidence]
+      .filter((item) => parseInstant(item.admittedAt, `${item.id}.admittedAt`) <= cutInstant)
+      .sort(compareEvidence);
+
+    const provisions = admitted.filter(
+      (item): item is Extract<BenchmarkEvidence, { kind: "provision_occurrence" }> =>
+        item.kind === "provision_occurrence"
+        && parseInstant(item.occurredAt, `${item.id}.occurredAt`) <= cutInstant,
+    );
+    if (provisions.length !== 1) {
+      throw reconstructionError(
+        `Cut ${cut.id} requires exactly one admitted provision occurrence, found ${provisions.length}`,
+      );
+    }
+    const provision = provisions[0];
+    if (!provision) throw reconstructionError(`Cut ${cut.id} has no provision occurrence`);
+
+    const witnesses = admitted
+      .filter(
+        (item): item is Extract<BenchmarkEvidence, { kind: "disposition_witness" }> =>
+          item.kind === "disposition_witness"
+          && item.eligible
+          && item.subjectOccurrenceId === provision.id,
+      )
+      .sort(compareWitnessRecency);
+    const witness = witnesses.at(-1);
+
+    const fulfillment = fulfillmentFromWitness(witness);
+    const operational: ReconstructionResult["operational"] = {
+      authorization: provision.authorization,
+      purposeCompatibility: provision.purposeCompatibility,
+      fidelity: provision.fidelity,
+      fulfillment,
+    };
+    const unresolved = fulfillment === "scope_uncertain" ? ["fulfillment"] : [];
+    const known = ["authorization", "fidelity", "purposeCompatibility"];
+    if (fulfillment !== "scope_uncertain") known.push("fulfillment");
+    known.sort();
+
+    const history: HistoryRecord[] = admitted.map((item) => ({
+      id: item.id,
+      kind: item.kind,
+      address: addressJson(item).hash,
+    }));
+    const occurrenceAddress = addressJson(provision).hash;
+    const tensions: TensionState[] = [];
+    const projectionAddress = addressJson({
+      kind: "constitutional_reconstruction_projection_v0.1",
+      cutId: cut.id,
+      occurrenceAddress,
+      admittedHistoryAddresses: history.map((item) => item.address),
+      operational,
+      unresolved,
+      tensions,
+    }).hash;
+
+    return normalizeReconstructionResult({
+      engine: { id: this.id, version: this.version },
+      cutId: cut.id,
+      structural: {
+        occurrenceIds: [provision.id],
+        admittedEvidenceIds: history.map((item) => item.id),
+        missingReferences: [],
+      },
+      epistemic: {
+        known,
+        unresolved,
+        plurality: [],
+      },
+      constitutional: {
+        occurrenceAddress,
+        projectionAddress,
+        history,
+        tensions,
+        violations: [],
+      },
+      operational,
+    });
+  }
+}
+
+export class FixtureReconstructionEngine implements ReconstructionEngine {
+  constructor(
+    public readonly id: string,
+    public readonly version: string,
+    private readonly results: ReadonlyMap<string, ReconstructionResult>,
+  ) {}
+
+  async reconstruct(input: ReconstructionInput): Promise<ReconstructionResult> {
+    const stored = this.results.get(input.cut.id);
+    if (!stored) {
+      throw reconstructionError(`Fixture adapter ${this.id} has no result for cut ${input.cut.id}`);
+    }
+    return normalizeReconstructionResult({
+      ...stored,
+      engine: { id: this.id, version: this.version },
+    });
+  }
+}
+
+export function evaluateBenchmarkResult(
+  result: ReconstructionResult,
+  expected: CutExpectation,
+): BenchmarkEvaluation {
+  const findings: BenchmarkFinding[] = [];
+
+  for (const expectation of expected.exact) {
+    const actual = readFact(result, expectation.path);
+    findings.push({
+      class: "exact",
+      key: expectation.path,
+      ok: actual === expectation.value,
+      actual,
+      expected: [expectation.value],
+    });
+  }
+
+  for (const expectation of expected.plural) {
+    const actual = readFact(result, expectation.path);
+    findings.push({
+      class: "plural",
+      key: expectation.path,
+      ok: expectation.values.includes(actual),
+      actual,
+      expected: [...expectation.values].sort(),
+    });
+  }
+
+  for (const subject of expected.unresolved) {
+    const unresolved = result.epistemic.unresolved.includes(subject);
+    findings.push({
+      class: "unresolved",
+      key: subject,
+      ok: unresolved,
+      actual: unresolved ? "unresolved" : "resolved",
+      expected: ["unresolved"],
+    });
+  }
+
+  for (const expectation of expected.prohibited) {
+    const actual = readFact(result, expectation.path);
+    findings.push({
+      class: "prohibited",
+      key: expectation.path,
+      ok: actual !== expectation.value,
+      actual,
+      expected: [`not:${expectation.value}`],
+      reason: expectation.reason,
+    });
+  }
+
+  findings.sort(compareFinding);
+  return {
+    pass: findings.every((finding) => finding.ok),
+    findings,
+  };
+}
+
+export function normalizeReconstructionResult(result: ReconstructionResult): ReconstructionResult {
+  return {
+    engine: { ...result.engine },
+    cutId: result.cutId,
+    structural: {
+      occurrenceIds: [...result.structural.occurrenceIds].sort(),
+      admittedEvidenceIds: [...result.structural.admittedEvidenceIds].sort(),
+      missingReferences: [...result.structural.missingReferences].sort(),
+    },
+    epistemic: {
+      known: [...result.epistemic.known].sort(),
+      unresolved: [...result.epistemic.unresolved].sort(),
+      plurality: [...result.epistemic.plurality].sort(),
+    },
+    constitutional: {
+      occurrenceAddress: result.constitutional.occurrenceAddress,
+      projectionAddress: result.constitutional.projectionAddress,
+      history: result.constitutional.history
+        .map((item) => ({ ...item }))
+        .sort((left, right) => left.id.localeCompare(right.id) || left.address.localeCompare(right.address)),
+      tensions: result.constitutional.tensions
+        .map((item) => ({
+          id: item.id,
+          status: item.status,
+          resolutionEvidenceIds: [...item.resolutionEvidenceIds].sort(),
+        }))
+        .sort((left, right) => left.id.localeCompare(right.id)),
+      violations: [...result.constitutional.violations].sort(),
+    },
+    operational: { ...result.operational },
+  };
 }
 
 export function validateBenchmarkManifest(value: unknown): BenchmarkManifest {
@@ -207,6 +425,58 @@ export function validateBenchmarkManifest(value: unknown): BenchmarkManifest {
     evidence,
     cuts,
   };
+}
+
+function fulfillmentFromWitness(
+  witness: Extract<BenchmarkEvidence, { kind: "disposition_witness" }> | undefined,
+): FulfillmentStatus {
+  if (!witness || witness.disposition === "outcome_unknown") return "scope_uncertain";
+  if (witness.disposition === "consumed") return "scoped_complete";
+  return "attempted";
+}
+
+function compareEvidence(left: BenchmarkEvidence, right: BenchmarkEvidence): number {
+  return left.id.localeCompare(right.id);
+}
+
+function compareWitnessRecency(
+  left: Extract<BenchmarkEvidence, { kind: "disposition_witness" }>,
+  right: Extract<BenchmarkEvidence, { kind: "disposition_witness" }>,
+): number {
+  return parseInstant(left.admittedAt, `${left.id}.admittedAt`)
+    - parseInstant(right.admittedAt, `${right.id}.admittedAt`)
+    || left.id.localeCompare(right.id);
+}
+
+function compareFinding(left: BenchmarkFinding, right: BenchmarkFinding): number {
+  return left.class.localeCompare(right.class)
+    || left.key.localeCompare(right.key)
+    || (left.actual ?? "").localeCompare(right.actual ?? "");
+}
+
+function readFact(result: ReconstructionResult, path: FactPath): string {
+  switch (path) {
+    case "operational.authorization":
+      return result.operational.authorization;
+    case "operational.purposeCompatibility":
+      return result.operational.purposeCompatibility;
+    case "operational.fidelity":
+      return result.operational.fidelity;
+    case "operational.fulfillment":
+      return result.operational.fulfillment;
+  }
+}
+
+function parseInstant(value: string, label: string): number {
+  const instant = Date.parse(value);
+  if (!value.endsWith("Z") || Number.isNaN(instant)) {
+    throw reconstructionError(`${label} must be an RFC 3339 UTC timestamp`);
+  }
+  return instant;
+}
+
+function reconstructionError(message: string): BenchmarkError {
+  return new BenchmarkError("INVALID_RECONSTRUCTION_INPUT", message);
 }
 
 function parseEvidence(value: unknown, index: number): BenchmarkEvidence {
