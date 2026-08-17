@@ -11,7 +11,13 @@ import {
 
 const MAX_STDIN_BYTES = 1_048_576;
 
-interface IntentStrokeProcessRequest {
+interface AddressLayoutProcessRequest {
+  schema: "tranchnode.intent-stroke-process/v0.1";
+  operation: "address-layout";
+  layout: IntentStrokeFieldLayout;
+}
+
+interface DecodeProcessRequest {
   schema: "tranchnode.intent-stroke-process/v0.1";
   operation: "decode";
   stroke: IntentStroke;
@@ -19,6 +25,8 @@ interface IntentStrokeProcessRequest {
   templates: TraversalTemplate[];
   decoder: IntentStrokeDecoderIdentity;
 }
+
+type IntentStrokeProcessRequest = AddressLayoutProcessRequest | DecodeProcessRequest;
 
 interface ProcessErrorResult {
   schema: "tranchnode.intent-stroke-process-result/v0.1";
@@ -55,7 +63,7 @@ function parseRequest(input: string): IntentStrokeProcessRequest {
   if (record.schema !== "tranchnode.intent-stroke-process/v0.1") {
     fail("UNSUPPORTED_PROCESS_SCHEMA", `unsupported process schema ${String(record.schema)}`);
   }
-  if (record.operation !== "decode") {
+  if (record.operation !== "address-layout" && record.operation !== "decode") {
     fail("UNSUPPORTED_PROCESS_OPERATION", `unsupported process operation ${String(record.operation)}`);
   }
 
@@ -78,6 +86,18 @@ async function readStdin(): Promise<string> {
 
 async function main(): Promise<void> {
   const request = parseRequest(await readStdin());
+
+  if (request.operation === "address-layout") {
+    const addressed = addressIntentStrokeFieldLayout(request.layout);
+    process.stdout.write(`${JSON.stringify({
+      schema: "tranchnode.intent-stroke-process-result/v0.1",
+      status: "ok",
+      operation: "address-layout",
+      addressed,
+    })}\n`);
+    return;
+  }
+
   const layout = addressIntentStrokeFieldLayout(request.layout);
   const stroke = addressIntentStroke(request.stroke);
   const decoding = decodeIntentStroke({
@@ -90,6 +110,7 @@ async function main(): Promise<void> {
   process.stdout.write(`${JSON.stringify({
     schema: "tranchnode.intent-stroke-process-result/v0.1",
     status: "ok",
+    operation: "decode",
     decoding,
   })}\n`);
 }
