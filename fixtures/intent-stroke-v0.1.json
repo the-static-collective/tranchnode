@@ -1,0 +1,72 @@
+{
+  "layout": {
+    "schema": "tranchnode/intent-stroke-layout/v0.1",
+    "anchors": [
+      { "id": "field-traversal", "x": 100, "y": 100 },
+      { "id": "metaphor-portal", "x": 300, "y": 180 },
+      { "id": "metaphor-portal-shadow", "x": 300, "y": 180 },
+      { "id": "tranchnode", "x": 520, "y": 320 },
+      { "id": "memory-terrain", "x": 100, "y": 360 },
+      { "id": "world-reentry", "x": 300, "y": 300 },
+      { "id": "stigmergic-field", "x": 300, "y": 520 },
+      { "id": "band-runtime", "x": 520, "y": 520 }
+    ]
+  },
+  "decoder": {
+    "id": "tranchnode/intent-stroke-dtw",
+    "version": "0.1",
+    "interpolationStepsPerSegment": 4,
+    "endpointPenaltyMultiplier": 3
+  },
+  "templates": [
+    {
+      "id": "field-to-tranchnode-via-portal",
+      "anchorIds": ["field-traversal", "metaphor-portal", "tranchnode"]
+    },
+    {
+      "id": "memory-to-tranchnode-via-reentry",
+      "anchorIds": ["memory-terrain", "world-reentry", "tranchnode"]
+    },
+    {
+      "id": "field-to-band-via-stigmergy",
+      "anchorIds": ["field-traversal", "stigmergic-field", "band-runtime"]
+    },
+    {
+      "id": "tranchnode-to-field-via-portal",
+      "anchorIds": ["tranchnode", "metaphor-portal", "field-traversal"]
+    }
+  ],
+  "collisionTemplates": [
+    {
+      "id": "portal-route-a",
+      "anchorIds": ["field-traversal", "metaphor-portal", "tranchnode"]
+    },
+    {
+      "id": "portal-route-b",
+      "anchorIds": ["field-traversal", "metaphor-portal-shadow", "tranchnode"]
+    }
+  ],
+  "strokes": {
+    "intended": [
+      { "sequence": 1, "x": 95, "y": 105 },
+      { "sequence": 2, "x": 180, "y": 130 },
+      { "sequence": 3, "x": 285, "y": 175 },
+      { "sequence": 4, "x": 390, "y": 235 },
+      { "sequence": 5, "x": 515, "y": 315 }
+    ],
+    "perturbed": [
+      { "sequence": 1, "x": 110, "y": 94 },
+      { "sequence": 2, "x": 190, "y": 145 },
+      { "sequence": 3, "x": 292, "y": 166 },
+      { "sequence": 4, "x": 405, "y": 246 },
+      { "sequence": 5, "x": 525, "y": 327 }
+    ],
+    "reversed": [
+      { "sequence": 1, "x": 515, "y": 315 },
+      { "sequence": 2, "x": 390, "y": 235 },
+      { "sequence": 3, "x": 285, "y": 175 },
+      { "sequence": 4, "x": 180, "y": 130 },
+      { "sequence": 5, "x": 95, "y": 105 }
+    ]
+  }
+}
