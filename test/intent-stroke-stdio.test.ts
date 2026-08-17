@@ -74,6 +74,21 @@ test("stdio adapter returns the canonical non-authoritative decoding", async () 
   assert.match(response.decoding.fingerprint, /^sha256:[0-9a-f]{64}$/);
 });
 
+test("stdio adapter can bind raw stroke points to the canonical supplied layout", async () => {
+  const existing = request();
+  const rawStroke = {
+    schema: existing.stroke.schema,
+    points: existing.stroke.points,
+  };
+  const result = await runAdapter(`${JSON.stringify({ ...existing, stroke: rawStroke })}\n`);
+  assert.equal(result.code, 0, result.stderr);
+  const response = JSON.parse(result.stdout) as any;
+  assert.equal(response.ok, true);
+  assert.equal(response.decoding.authority, "none");
+  assert.equal(response.decoding.candidates[0]?.templateId, "field-to-tranchnode-via-portal");
+  assert.equal(response.decoding.fieldLayoutRef, addressIntentStrokeFieldLayout(fixture.layout).hash);
+});
+
 test("stdio adapter preserves exact decoder collisions", async () => {
   const result = await runAdapter(`${JSON.stringify(request(fixture.collisionTemplates))}\n`);
   assert.equal(result.code, 0, result.stderr);
