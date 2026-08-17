@@ -62,6 +62,16 @@ function request(templates: TraversalTemplate[] = fixture.templates) {
   };
 }
 
+function rawPointRequest(templates: TraversalTemplate[] = fixture.templates) {
+  return {
+    schema: "tranchnode/intent-stroke-stdio/v0.2",
+    points: fixture.strokes.intended,
+    layout: fixture.layout,
+    templates,
+    decoder: fixture.decoder,
+  };
+}
+
 test("stdio adapter returns the canonical non-authoritative decoding", async () => {
   const result = await runAdapter(`${JSON.stringify(request())}\n`);
   assert.equal(result.code, 0, result.stderr);
@@ -72,6 +82,29 @@ test("stdio adapter returns the canonical non-authoritative decoding", async () 
   assert.equal(response.decoding.candidates[0]?.templateId, "field-to-tranchnode-via-portal");
   assert.equal(response.decoding.ambiguity.kind, "none");
   assert.match(response.decoding.fingerprint, /^sha256:[0-9a-f]{64}$/);
+});
+
+test("v0.2 binds raw points to TranchNode's addressed layout before decoding", async () => {
+  const result = await runAdapter(`${JSON.stringify(rawPointRequest())}\n`);
+  assert.equal(result.code, 0, result.stderr);
+  const response = JSON.parse(result.stdout) as any;
+  const expectedLayoutRef = addressIntentStrokeFieldLayout(fixture.layout).hash;
+
+  assert.equal(response.schema, "tranchnode/intent-stroke-stdio-response/v0.2");
+  assert.equal(response.ok, true);
+  assert.equal(response.decoding.fieldLayoutRef, expectedLayoutRef);
+  assert.equal(response.decoding.authority, "none");
+  assert.equal(response.decoding.candidates[0]?.templateId, "field-to-tranchnode-via-portal");
+  assert.equal("fieldLayoutRef" in rawPointRequest(), false);
+});
+
+test("v0.2 preserves collisions while binding the layout internally", async () => {
+  const result = await runAdapter(`${JSON.stringify(rawPointRequest(fixture.collisionTemplates))}\n`);
+  assert.equal(result.code, 0, result.stderr);
+  const response = JSON.parse(result.stdout) as any;
+  assert.equal(response.schema, "tranchnode/intent-stroke-stdio-response/v0.2");
+  assert.equal(response.decoding.ambiguity.kind, "collision");
+  assert.deepEqual(response.decoding.ambiguity.leadingTemplateIds, ["portal-route-a", "portal-route-b"]);
 });
 
 test("stdio adapter preserves exact decoder collisions", async () => {
