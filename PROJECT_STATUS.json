@@ -1,0 +1,22 @@
+{
+  "schema": "static-collective.project-status.v1",
+  "asOf": "2026-08-17",
+  "repository": "the-static-collective/tranchnode",
+  "defaultBranch": "main",
+  "project": "TranchNode",
+  "state": "active",
+  "phase": "Intent Stroke v0.2 process boundary",
+  "canonicalAuthority": "project-owned repository",
+  "observedMainCommit": "bf886c0b4938a1444a79afb7a7b384e91b5d5197",
+  "executableSurface": [
+    {"id": "residual-v0.1", "status": "landed", "interface": "TypeScript library/tests"},
+    {"id": "intent-stroke-decoder-v0.1", "status": "landed", "evidence": {"commit": "efc75f6228a2d9c16475378d0dc382a48bf762c8", "pullRequest": 41}},
+    {"id": "intent-stroke-stdio-v0.1", "status": "landed", "evidence": {"commit": "a3dc7fa5155df93641f4f116eac1464b10342849", "pullRequest": 50}},
+    {"id": "intent-stroke-stdio-v0.2-raw-points", "status": "landed", "interface": "npm run intent-stroke:stdio", "evidence": {"commit": "bf886c0b4938a1444a79afb7a7b384e91b5d5197", "pullRequest": 54}}
+  ],
+  "nonClaims": [
+    "retrieval is not authority",
+    "decoded intent does not authorize traversal",
+    "raw pointer transport does not transfer caller authority"
+  ]
+}
