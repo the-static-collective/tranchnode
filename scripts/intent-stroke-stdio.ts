@@ -6,29 +6,42 @@ import {
   type IntentStroke,
   type IntentStrokeDecoderIdentity,
   type IntentStrokeFieldLayout,
+  type IntentStrokePoint,
   type TraversalTemplate,
 } from "../src/intent-stroke.js";
 
-const REQUEST_SCHEMA = "tranchnode/intent-stroke-stdio/v0.1";
-const RESPONSE_SCHEMA = "tranchnode/intent-stroke-stdio-response/v0.1";
+const REQUEST_SCHEMA_V01 = "tranchnode/intent-stroke-stdio/v0.1";
+const REQUEST_SCHEMA_V02 = "tranchnode/intent-stroke-stdio/v0.2";
+const RESPONSE_SCHEMA_V01 = "tranchnode/intent-stroke-stdio-response/v0.1";
+const RESPONSE_SCHEMA_V02 = "tranchnode/intent-stroke-stdio-response/v0.2";
 const MAX_INPUT_BYTES = 1_048_576;
 
-type AdapterRequest = {
-  schema: typeof REQUEST_SCHEMA;
+type AdapterRequestV01 = {
+  schema: typeof REQUEST_SCHEMA_V01;
   stroke: IntentStroke;
   layout: IntentStrokeFieldLayout;
   templates: TraversalTemplate[];
   decoder: IntentStrokeDecoderIdentity;
 };
 
+type AdapterRequestV02 = {
+  schema: typeof REQUEST_SCHEMA_V02;
+  points: IntentStrokePoint[];
+  layout: IntentStrokeFieldLayout;
+  templates: TraversalTemplate[];
+  decoder: IntentStrokeDecoderIdentity;
+};
+
+type ResponseSchema = typeof RESPONSE_SCHEMA_V01 | typeof RESPONSE_SCHEMA_V02;
+
 type AdapterResponse =
   | {
-      schema: typeof RESPONSE_SCHEMA;
+      schema: ResponseSchema;
       ok: true;
       decoding: ReturnType<typeof decodeIntentStroke>;
     }
   | {
-      schema: typeof RESPONSE_SCHEMA;
+      schema: ResponseSchema;
       ok: false;
       error: { code: string };
     };
@@ -37,9 +50,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function fail(code: string): never {
+function responseSchemaFor(value: unknown): ResponseSchema {
+  return isRecord(value) && value.schema === REQUEST_SCHEMA_V02
+    ? RESPONSE_SCHEMA_V02
+    : RESPONSE_SCHEMA_V01;
+}
+
+function fail(code: string, schema: ResponseSchema = RESPONSE_SCHEMA_V01): never {
   const response: AdapterResponse = {
-    schema: RESPONSE_SCHEMA,
+    schema,
     ok: false,
     error: { code },
   };
@@ -67,15 +86,30 @@ async function main(): Promise<void> {
     fail("MALFORMED_JSON");
   }
 
-  if (!isRecord(parsed) || parsed.schema !== REQUEST_SCHEMA) {
+  if (
+    !isRecord(parsed) ||
+    (parsed.schema !== REQUEST_SCHEMA_V01 && parsed.schema !== REQUEST_SCHEMA_V02)
+  ) {
     fail("UNSUPPORTED_SCHEMA_VERSION");
   }
 
-  const request = parsed as AdapterRequest;
+  const responseSchema = responseSchemaFor(parsed);
 
   try {
-    const layout = addressIntentStrokeFieldLayout(request.layout);
-    const stroke = addressIntentStroke(request.stroke);
+    const layout = addressIntentStrokeFieldLayout(
+      (parsed as AdapterRequestV01 | AdapterRequestV02).layout,
+    );
+
+    const rawStroke: IntentStroke = parsed.schema === REQUEST_SCHEMA_V02
+      ? {
+          schema: "tranchnode/intent-stroke/v0.1",
+          fieldLayoutRef: layout.hash,
+          points: (parsed as AdapterRequestV02).points,
+        }
+      : (parsed as AdapterRequestV01).stroke;
+
+    const stroke = addressIntentStroke(rawStroke);
+    const request = parsed as AdapterRequestV01 | AdapterRequestV02;
     const decoding = decodeIntentStroke({
       stroke,
       layout,
@@ -84,14 +118,14 @@ async function main(): Promise<void> {
     });
 
     const response: AdapterResponse = {
-      schema: RESPONSE_SCHEMA,
+      schema: responseSchema,
       ok: true,
       decoding,
     };
     process.stdout.write(`${JSON.stringify(response)}\n`);
   } catch (error: unknown) {
-    if (error instanceof IntentStrokeError) fail(error.code);
-    fail("INVALID_REQUEST");
+    if (error instanceof IntentStrokeError) fail(error.code, responseSchema);
+    fail("INVALID_REQUEST", responseSchema);
   }
 }
 
