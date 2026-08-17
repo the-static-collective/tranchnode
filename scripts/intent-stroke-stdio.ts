@@ -9,6 +9,8 @@ import {
   type TraversalTemplate,
 } from "../src/intent-stroke.js";
 
+const MAX_STDIN_BYTES = 1_048_576;
+
 interface IntentStrokeProcessRequest {
   schema: "tranchnode.intent-stroke-process/v0.1";
   operation: "decode";
@@ -62,8 +64,14 @@ function parseRequest(input: string): IntentStrokeProcessRequest {
 
 async function readStdin(): Promise<string> {
   const chunks: Buffer[] = [];
+  let total = 0;
   for await (const chunk of process.stdin) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    total += buffer.byteLength;
+    if (total > MAX_STDIN_BYTES) {
+      fail("PROCESS_INPUT_TOO_LARGE", "stdin exceeds the one MiB process limit");
+    }
+    chunks.push(buffer);
   }
   return Buffer.concat(chunks).toString("utf8");
 }
