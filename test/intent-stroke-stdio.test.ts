@@ -106,6 +106,18 @@ test("stdio adapter rejects unsupported wrapper schema before decoding", async (
   });
 });
 
+test("stdio adapter rejects oversized raw requests before retaining an unbounded body", async () => {
+  const oversized = { ...request(), padding: "x".repeat(1_100_000) };
+  const result = await runAdapter(`${JSON.stringify(oversized)}\n`);
+  assert.equal(result.code, 1);
+  const response = JSON.parse(result.stdout) as any;
+  assert.deepEqual(response, {
+    schema: "tranchnode/intent-stroke-stdio-response/v0.1",
+    ok: false,
+    error: { code: "INPUT_TOO_LARGE" },
+  });
+});
+
 test("stdio adapter cannot manufacture crossing authority", async () => {
   const result = await runAdapter(`${JSON.stringify({ ...request(), authority: "grant" })}\n`);
   assert.equal(result.code, 0, result.stderr);
