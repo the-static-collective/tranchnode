@@ -89,6 +89,19 @@ test("stdio adapter can bind raw stroke points to the canonical supplied layout"
   assert.equal(response.decoding.fieldLayoutRef, addressIntentStrokeFieldLayout(fixture.layout).hash);
 });
 
+test("stdio adapter preserves an explicit conflicting layout ref as a mismatch", async () => {
+  const bad = request();
+  bad.stroke.fieldLayoutRef = "sha256:" + "0".repeat(64);
+  const result = await runAdapter(`${JSON.stringify(bad)}\n`);
+  assert.equal(result.code, 1);
+  const response = JSON.parse(result.stdout) as any;
+  assert.deepEqual(response, {
+    schema: "tranchnode/intent-stroke-stdio-response/v0.1",
+    ok: false,
+    error: { code: "LAYOUT_REF_MISMATCH" },
+  });
+});
+
 test("stdio adapter preserves exact decoder collisions", async () => {
   const result = await runAdapter(`${JSON.stringify(request(fixture.collisionTemplates))}\n`);
   assert.equal(result.code, 0, result.stderr);
