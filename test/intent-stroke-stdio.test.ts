@@ -91,7 +91,7 @@ test("stdio adapter can bind raw stroke points to the canonical supplied layout"
 
 test("stdio adapter preserves an explicit conflicting layout ref as a mismatch", async () => {
   const bad = request();
-  bad.stroke.fieldLayoutRef = "sha256:" + "0".repeat(64);
+  bad.stroke.fieldLayoutRef = `sha256:${"0".repeat(64)}` as IntentStroke["fieldLayoutRef"];
   const result = await runAdapter(`${JSON.stringify(bad)}\n`);
   assert.equal(result.code, 1);
   const response = JSON.parse(result.stdout) as any;
