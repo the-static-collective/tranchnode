@@ -13,9 +13,13 @@ const REQUEST_SCHEMA = "tranchnode/intent-stroke-stdio/v0.1";
 const RESPONSE_SCHEMA = "tranchnode/intent-stroke-stdio-response/v0.1";
 const MAX_INPUT_BYTES = 1_048_576;
 
+type AdapterStroke = Omit<IntentStroke, "fieldLayoutRef"> & {
+  fieldLayoutRef?: IntentStroke["fieldLayoutRef"];
+};
+
 type AdapterRequest = {
   schema: typeof REQUEST_SCHEMA;
-  stroke: IntentStroke;
+  stroke: AdapterStroke;
   layout: IntentStrokeFieldLayout;
   templates: TraversalTemplate[];
   decoder: IntentStrokeDecoderIdentity;
@@ -75,7 +79,10 @@ async function main(): Promise<void> {
 
   try {
     const layout = addressIntentStrokeFieldLayout(request.layout);
-    const stroke = addressIntentStroke(request.stroke);
+    const strokeValue: IntentStroke = request.stroke.fieldLayoutRef === undefined
+      ? { ...request.stroke, fieldLayoutRef: layout.hash }
+      : request.stroke as IntentStroke;
+    const stroke = addressIntentStroke(strokeValue);
     const decoding = decodeIntentStroke({
       stroke,
       layout,
