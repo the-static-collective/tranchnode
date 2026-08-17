@@ -11,6 +11,7 @@ import {
 
 const REQUEST_SCHEMA = "tranchnode/intent-stroke-stdio/v0.1";
 const RESPONSE_SCHEMA = "tranchnode/intent-stroke-stdio-response/v0.1";
+const MAX_INPUT_BYTES = 1_048_576;
 
 type AdapterRequest = {
   schema: typeof REQUEST_SCHEMA;
@@ -48,8 +49,13 @@ function fail(code: string): never {
 
 async function readStdin(): Promise<string> {
   let input = "";
+  let inputBytes = 0;
   process.stdin.setEncoding("utf8");
-  for await (const chunk of process.stdin) input += chunk;
+  for await (const chunk of process.stdin) {
+    inputBytes += Buffer.byteLength(chunk, "utf8");
+    if (inputBytes > MAX_INPUT_BYTES) fail("INPUT_TOO_LARGE");
+    input += chunk;
+  }
   return input;
 }
 
