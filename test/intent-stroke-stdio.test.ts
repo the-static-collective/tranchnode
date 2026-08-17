@@ -76,3 +76,19 @@ test("stdio adapter fails closed on an unsupported process schema", () => {
   assert.equal(body.status, "error");
   assert.equal(body.code, "UNSUPPORTED_PROCESS_SCHEMA");
 });
+
+test("stdio adapter rejects input larger than one MiB", () => {
+  const child = spawnSync(
+    process.execPath,
+    ["--import", "tsx", "scripts/intent-stroke-stdio.ts"],
+    {
+      input: JSON.stringify({ ...makeRequest(), padding: "x".repeat(1_048_576) }),
+      encoding: "utf8",
+    },
+  );
+
+  assert.notEqual(child.status, 0);
+  const body = JSON.parse(child.stdout);
+  assert.equal(body.status, "error");
+  assert.equal(body.code, "PROCESS_INPUT_TOO_LARGE");
+});
