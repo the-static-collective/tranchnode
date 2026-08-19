@@ -312,3 +312,69 @@ test("Intent Stroke refuses to drop responsibility when no transfer carries it f
     ),
   );
 });
+
+test("transition evaluation does not mutate manifest or supplied witnesses", async () => {
+  const spine = await rawFixture();
+  const witnesses = ["witness:pr54-green", "witness:pr54-boundary-review"];
+  const spineBefore = structuredClone(spine);
+  const witnessesBefore = [...witnesses];
+
+  evaluateStageTransition({
+    spine,
+    fromStageId: "v0.1-caller-bound",
+    toStageId: "v0.1-v0.2-overlap",
+    suppliedWitnesses: witnesses,
+  });
+
+  assert.deepEqual(spine, spineBefore);
+  assert.deepEqual(witnesses, witnessesBefore);
+});
+
+test("repeated transition evaluation is structurally stable", async () => {
+  const spine = validateContinuitySpineManifest(await rawFixture());
+  const input = {
+    spine,
+    fromStageId: "v0.1-caller-bound",
+    toStageId: "v0.1-v0.2-overlap",
+    suppliedWitnesses: ["witness:pr54-green", "witness:pr54-boundary-review"],
+  };
+
+  assert.deepEqual(evaluateStageTransition(input), evaluateStageTransition(input));
+});
+
+test("supplied witness order cannot alter transition evaluation", async () => {
+  const spine = validateContinuitySpineManifest(await rawFixture());
+  const forward = evaluateStageTransition({
+    spine,
+    fromStageId: "v0.1-caller-bound",
+    toStageId: "v0.1-v0.2-overlap",
+    suppliedWitnesses: ["witness:pr54-green", "witness:pr54-boundary-review"],
+  });
+  const reversed = evaluateStageTransition({
+    spine,
+    fromStageId: "v0.1-caller-bound",
+    toStageId: "v0.1-v0.2-overlap",
+    suppliedWitnesses: ["witness:pr54-boundary-review", "witness:pr54-green"],
+  });
+
+  assert.deepEqual(forward, reversed);
+});
+
+test("unknown supplied witness fails closed", async () => {
+  const spine = validateContinuitySpineManifest(await rawFixture());
+  const result = evaluateStageTransition({
+    spine,
+    fromStageId: "v0.1-caller-bound",
+    toStageId: "v0.1-v0.2-overlap",
+    suppliedWitnesses: ["witness:pr54-green", "witness:not-declared"],
+  });
+
+  assert.equal(result.decision, "invalid");
+  assert.ok(
+    result.findings.some(
+      (finding) => finding.class === "invalid_manifest"
+        && finding.subjectId === "witness:not-declared"
+        && finding.reason === "UNKNOWN_SUPPLIED_WITNESS",
+    ),
+  );
+});
