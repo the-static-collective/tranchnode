@@ -322,6 +322,234 @@ export function validateContinuitySpineManifest(value: unknown): ContinuitySpine
   };
 }
 
-export function evaluateStageTransition(_input: TransitionEvaluationInput): TransitionEvaluation {
-  throw new ContinuitySpineError("NOT_IMPLEMENTED");
+function sortFindings(findings: TransitionFinding[]): TransitionFinding[] {
+  return [...findings].sort((left, right) =>
+    left.class.localeCompare(right.class)
+    || left.subjectId.localeCompare(right.subjectId)
+    || left.reason.localeCompare(right.reason)
+  );
+}
+
+function invalidEvaluation(
+  spineId: string,
+  fromStageId: string,
+  toStageId: string,
+  subjectId: string,
+  reason: string,
+): TransitionEvaluation {
+  return {
+    schema: EVALUATION_SCHEMA,
+    spineId,
+    fromStageId,
+    toStageId,
+    decision: "invalid",
+    shed: [],
+    completedTransferIds: [],
+    findings: [{ class: "invalid_manifest", subjectId, reason }],
+  };
+}
+
+function bestEffortSpineId(value: unknown): string {
+  if (isRecord(value) && typeof value.id === "string" && value.id.length > 0) {
+    return value.id;
+  }
+  return "unknown-spine";
+}
+
+export function evaluateStageTransition(input: TransitionEvaluationInput): TransitionEvaluation {
+  const rawSpine: unknown = input.spine;
+  let spine: ContinuitySpineManifestV01;
+  try {
+    spine = validateContinuitySpineManifest(rawSpine);
+  } catch (error: unknown) {
+    const reason = error instanceof ContinuitySpineError ? error.code : "INVALID_MANIFEST";
+    return invalidEvaluation(
+      bestEffortSpineId(rawSpine),
+      input.fromStageId,
+      input.toStageId,
+      bestEffortSpineId(rawSpine),
+      reason,
+    );
+  }
+
+  if (!Array.isArray(input.suppliedWitnesses)) {
+    return invalidEvaluation(
+      spine.id,
+      input.fromStageId,
+      input.toStageId,
+      spine.id,
+      "INVALID_SUPPLIED_WITNESSES",
+    );
+  }
+
+  const suppliedWitnesses: string[] = [];
+  for (const witness of input.suppliedWitnesses) {
+    if (typeof witness !== "string" || witness.trim().length === 0) {
+      return invalidEvaluation(
+        spine.id,
+        input.fromStageId,
+        input.toStageId,
+        spine.id,
+        "INVALID_SUPPLIED_WITNESSES",
+      );
+    }
+    if (!suppliedWitnesses.includes(witness)) suppliedWitnesses.push(witness);
+  }
+  suppliedWitnesses.sort();
+
+  const knownWitnesses = new Set(
+    spine.transfers.flatMap((transfer) => transfer.requiredWitnessIds),
+  );
+  const unknownWitness = suppliedWitnesses.find((witness) => !knownWitnesses.has(witness));
+  if (unknownWitness !== undefined) {
+    return invalidEvaluation(
+      spine.id,
+      input.fromStageId,
+      input.toStageId,
+      unknownWitness,
+      "UNKNOWN_SUPPLIED_WITNESS",
+    );
+  }
+
+  const fromIndex = spine.stageOrder.indexOf(input.fromStageId);
+  const toIndex = spine.stageOrder.indexOf(input.toStageId);
+  if (fromIndex < 0 || toIndex < 0) {
+    const unknownStage = fromIndex < 0 ? input.fromStageId : input.toStageId;
+    return invalidEvaluation(
+      spine.id,
+      input.fromStageId,
+      input.toStageId,
+      unknownStage,
+      "UNKNOWN_STAGE",
+    );
+  }
+  if (fromIndex >= toIndex) {
+    return invalidEvaluation(
+      spine.id,
+      input.fromStageId,
+      input.toStageId,
+      `${input.fromStageId}->${input.toStageId}`,
+      "INVALID_TRANSITION_ORDER",
+    );
+  }
+
+  const from = spine.stages.find((stage) => stage.id === input.fromStageId);
+  const to = spine.stages.find((stage) => stage.id === input.toStageId);
+  if (from === undefined || to === undefined) {
+    return invalidEvaluation(
+      spine.id,
+      input.fromStageId,
+      input.toStageId,
+      `${input.fromStageId}->${input.toStageId}`,
+      "UNKNOWN_STAGE",
+    );
+  }
+
+  const sourceMaterial = new Set([
+    ...from.carries,
+    ...from.dependsOn,
+    ...from.scaffolds,
+  ]);
+  const destinationMaterial = new Set([
+    ...to.carries,
+    ...to.dependsOn,
+    ...to.scaffolds,
+  ]);
+  const shed = [...sourceMaterial]
+    .filter((id) => !destinationMaterial.has(id))
+    .sort();
+
+  const findings: TransitionFinding[] = [];
+  if (to.status === "proposal") {
+    findings.push({
+      class: "proposal_only",
+      subjectId: to.id,
+      reason: "DESTINATION_REMAINS_PROPOSAL",
+    });
+  }
+
+  for (const invariant of spine.invariants) {
+    const applies = invariant.appliesThrough === "all"
+      || invariant.appliesThrough.includes(to.id);
+    if (!applies) continue;
+
+    for (const requiredCarry of invariant.requiredCarries) {
+      if (!to.carries.includes(requiredCarry)) {
+        findings.push({
+          class: "blocked_invariant_loss",
+          subjectId: invariant.id,
+          reason: "ACTIVE_INVARIANT_CARRIER_MISSING",
+        });
+      }
+    }
+  }
+
+  const suppliedWitnessSet = new Set(suppliedWitnesses);
+  const relevantTransfers = spine.transfers.filter(
+    (transfer) => transfer.sourceStageId === from.id
+      && transfer.destinationStageId === to.id,
+  );
+  const completedTransfers = relevantTransfers.filter((transfer) =>
+    transfer.requiredWitnessIds.every((witness) => suppliedWitnessSet.has(witness))
+  );
+  const completedTransferIds = completedTransfers.map((transfer) => transfer.id).sort();
+  const completedTransferIdSet = new Set(completedTransferIds);
+
+  for (const transfer of relevantTransfers) {
+    if (!completedTransferIdSet.has(transfer.id)) {
+      findings.push({
+        class: "blocked_unwitnessed_transfer",
+        subjectId: transfer.id,
+        reason: "REQUIRED_TRANSFER_WITNESS_MISSING",
+      });
+    }
+  }
+
+  for (const shedId of shed) {
+    const permittingTransfers = relevantTransfers.filter(
+      (transfer) => transfer.permitsShedding.includes(shedId),
+    );
+    const hasCompletedPermission = permittingTransfers.some(
+      (transfer) => completedTransferIdSet.has(transfer.id),
+    );
+
+    if (hasCompletedPermission) continue;
+
+    if (permittingTransfers.length > 0) {
+      findings.push({
+        class: "blocked_premature_shedding",
+        subjectId: shedId,
+        reason: "SHED_BEFORE_TRANSFER_WITNESS",
+      });
+      continue;
+    }
+
+    if (from.carries.includes(shedId)) {
+      findings.push({
+        class: "blocked_untransferred_responsibility",
+        subjectId: shedId,
+        reason: "RESPONSIBILITY_DROPPED_WITHOUT_TRANSFER",
+      });
+    } else {
+      findings.push({
+        class: "blocked_premature_shedding",
+        subjectId: shedId,
+        reason: "SHED_WITHOUT_TRANSFER_PERMISSION",
+      });
+    }
+  }
+
+  const normalizedFindings = sortFindings(findings);
+  const blocked = normalizedFindings.some((finding) => finding.class.startsWith("blocked_"));
+
+  return {
+    schema: EVALUATION_SCHEMA,
+    spineId: spine.id,
+    fromStageId: from.id,
+    toStageId: to.id,
+    decision: blocked ? "blocked" : "admissible",
+    shed,
+    completedTransferIds,
+    findings: normalizedFindings,
+  };
 }
