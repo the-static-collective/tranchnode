@@ -93,8 +93,8 @@ A spine may contain:
 
 - a reference to an origin or prior constituted cut;
 - a reference to the current constituted cut;
-- one or more proposed future attractors;
-- candidate transitions between them.
+- one proposed future attractor;
+- candidate transitions between stages.
 
 But only the present/prior references may claim constituted status. Future stages remain proposed until independent admitted events and witnesses make them part of history.
 
@@ -119,7 +119,7 @@ A later cross-repository slice may use both. v0.1 stays inside TranchNode.
 
 ### A. Stage ledger + pure evaluator — selected
 
-Represent the transformation as a versioned manifest and implement a pure evaluator that answers whether a proposed stage transition is admissible, blocked, or still proposal-only.
+Represent the transformation as a versioned manifest and implement a pure evaluator that answers whether a proposed stage transition is admissible, blocked, or invalid while separately preserving the fact that a destination is still proposal-only.
 
 Benefits:
 
@@ -162,11 +162,14 @@ interface ContinuitySpineManifestV01 {
   present: StateRef;
   attractor: AttractorRef;
 
+  stageOrder: string[];
   invariants: Invariant[];
   stages: Stage[];
   transfers: Transfer[];
 }
 ```
+
+`stageOrder` is explicit in v0.1. Every stage id must appear exactly once. The evaluator rejects duplicate ids, unknown ids, and any transition whose source does not precede its destination.
 
 ### StateRef
 
@@ -266,12 +269,18 @@ evaluateStageTransition({
 
 The evaluator must not mutate files, branches, project status, or external systems.
 
-It returns structured findings rather than a composite score.
+`TransitionEvaluation` has one primary decision and zero or more structured findings:
+
+```text
+decision = admissible | blocked | invalid
+findings = [...]
+```
+
+A transition to a proposed stage may therefore be `decision: admissible` while also carrying a `proposal_only` finding. `admissible` means the transition satisfies the manifest's structural continuity law; it does **not** promote the destination into constituted history.
 
 Required v0.1 finding classes:
 
-- `admissible` — all applicable invariants survive, required transfers are witnessed, and requested shedding is permitted;
-- `proposal_only` — destination is prospective and not yet historically constituted; this is not an error by itself;
+- `proposal_only` — destination is prospective and not yet historically constituted; informational and compatible with an admissible decision;
 - `blocked_invariant_loss` — transition would violate an applicable invariant;
 - `blocked_untransferred_responsibility` — a required capability/dependency is still carried only by the old stage;
 - `blocked_unwitnessed_transfer` — the manifest proposes a transfer but supplied evidence does not establish it;
@@ -346,7 +355,7 @@ The fixture should include at least these blocked variants:
 1. mark the raw-point caller dependency as shed without supplying the v0.2 transfer witness -> `blocked_unwitnessed_transfer`;
 2. propose a destination stage that changes decoder authority from `none` -> `blocked_invariant_loss`;
 3. encode the attractor as `constituted` merely because it is desired -> `invalid_manifest`;
-4. remove the v0.1 compatibility obligation while the manifest still declares compatibility as an active invariant -> `blocked_premature_shedding` or `blocked_invariant_loss`, whichever structural rule is primary in implementation.
+4. remove the v0.1 compatibility obligation while compatibility is still declared as an active invariant -> `blocked_invariant_loss`.
 
 ## Canonical storage for v0.1
 
@@ -380,7 +389,7 @@ The evaluator is a refusal surface before it is a recommendation surface.
 It must reject or block when:
 
 - a stage references unknown transfers/invariants;
-- stage ordering is cyclic or internally contradictory in a form v0.1 cannot interpret;
+- stage ids are duplicated, omitted from `stageOrder`, or ordered inconsistently with the requested transition;
 - a proposed attractor claims evidence status;
 - requested shedding outruns transfer;
 - a transfer claims completion without supplied witness evidence;
@@ -403,8 +412,9 @@ Minimum tests:
 6. v0.2 caller may shed caller-side layout-binding responsibility only after transfer witness;
 7. v0.1 compatibility remains independently preserved;
 8. unknown refs fail closed;
-9. input objects are not mutated;
-10. repeated evaluation is byte/structure stable for identical input.
+9. stage order rejects duplicates and backwards transitions;
+10. input objects are not mutated;
+11. repeated evaluation is byte/structure stable for identical input.
 
 No network, GitHub API, GitBook API, filesystem mutation, LLM, wall clock, random value, or environment-dependent behavior belongs in v0.1 tests.
 
