@@ -136,7 +136,9 @@ test("witnessed transfer permits the declared scaffold to be shed", () => {
 
 test("proposal destination can be structurally admissible without becoming constituted", () => {
   const spine = minimalManifest();
-  spine.stages[1].status = "proposal";
+  const destination = spine.stages[1];
+  assert.ok(destination);
+  destination.status = "proposal";
   const result = evaluateStageTransition({
     spine,
     fromStageId: "stage-a",
@@ -163,7 +165,9 @@ test("missing transfer witness blocks a shed permitted by that transfer", () => 
 
 test("active invariant loss blocks the transition", () => {
   const spine = minimalManifest();
-  spine.stages[1].carries = spine.stages[1].carries.filter(
+  const destination = spine.stages[1];
+  assert.ok(destination);
+  destination.carries = destination.carries.filter(
     (id) => id !== "decoder-authority:none",
   );
   const result = evaluateStageTransition({
