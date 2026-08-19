@@ -133,6 +133,17 @@ function uniqueStrings(value: unknown, allowEmpty = true): string[] {
   return result;
 }
 
+function stageOrderStrings(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new ContinuitySpineError("INVALID_STAGE_ORDER");
+  }
+  const result = value.map(requiredString);
+  if (new Set(result).size !== result.length) {
+    throw new ContinuitySpineError("INVALID_STAGE_ORDER");
+  }
+  return result;
+}
+
 function assertUniqueIds(items: Array<{ id: string }>): void {
   const ids = items.map((item) => item.id);
   if (new Set(ids).size !== ids.length) {
@@ -233,7 +244,7 @@ export function validateContinuitySpineManifest(value: unknown): ContinuitySpine
   const invariants = parseArray(record.invariants, parseInvariant);
   const stages = parseArray(record.stages, parseStage);
   const transfers = parseArray(record.transfers, parseTransfer);
-  const stageOrder = uniqueStrings(record.stageOrder, false);
+  const stageOrder = stageOrderStrings(record.stageOrder);
 
   assertUniqueIds(invariants);
   assertUniqueIds(stages);
