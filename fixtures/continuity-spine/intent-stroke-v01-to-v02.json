@@ -1,0 +1,142 @@
+{
+  "schema": "tranchnode/continuity-spine/v0.1",
+  "id": "intent-stroke-v01-to-v02",
+  "project": "TranchNode",
+  "origin": {
+    "id": "intent-stroke-stdio-v0.1",
+    "status": "historical",
+    "sourceRef": "pull-request:50",
+    "observedCommit": "a3dc7fa5155df93641f4f116eac1464b10342849"
+  },
+  "present": {
+    "id": "intent-stroke-stdio-v0.2-overlap",
+    "status": "constituted",
+    "sourceRef": "pull-request:54",
+    "observedCommit": "bf886c0b4938a1444a79afb7a7b384e91b5d5197"
+  },
+  "attractor": {
+    "id": "raw-point-callers-need-no-canonical-layout-ref",
+    "status": "proposal",
+    "purpose": "Let v0.2 callers supply raw points plus declared layout while TranchNode owns canonical layout binding.",
+    "desiredCapabilities": [
+      "caller-may-omit-fieldLayoutRef"
+    ],
+    "nonClaims": [
+      "future state is not constituted by declaration",
+      "raw pointer transport grants no traversal authority"
+    ]
+  },
+  "stageOrder": [
+    "v0.1-caller-bound",
+    "v0.1-v0.2-overlap"
+  ],
+  "invariants": [
+    {
+      "id": "v0.1-compatibility",
+      "description": "The v0.1 stdio request remains supported during the overlap.",
+      "sourceRef": "pull-request:54",
+      "appliesThrough": "all",
+      "requiredCarries": [
+        "interface:intent-stroke-stdio-v0.1"
+      ]
+    },
+    {
+      "id": "decoder-authority-none",
+      "description": "Intent Stroke decoding remains non-authoritative.",
+      "sourceRef": "pull-request:54",
+      "appliesThrough": "all",
+      "requiredCarries": [
+        "decoder-authority:none"
+      ]
+    },
+    {
+      "id": "collision-remains-unresolved",
+      "description": "Equal-cost decoder collisions are preserved rather than silently selected.",
+      "sourceRef": "pull-request:54",
+      "appliesThrough": "all",
+      "requiredCarries": [
+        "collision-policy:unresolved"
+      ]
+    },
+    {
+      "id": "raw-transport-no-traversal-authority",
+      "description": "Raw point transport does not grant traversal or caller authority.",
+      "sourceRef": "pull-request:54",
+      "appliesThrough": "all",
+      "requiredCarries": [
+        "transport-authority:none"
+      ]
+    },
+    {
+      "id": "canonical-addressing-inside-tranchnode",
+      "description": "Canonical layout addressing for v0.2 is performed inside TranchNode.",
+      "sourceRef": "pull-request:54",
+      "appliesThrough": [
+        "v0.1-v0.2-overlap"
+      ],
+      "requiredCarries": [
+        "layout-binding:tranchnode"
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "id": "v0.1-caller-bound",
+      "status": "historical",
+      "carries": [
+        "interface:intent-stroke-stdio-v0.1",
+        "decoder-authority:none",
+        "collision-policy:unresolved",
+        "transport-authority:none",
+        "responsibility:canonical-layout-binding"
+      ],
+      "dependsOn": [
+        "dependency:caller-constructs-fieldLayoutRef"
+      ],
+      "scaffolds": [
+        "dependency:caller-constructs-fieldLayoutRef"
+      ],
+      "entryConditions": [],
+      "exitConditions": [
+        "transfer:canonical-layout-binding-to-tranchnode"
+      ]
+    },
+    {
+      "id": "v0.1-v0.2-overlap",
+      "status": "constituted",
+      "carries": [
+        "interface:intent-stroke-stdio-v0.1",
+        "interface:intent-stroke-stdio-v0.2",
+        "decoder-authority:none",
+        "collision-policy:unresolved",
+        "transport-authority:none",
+        "responsibility:canonical-layout-binding",
+        "layout-binding:tranchnode"
+      ],
+      "dependsOn": [],
+      "scaffolds": [],
+      "entryConditions": [
+        "witness:pr54-green",
+        "witness:pr54-boundary-review"
+      ],
+      "exitConditions": []
+    }
+  ],
+  "transfers": [
+    {
+      "id": "transfer:canonical-layout-binding-to-tranchnode",
+      "responsibilityId": "responsibility:canonical-layout-binding",
+      "fromCarrier": "v0.2-caller-boundary",
+      "toCarrier": "tranchnode",
+      "sourceStageId": "v0.1-caller-bound",
+      "destinationStageId": "v0.1-v0.2-overlap",
+      "requiredWitnessIds": [
+        "witness:pr54-green",
+        "witness:pr54-boundary-review"
+      ],
+      "permitsShedding": [
+        "dependency:caller-constructs-fieldLayoutRef"
+      ]
+    }
+  ]
+}
