@@ -21,9 +21,31 @@ See [`INVARIANTS.md`](./INVARIANTS.md) for the authoritative invariant set.
 
 ## Current executable surface
 
-The repository currently includes a TypeScript implementation of residual extraction and validation in [`src/residual.ts`](./src/residual.ts), with characterization and residual tests under [`test/`](./test/).
+The executable surface is now broader than residual extraction alone.
 
-The executable surface is intentionally narrower than the full architecture. The documents define the governing contracts; code is added in bounded slices that make those contracts mechanically testable.
+It includes:
+
+- TypeScript residual extraction and validation;
+- **Intent Stroke v0.1** traversal decoding with deterministic candidate/ambiguity evidence;
+- a bounded stdio process adapter for Intent Stroke;
+- **Intent Stroke stdio v0.2**, which accepts raw pointer points and binds them to the donor-owned canonical field layout before decoding.
+
+The process seam deliberately carries observation, not crossing authority. A decoded gesture may expose a candidate route; it does not authorize the destination or silently choose a crossing.
+
+Run the complete repository proof:
+
+```bash
+npm install
+npm run check
+```
+
+Run the bounded Intent Stroke process seam:
+
+```bash
+npm run intent-stroke:stdio
+```
+
+Machine-readable snapshot: [`PROJECT_STATUS.json`](PROJECT_STATUS.json).
 
 ## Architecture map
 
@@ -38,22 +60,8 @@ Start here:
 - [`PROJECTION_COVENANT.md`](./PROJECTION_COVENANT.md) — projection rules and limits.
 - [`COMPATIBILITY.md`](./COMPATIBILITY.md) — implementation compatibility floor.
 - [`PROJECT_LEGO_FLOOR_1_0.md`](./PROJECT_LEGO_FLOOR_1_0.md) — composable project floor.
-- [`RESIDUAL_V0_1.md`](./RESIDUAL_V0_1.md) — current residual contract.
-
-Additional focused documents and fixtures live under [`docs/`](./docs/) and [`fixtures/`](./fixtures/).
-
-## Development
-
-Requires a current Node.js runtime with npm.
-
-```bash
-npm install
-npm test
-npm run check
-```
-
-- `npm test` runs the Node test suite through `tsx`.
-- `npm run check` runs TypeScript validation and the full test suite.
+- [`RESIDUAL_V0_1.md`](./RESIDUAL_V0_1.md) — residual contract.
+- [`docs/`](./docs/) and [`fixtures/`](./fixtures/) — focused executable designs, plans, and proof material.
 
 ## Design posture
 
@@ -63,4 +71,6 @@ Applications are replaceable interfaces. Retrieval proposes relevant material. M
 
 ## Status
 
-TranchNode is under active development. The repository contains both adopted architectural law and bounded executable proofs. Historical proposals should be read through their inheritance and supersession links rather than assumed to be live integration choices.
+TranchNode is under active development. The repository contains both adopted architectural law and bounded executable proofs. Its newest process-facing proof turns raw human traversal input into deterministic, inspectable candidate evidence while leaving destination authority outside the decoder.
+
+Historical proposals should be read through their inheritance and supersession links rather than assumed to be live integration choices.
