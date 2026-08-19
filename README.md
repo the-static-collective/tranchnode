@@ -28,9 +28,12 @@ It includes:
 - TypeScript residual extraction and validation;
 - **Intent Stroke v0.1** traversal decoding with deterministic candidate/ambiguity evidence;
 - a bounded stdio process adapter for Intent Stroke;
-- **Intent Stroke stdio v0.2**, which accepts raw pointer points and binds them to the donor-owned canonical field layout before decoding.
+- **Intent Stroke stdio v0.2**, which accepts raw pointer points and binds them to the donor-owned canonical field layout before decoding;
+- **Continuity Spine v0.1**, a pure staged-transformation evaluator that keeps future attractors proposal-only, requires invariant-preserving overlap and witnessed responsibility transfer, and permits shedding only after the receiving carrier demonstrably bears the dependency.
 
 The process seam deliberately carries observation, not crossing authority. A decoded gesture may expose a candidate route; it does not authorize the destination or silently choose a crossing.
+
+Continuity Spine likewise describes and refuses transitions; it does not execute them. Its first pinned specimen treats the Intent Stroke v0.1 → v0.2 change as a staged handoff rather than rewriting the older carrier out of history.
 
 Run the complete repository proof:
 
@@ -71,6 +74,6 @@ Applications are replaceable interfaces. Retrieval proposes relevant material. M
 
 ## Status
 
-TranchNode is under active development. The repository contains both adopted architectural law and bounded executable proofs. Its newest process-facing proof turns raw human traversal input into deterministic, inspectable candidate evidence while leaving destination authority outside the decoder.
+TranchNode is under active development. The repository contains both adopted architectural law and bounded executable proofs. Its process-facing proof turns raw human traversal input into deterministic, inspectable candidate evidence while leaving destination authority outside the decoder; its Continuity Spine proof now separately demonstrates staged transformation without promoting desired futures into present fact.
 
 Historical proposals should be read through their inheritance and supersession links rather than assumed to be live integration choices.
