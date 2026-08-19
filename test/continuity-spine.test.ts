@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   ContinuitySpineError,
@@ -6,6 +7,12 @@ import {
   validateContinuitySpineManifest,
   type ContinuitySpineManifestV01,
 } from "../src/continuity-spine.js";
+
+const FIXTURE_PATH = "fixtures/continuity-spine/intent-stroke-v01-to-v02.json";
+
+async function rawFixture(): Promise<any> {
+  return JSON.parse(await readFile(FIXTURE_PATH, "utf8"));
+}
 
 function minimalManifest(): ContinuitySpineManifestV01 {
   return {
@@ -191,4 +198,117 @@ test("backward transition is invalid rather than merely blocked", () => {
 
   assert.equal(result.decision, "invalid");
   assert.ok(result.findings.some((finding) => finding.class === "invalid_manifest"));
+});
+
+test("Intent Stroke v0.1 -> v0.2 proves overlap, witnessed transfer, and lawful shedding", async () => {
+  const spine = validateContinuitySpineManifest(await rawFixture());
+  const result = evaluateStageTransition({
+    spine,
+    fromStageId: "v0.1-caller-bound",
+    toStageId: "v0.1-v0.2-overlap",
+    suppliedWitnesses: ["witness:pr54-green", "witness:pr54-boundary-review"],
+  });
+
+  assert.equal(result.decision, "admissible");
+  assert.deepEqual(result.shed, ["dependency:caller-constructs-fieldLayoutRef"]);
+  assert.deepEqual(
+    result.completedTransferIds,
+    ["transfer:canonical-layout-binding-to-tranchnode"],
+  );
+  assert.equal(
+    result.findings.some((finding) => finding.class.startsWith("blocked_")),
+    false,
+  );
+});
+
+test("Intent Stroke transfer witness is required before caller layout binding may be shed", async () => {
+  const spine = validateContinuitySpineManifest(await rawFixture());
+  const result = evaluateStageTransition({
+    spine,
+    fromStageId: "v0.1-caller-bound",
+    toStageId: "v0.1-v0.2-overlap",
+    suppliedWitnesses: [],
+  });
+
+  assert.equal(result.decision, "blocked");
+  assert.ok(result.findings.some((finding) => finding.class === "blocked_unwitnessed_transfer"));
+  assert.ok(result.findings.some((finding) => finding.class === "blocked_premature_shedding"));
+});
+
+test("Intent Stroke destination cannot drop decoder non-authority", async () => {
+  const candidate = await rawFixture();
+  const destination = candidate.stages.find(
+    (stage: any) => stage.id === "v0.1-v0.2-overlap",
+  );
+  assert.ok(destination);
+  destination.carries = destination.carries.filter(
+    (id: string) => id !== "decoder-authority:none",
+  );
+  const result = evaluateStageTransition({
+    spine: candidate,
+    fromStageId: "v0.1-caller-bound",
+    toStageId: "v0.1-v0.2-overlap",
+    suppliedWitnesses: ["witness:pr54-green", "witness:pr54-boundary-review"],
+  });
+
+  assert.equal(result.decision, "blocked");
+  assert.ok(result.findings.some((finding) => finding.class === "blocked_invariant_loss"));
+});
+
+test("Intent Stroke attractor cannot become constituted merely because it is desired", async () => {
+  const candidate = await rawFixture();
+  candidate.attractor.status = "constituted";
+
+  assert.throws(
+    () => validateContinuitySpineManifest(candidate),
+    (error: unknown) => error instanceof ContinuitySpineError
+      && error.code === "ATTRACTOR_MUST_BE_PROPOSAL",
+  );
+});
+
+test("Intent Stroke overlap must preserve the v0.1 compatibility obligation", async () => {
+  const candidate = await rawFixture();
+  const destination = candidate.stages.find(
+    (stage: any) => stage.id === "v0.1-v0.2-overlap",
+  );
+  assert.ok(destination);
+  destination.carries = destination.carries.filter(
+    (id: string) => id !== "interface:intent-stroke-stdio-v0.1",
+  );
+  const result = evaluateStageTransition({
+    spine: candidate,
+    fromStageId: "v0.1-caller-bound",
+    toStageId: "v0.1-v0.2-overlap",
+    suppliedWitnesses: ["witness:pr54-green", "witness:pr54-boundary-review"],
+  });
+
+  assert.equal(result.decision, "blocked");
+  assert.ok(result.findings.some((finding) => finding.class === "blocked_invariant_loss"));
+});
+
+test("Intent Stroke refuses to drop responsibility when no transfer carries it forward", async () => {
+  const candidate = await rawFixture();
+  const destination = candidate.stages.find(
+    (stage: any) => stage.id === "v0.1-v0.2-overlap",
+  );
+  assert.ok(destination);
+  destination.carries = destination.carries.filter(
+    (id: string) => id !== "responsibility:canonical-layout-binding",
+  );
+  candidate.transfers = [];
+
+  const result = evaluateStageTransition({
+    spine: candidate,
+    fromStageId: "v0.1-caller-bound",
+    toStageId: "v0.1-v0.2-overlap",
+    suppliedWitnesses: [],
+  });
+
+  assert.equal(result.decision, "blocked");
+  assert.ok(
+    result.findings.some(
+      (finding) => finding.class === "blocked_untransferred_responsibility"
+        && finding.reason === "RESPONSIBILITY_DROPPED_WITHOUT_TRANSFER",
+    ),
+  );
 });
