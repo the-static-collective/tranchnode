@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   ContinuitySpineError,
+  evaluateStageTransition,
   validateContinuitySpineManifest,
   type ContinuitySpineManifestV01,
 } from "../src/continuity-spine.js";
@@ -117,4 +118,73 @@ test("continuity spine validator returns a fresh normalized manifest", () => {
   assert.notEqual(validated, input);
   assert.notEqual(validated.stages, input.stages);
   assert.notEqual(validated.stages[0], input.stages[0]);
+});
+
+test("witnessed transfer permits the declared scaffold to be shed", () => {
+  const result = evaluateStageTransition({
+    spine: minimalManifest(),
+    fromStageId: "stage-a",
+    toStageId: "stage-b",
+    suppliedWitnesses: ["witness:transfer"],
+  });
+
+  assert.equal(result.decision, "admissible");
+  assert.deepEqual(result.shed, ["dependency:caller-layout-ref"]);
+  assert.deepEqual(result.completedTransferIds, ["transfer:layout-binding"]);
+  assert.deepEqual(result.findings, []);
+});
+
+test("proposal destination can be structurally admissible without becoming constituted", () => {
+  const spine = minimalManifest();
+  spine.stages[1].status = "proposal";
+  const result = evaluateStageTransition({
+    spine,
+    fromStageId: "stage-a",
+    toStageId: "stage-b",
+    suppliedWitnesses: ["witness:transfer"],
+  });
+
+  assert.equal(result.decision, "admissible");
+  assert.ok(result.findings.some((finding) => finding.class === "proposal_only"));
+});
+
+test("missing transfer witness blocks a shed permitted by that transfer", () => {
+  const result = evaluateStageTransition({
+    spine: minimalManifest(),
+    fromStageId: "stage-a",
+    toStageId: "stage-b",
+    suppliedWitnesses: [],
+  });
+
+  assert.equal(result.decision, "blocked");
+  assert.ok(result.findings.some((finding) => finding.class === "blocked_unwitnessed_transfer"));
+  assert.ok(result.findings.some((finding) => finding.class === "blocked_premature_shedding"));
+});
+
+test("active invariant loss blocks the transition", () => {
+  const spine = minimalManifest();
+  spine.stages[1].carries = spine.stages[1].carries.filter(
+    (id) => id !== "decoder-authority:none",
+  );
+  const result = evaluateStageTransition({
+    spine,
+    fromStageId: "stage-a",
+    toStageId: "stage-b",
+    suppliedWitnesses: ["witness:transfer"],
+  });
+
+  assert.equal(result.decision, "blocked");
+  assert.ok(result.findings.some((finding) => finding.class === "blocked_invariant_loss"));
+});
+
+test("backward transition is invalid rather than merely blocked", () => {
+  const result = evaluateStageTransition({
+    spine: minimalManifest(),
+    fromStageId: "stage-b",
+    toStageId: "stage-a",
+    suppliedWitnesses: [],
+  });
+
+  assert.equal(result.decision, "invalid");
+  assert.ok(result.findings.some((finding) => finding.class === "invalid_manifest"));
 });
