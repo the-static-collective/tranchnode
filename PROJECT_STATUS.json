@@ -1,22 +1,25 @@
 {
   "schema": "static-collective.project-status.v1",
-  "asOf": "2026-08-17",
+  "asOf": "2026-08-19",
   "repository": "the-static-collective/tranchnode",
   "defaultBranch": "main",
   "project": "TranchNode",
   "state": "active",
-  "phase": "Intent Stroke v0.2 process boundary",
+  "phase": "Intent Stroke v0.2 process boundary + Continuity Spine v0.1",
   "canonicalAuthority": "project-owned repository",
-  "observedMainCommit": "bf886c0b4938a1444a79afb7a7b384e91b5d5197",
+  "observedMainCommit": "ca32f69d63cfd1ef0e8ae70c73186bbe46968f9d",
   "executableSurface": [
     {"id": "residual-v0.1", "status": "landed", "interface": "TypeScript library/tests"},
     {"id": "intent-stroke-decoder-v0.1", "status": "landed", "evidence": {"commit": "efc75f6228a2d9c16475378d0dc382a48bf762c8", "pullRequest": 41}},
     {"id": "intent-stroke-stdio-v0.1", "status": "landed", "evidence": {"commit": "a3dc7fa5155df93641f4f116eac1464b10342849", "pullRequest": 50}},
-    {"id": "intent-stroke-stdio-v0.2-raw-points", "status": "landed", "interface": "npm run intent-stroke:stdio", "evidence": {"commit": "bf886c0b4938a1444a79afb7a7b384e91b5d5197", "pullRequest": 54}}
+    {"id": "intent-stroke-stdio-v0.2-raw-points", "status": "landed", "interface": "npm run intent-stroke:stdio", "evidence": {"commit": "bf886c0b4938a1444a79afb7a7b384e91b5d5197", "pullRequest": 54}},
+    {"id": "continuity-spine-v0.1", "status": "landed", "interface": "pure TypeScript transition evaluator + pinned Intent Stroke v0.1-to-v0.2 specimen", "evidence": {"commit": "ca32f69d63cfd1ef0e8ae70c73186bbe46968f9d", "pullRequest": 58}}
   ],
   "nonClaims": [
     "retrieval is not authority",
     "decoded intent does not authorize traversal",
-    "raw pointer transport does not transfer caller authority"
+    "raw pointer transport does not transfer caller authority",
+    "Continuity Spine describes and refuses staged transitions; it does not execute them or promote proposed futures into present state",
+    "witnessed transfer is required before lawful shedding"
   ]
 }
