@@ -111,6 +111,26 @@ test("invalid unresolved inputs fail closed without string inference", () => {
   );
 });
 
+test("accessor-backed unresolved refs fail closed without executing the accessor", () => {
+  let accessorExecuted = false;
+  const unresolvedRefs: string[] = [];
+  Object.defineProperty(unresolvedRefs, "0", {
+    configurable: true,
+    enumerable: true,
+    get() {
+      accessorExecuted = true;
+      return "collision-policy:unresolved";
+    },
+  });
+
+  assert.throws(
+    () => derive({ unresolvedRefs }),
+    (error: unknown) => error instanceof ContinuityBoundaryWitnessError
+      && error.code === "INVALID_UNRESOLVED_REFS",
+  );
+  assert.equal(accessorExecuted, false);
+});
+
 test("derivation does not mutate the source fixture", () => {
   const before = JSON.stringify(fixture);
   derive();
