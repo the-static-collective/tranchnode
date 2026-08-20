@@ -61,8 +61,21 @@ function normalizedUniqueStrings(value: unknown): string[] {
   if (!Array.isArray(value)) {
     throw new ContinuityBoundaryWitnessError("INVALID_UNRESOLVED_REFS");
   }
+
+  const descriptors = Object.getOwnPropertyDescriptors(value);
   const result: string[] = [];
-  for (const item of value) {
+  for (let index = 0; index < value.length; index += 1) {
+    const descriptor = descriptors[String(index)];
+    if (
+      descriptor === undefined
+      || !("value" in descriptor)
+      || descriptor.get !== undefined
+      || descriptor.set !== undefined
+    ) {
+      throw new ContinuityBoundaryWitnessError("INVALID_UNRESOLVED_REFS");
+    }
+
+    const item = descriptor.value;
     if (typeof item !== "string" || item.trim().length === 0 || result.includes(item)) {
       throw new ContinuityBoundaryWitnessError("INVALID_UNRESOLVED_REFS");
     }
