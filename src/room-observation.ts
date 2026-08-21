@@ -59,8 +59,8 @@ export async function observeWitnessReferences(
     let current = root;
     let result: WitnessObservation | undefined;
 
-    for (let index = 0; index < components.length; index += 1) {
-      current = join(current, components[index]);
+    for (const [index, component] of components.entries()) {
+      current = join(current, component);
       try {
         const entry = await lstat(current);
         const finalComponent = index === components.length - 1;
