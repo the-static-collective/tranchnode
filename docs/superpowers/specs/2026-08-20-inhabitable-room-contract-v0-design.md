@@ -23,14 +23,14 @@ The reconciliation inspected the actual PR, its changed files and tests, the cur
 
 | Item | Inspected state on 2026-08-21 | Consequence |
 |---|---|---|
-| TranchNode PR #67 | Draft, open, green; head `52bac82801e109196a55a971be9ef9770ac6c0c7`; base `91f7f96805d4e868e35b8d0c75dc5f0671cb494a` | The implementation is candidate ancestry, not adopted TranchNode state. |
+| TranchNode PR #67 implementation ancestry | Draft, open, green at inspection; pre-reconciliation head `52bac82801e109196a55a971be9ef9770ac6c0c7`; base `91f7f96805d4e868e35b8d0c75dc5f0671cb494a` | The implementation is candidate ancestry, not adopted TranchNode state. |
 | TranchNode `main` | `91f7f96805d4e868e35b8d0c75dc5f0671cb494a` | Existing executable claims may cite this declared anchor, but the Room observer will not infer currentness or adoption from it. |
 | Project0 PR #58 | Draft, open, unmerged; head `011d8d4...` | It is not constituted reciprocity and is not a dependency of this experiment. |
 | TranchNode issue #25 | Defines sovereign `Room`, `Door`, and `Threshold` concepts with human-ratified topology/admission semantics | Room Protocol types and prose must identify themselves as an entry projection and must not instantiate or redefine those sovereign concepts. |
 | Four-Surface Capability Covenant on TranchNode `main` | Separates EYE observation, MOUTH testimony, HAND admitted consequence, and HAIR lineage; no organ inherits authority | The declaration is testimony; the path observer is observation; neither may claim authority or admitted consequence. |
 | GitBook Front Room / Field Traversal / Continuity Witness / Constituted Reality doctrine | Orientation is not retrieval; a door is not an instruction; reachability is observer-relative and non-authorizing; bytes are not constituted state; portable evidence carries no portable authority | The projection must preserve fog and direct traversal without conferring permission, truth, reciprocity, or constitution. |
 
-The current GitBook implementation note and PR body describe reciprocal roads more strongly than the inspected state permits. They are derived descriptions, not constituting evidence. PR metadata should be corrected during this handoff. GitBook should be corrected through its own review flow after the executable specimen and experiment record exist; it must not be used to bootstrap constitution.
+At inspection, the GitBook implementation note and PR body described reciprocal roads more strongly than the inspected state permits. They are derived descriptions, not constituting evidence. The PR metadata is corrected as part of this handoff. GitBook should be corrected through its own review flow after the executable specimen and experiment record exist; it must not be used to bootstrap constitution.
 
 ## Core design answer
 
