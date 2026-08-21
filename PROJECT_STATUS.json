@@ -1,19 +1,19 @@
 {
   "schema": "static-collective.project-status.v1",
-  "asOf": "2026-08-19",
+  "asOf": "2026-08-20",
   "repository": "the-static-collective/tranchnode",
   "defaultBranch": "main",
   "project": "TranchNode",
   "state": "active",
   "phase": "Intent Stroke v0.2 process boundary + Continuity Spine v0.1",
   "canonicalAuthority": "project-owned repository",
-  "observedMainCommit": "ca32f69d63cfd1ef0e8ae70c73186bbe46968f9d",
+  "observedMainCommit": "91f7f96805d4e868e35b8d0c75dc5f0671cb494a",
   "executableSurface": [
-    {"id": "residual-v0.1", "status": "landed", "interface": "TypeScript library/tests"},
-    {"id": "intent-stroke-decoder-v0.1", "status": "landed", "evidence": {"commit": "efc75f6228a2d9c16475378d0dc382a48bf762c8", "pullRequest": 41}},
-    {"id": "intent-stroke-stdio-v0.1", "status": "landed", "evidence": {"commit": "a3dc7fa5155df93641f4f116eac1464b10342849", "pullRequest": 50}},
-    {"id": "intent-stroke-stdio-v0.2-raw-points", "status": "landed", "interface": "npm run intent-stroke:stdio", "evidence": {"commit": "bf886c0b4938a1444a79afb7a7b384e91b5d5197", "pullRequest": 54}},
-    {"id": "continuity-spine-v0.1", "status": "landed", "interface": "pure TypeScript transition evaluator + pinned Intent Stroke v0.1-to-v0.2 specimen", "evidence": {"commit": "ca32f69d63cfd1ef0e8ae70c73186bbe46968f9d", "pullRequest": 58}}
+    {"id": "residual-v0.1", "status": "landed", "interface": "TypeScript library/tests", "witnesses": ["src/residual.ts", "test/residual.test.ts"]},
+    {"id": "intent-stroke-decoder-v0.1", "status": "landed", "evidence": {"commit": "efc75f6228a2d9c16475378d0dc382a48bf762c8", "pullRequest": 41}, "witnesses": ["src/intent-stroke.ts", "test/intent-stroke.test.ts"]},
+    {"id": "intent-stroke-stdio-v0.1", "status": "landed", "evidence": {"commit": "a3dc7fa5155df93641f4f116eac1464b10342849", "pullRequest": 50}, "witnesses": ["scripts/intent-stroke-stdio.ts", "test/intent-stroke-stdio.test.ts"]},
+    {"id": "intent-stroke-stdio-v0.2-raw-points", "status": "landed", "interface": "npm run intent-stroke:stdio", "evidence": {"commit": "bf886c0b4938a1444a79afb7a7b384e91b5d5197", "pullRequest": 54}, "witnesses": ["scripts/intent-stroke-stdio.ts", "test/intent-stroke-stdio.test.ts"]},
+    {"id": "continuity-spine-v0.1", "status": "landed", "interface": "pure TypeScript transition evaluator + pinned Intent Stroke v0.1-to-v0.2 specimen", "evidence": {"commit": "ca32f69d63cfd1ef0e8ae70c73186bbe46968f9d", "pullRequest": 58}, "witnesses": ["src/continuity-spine.ts", "test/continuity-spine.test.ts"]}
   ],
   "nonClaims": [
     "retrieval is not authority",
@@ -21,5 +21,55 @@
     "raw pointer transport does not transfer caller authority",
     "Continuity Spine describes and refuses staged transitions; it does not execute them or promote proposed futures into present state",
     "witnessed transfer is required before lawful shedding"
-  ]
+  ],
+  "dependsOn": [
+    {
+      "repository": "the-static-collective/project0",
+      "relation": "compatibility-obligation",
+      "evidence": "COMPATIBILITY.md",
+      "witnesses": ["COMPATIBILITY.md"]
+    }
+  ],
+  "touchpoints": [
+    {
+      "id": "project-status",
+      "kind": "read",
+      "posture": "inspect",
+      "interface": "PROJECT_STATUS.json",
+      "witnesses": ["PROJECT_STATUS.json"]
+    },
+    {
+      "id": "compatibility-map",
+      "kind": "read",
+      "posture": "inspect",
+      "interface": "COMPATIBILITY.md",
+      "witnesses": ["COMPATIBILITY.md"]
+    },
+    {
+      "id": "intent-stroke-stdio",
+      "kind": "executable",
+      "posture": "invoke-under-local-rules",
+      "interface": "npm run intent-stroke:stdio",
+      "witnesses": ["scripts/intent-stroke-stdio.ts"]
+    },
+    {
+      "id": "decoded-traversal",
+      "kind": "gate",
+      "posture": "proposal-only",
+      "interface": "src/intent-stroke.ts",
+      "witnesses": ["src/intent-stroke.ts"]
+    },
+    {
+      "id": "direct-structure-write",
+      "kind": "gate",
+      "posture": "closed",
+      "interface": "ATTENTION_TESTIMONY_RECOGNITION.md",
+      "witnesses": ["ATTENTION_TESTIMONY_RECOGNITION.md"]
+    }
+  ],
+  "reentry": {
+    "readme": "README.md",
+    "status": "PROJECT_STATUS.json",
+    "docs": "docs/"
+  }
 }
