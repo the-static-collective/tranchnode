@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { validateProjectStatus } from "../src/room-contract.js";
+import { renderRoomMarkdown, validateProjectStatus } from "../src/room-contract.js";
 
 function legacyStatus() {
   return {
@@ -128,4 +128,59 @@ test("re-entry landmarks must be repository-relative paths", () => {
       /reentry\.readme/,
     );
   }
+});
+
+test("room renderer deterministically answers the five portable questions", () => {
+  const status = validateProjectStatus({
+    ...legacyStatus(),
+    executableSurface: [
+      { id: "continuity-spine-v0.1", status: "landed", interface: "TypeScript library/tests" },
+    ],
+    dependsOn: [
+      {
+        repository: "the-static-collective/project0",
+        relation: "compatibility-witness",
+        evidence: "COMPATIBILITY.md",
+      },
+    ],
+    humanHeld: ["promotion of proposed futures into present state"],
+    touchpoints: [
+      { id: "status", kind: "read", access: "safe-read", interface: "PROJECT_STATUS.json" },
+      { id: "intent-stroke", kind: "executable", access: "safe-read-execute", interface: "npm run intent-stroke:stdio" },
+      { id: "promotion", kind: "gate", access: "human-only" },
+      { id: "implicit-crossing", kind: "gate", access: "closed" },
+    ],
+    reentry: { readme: "README.md", status: "PROJECT_STATUS.json", docs: "docs/" },
+  });
+
+  const first = renderRoomMarkdown(status);
+  const second = renderRoomMarkdown(status);
+  assert.equal(first, second);
+
+  for (const heading of [
+    "## What are you?",
+    "## What do you currently prove?",
+    "## What do you depend on?",
+    "## What remains human-held?",
+    "## Where may another project safely touch you?",
+  ]) {
+    assert.match(first, new RegExp(heading.replace(/[?]/g, "\\?")));
+  }
+
+  assert.match(first, /This file is a projection/);
+  assert.match(first, /Source: `PROJECT_STATUS\.json`/);
+  assert.match(first, /0123456789abcdef0123456789abcdef01234567/);
+  assert.match(first, /the-static-collective\/project0/);
+  assert.match(first, /\[human-only\]/);
+  assert.match(first, /\[closed\]/);
+});
+
+test("room renderer preserves unknown state and invents no undeclared neighbor", () => {
+  const markdown = renderRoomMarkdown(validateProjectStatus(legacyStatus()));
+
+  assert.match(markdown, /What do you depend on\?[\s\S]*Not declared\./);
+  assert.match(markdown, /What remains human-held\?[\s\S]*Not declared\./);
+  assert.match(markdown, /Where may another project safely touch you\?[\s\S]*Not declared\./);
+  assert.match(markdown, /Re-entry landmarks[\s\S]*Not declared\./);
+  assert.doesNotMatch(markdown, /project0/i);
 });
