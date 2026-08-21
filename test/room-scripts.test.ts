@@ -8,6 +8,7 @@ import test from "node:test";
 import { renderRoomMarkdown, validateProjectStatus } from "../src/room-contract.js";
 
 const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
+const tsxImport = import.meta.resolve("tsx");
 
 function statusFixture() {
   return {
@@ -30,7 +31,7 @@ function statusFixture() {
 
 async function runScript(name: string, cwd: string) {
   const script = join(repositoryRoot, "scripts", name);
-  const child = spawn(process.execPath, ["--import", "tsx", script], {
+  const child = spawn(process.execPath, ["--import", tsxImport, script], {
     cwd,
     stdio: ["ignore", "pipe", "pipe"],
   });
