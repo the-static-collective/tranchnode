@@ -1,13 +1,13 @@
 {
   "schema": "static-collective.project-status.v1",
-  "asOf": "2026-08-19",
+  "asOf": "2026-08-20",
   "repository": "the-static-collective/tranchnode",
   "defaultBranch": "main",
   "project": "TranchNode",
   "state": "active",
   "phase": "Intent Stroke v0.2 process boundary + Continuity Spine v0.1",
   "canonicalAuthority": "project-owned repository",
-  "observedMainCommit": "ca32f69d63cfd1ef0e8ae70c73186bbe46968f9d",
+  "observedMainCommit": "91f7f96805d4e868e35b8d0c75dc5f0671cb494a",
   "executableSurface": [
     {"id": "residual-v0.1", "status": "landed", "interface": "TypeScript library/tests"},
     {"id": "intent-stroke-decoder-v0.1", "status": "landed", "evidence": {"commit": "efc75f6228a2d9c16475378d0dc382a48bf762c8", "pullRequest": 41}},
@@ -21,5 +21,49 @@
     "raw pointer transport does not transfer caller authority",
     "Continuity Spine describes and refuses staged transitions; it does not execute them or promote proposed futures into present state",
     "witnessed transfer is required before lawful shedding"
-  ]
+  ],
+  "dependsOn": [
+    {
+      "repository": "the-static-collective/project0",
+      "relation": "compatibility-obligation",
+      "evidence": "COMPATIBILITY.md"
+    }
+  ],
+  "touchpoints": [
+    {
+      "id": "project-status",
+      "kind": "read",
+      "access": "safe-read",
+      "interface": "PROJECT_STATUS.json"
+    },
+    {
+      "id": "compatibility-map",
+      "kind": "read",
+      "access": "safe-read",
+      "interface": "COMPATIBILITY.md"
+    },
+    {
+      "id": "intent-stroke-stdio",
+      "kind": "executable",
+      "access": "safe-read-execute",
+      "interface": "npm run intent-stroke:stdio"
+    },
+    {
+      "id": "decoded-traversal",
+      "kind": "gate",
+      "access": "proposal-only",
+      "interface": "src/intent-stroke.ts"
+    },
+    {
+      "id": "direct-structure-write",
+      "kind": "gate",
+      "access": "closed",
+      "interface": "ATTENTION_TESTIMONY_RECOGNITION.md"
+    }
+  ],
+  "reentry": {
+    "readme": "README.md",
+    "status": "PROJECT_STATUS.json",
+    "docs": "docs/"
+  }
 }
