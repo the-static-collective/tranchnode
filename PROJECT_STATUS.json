@@ -9,11 +9,11 @@
   "canonicalAuthority": "project-owned repository",
   "observedMainCommit": "91f7f96805d4e868e35b8d0c75dc5f0671cb494a",
   "executableSurface": [
-    {"id": "residual-v0.1", "status": "landed", "interface": "TypeScript library/tests"},
-    {"id": "intent-stroke-decoder-v0.1", "status": "landed", "evidence": {"commit": "efc75f6228a2d9c16475378d0dc382a48bf762c8", "pullRequest": 41}},
-    {"id": "intent-stroke-stdio-v0.1", "status": "landed", "evidence": {"commit": "a3dc7fa5155df93641f4f116eac1464b10342849", "pullRequest": 50}},
-    {"id": "intent-stroke-stdio-v0.2-raw-points", "status": "landed", "interface": "npm run intent-stroke:stdio", "evidence": {"commit": "bf886c0b4938a1444a79afb7a7b384e91b5d5197", "pullRequest": 54}},
-    {"id": "continuity-spine-v0.1", "status": "landed", "interface": "pure TypeScript transition evaluator + pinned Intent Stroke v0.1-to-v0.2 specimen", "evidence": {"commit": "ca32f69d63cfd1ef0e8ae70c73186bbe46968f9d", "pullRequest": 58}}
+    {"id": "residual-v0.1", "status": "landed", "interface": "TypeScript library/tests", "witnesses": ["src/residual.ts", "test/residual.test.ts"]},
+    {"id": "intent-stroke-decoder-v0.1", "status": "landed", "evidence": {"commit": "efc75f6228a2d9c16475378d0dc382a48bf762c8", "pullRequest": 41}, "witnesses": ["src/intent-stroke.ts", "test/intent-stroke.test.ts"]},
+    {"id": "intent-stroke-stdio-v0.1", "status": "landed", "evidence": {"commit": "a3dc7fa5155df93641f4f116eac1464b10342849", "pullRequest": 50}, "witnesses": ["scripts/intent-stroke-stdio.ts", "test/intent-stroke-stdio.test.ts"]},
+    {"id": "intent-stroke-stdio-v0.2-raw-points", "status": "landed", "interface": "npm run intent-stroke:stdio", "evidence": {"commit": "bf886c0b4938a1444a79afb7a7b384e91b5d5197", "pullRequest": 54}, "witnesses": ["scripts/intent-stroke-stdio.ts", "test/intent-stroke-stdio.test.ts"]},
+    {"id": "continuity-spine-v0.1", "status": "landed", "interface": "pure TypeScript transition evaluator + pinned Intent Stroke v0.1-to-v0.2 specimen", "evidence": {"commit": "ca32f69d63cfd1ef0e8ae70c73186bbe46968f9d", "pullRequest": 58}, "witnesses": ["src/continuity-spine.ts", "test/continuity-spine.test.ts"]}
   ],
   "nonClaims": [
     "retrieval is not authority",
@@ -26,39 +26,45 @@
     {
       "repository": "the-static-collective/project0",
       "relation": "compatibility-obligation",
-      "evidence": "COMPATIBILITY.md"
+      "evidence": "COMPATIBILITY.md",
+      "witnesses": ["COMPATIBILITY.md"]
     }
   ],
   "touchpoints": [
     {
       "id": "project-status",
       "kind": "read",
-      "access": "safe-read",
-      "interface": "PROJECT_STATUS.json"
+      "posture": "inspect",
+      "interface": "PROJECT_STATUS.json",
+      "witnesses": ["PROJECT_STATUS.json"]
     },
     {
       "id": "compatibility-map",
       "kind": "read",
-      "access": "safe-read",
-      "interface": "COMPATIBILITY.md"
+      "posture": "inspect",
+      "interface": "COMPATIBILITY.md",
+      "witnesses": ["COMPATIBILITY.md"]
     },
     {
       "id": "intent-stroke-stdio",
       "kind": "executable",
-      "access": "safe-read-execute",
-      "interface": "npm run intent-stroke:stdio"
+      "posture": "invoke-under-local-rules",
+      "interface": "npm run intent-stroke:stdio",
+      "witnesses": ["scripts/intent-stroke-stdio.ts"]
     },
     {
       "id": "decoded-traversal",
       "kind": "gate",
-      "access": "proposal-only",
-      "interface": "src/intent-stroke.ts"
+      "posture": "proposal-only",
+      "interface": "src/intent-stroke.ts",
+      "witnesses": ["src/intent-stroke.ts"]
     },
     {
       "id": "direct-structure-write",
       "kind": "gate",
-      "access": "closed",
-      "interface": "ATTENTION_TESTIMONY_RECOGNITION.md"
+      "posture": "closed",
+      "interface": "ATTENTION_TESTIMONY_RECOGNITION.md",
+      "witnesses": ["ATTENTION_TESTIMONY_RECOGNITION.md"]
     }
   ],
   "reentry": {
