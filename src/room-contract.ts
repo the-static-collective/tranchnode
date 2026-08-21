@@ -108,6 +108,91 @@ export function validateProjectStatus(value: unknown): ProjectStatus {
   return status;
 }
 
+export function renderRoomMarkdown(status: ProjectStatus): string {
+  const lines: string[] = [
+    `# ${status.project} — Room`,
+    "",
+    "> This file is a projection of repository-owned status. It does not create authority, relationships, or state.",
+    "",
+    `Source: \`PROJECT_STATUS.json\` @ \`${status.observedMainCommit}\``,
+    `Repository: \`${status.repository}\``,
+    "",
+    "## What are you?",
+    "",
+    `- Project: ${status.project}`,
+    `- Repository: \`${status.repository}\``,
+    `- State: ${status.state}`,
+    `- Phase: ${status.phase}`,
+    `- Canonical authority: ${status.canonicalAuthority}`,
+    "",
+    "## What do you currently prove?",
+    "",
+  ];
+
+  if (status.executableSurface.length === 0) {
+    lines.push("Not declared.");
+  } else {
+    for (const surface of status.executableSurface) {
+      const interfaceText = surface.interface ? ` — interface: \`${surface.interface}\`` : "";
+      const scopeText = surface.scope ? ` — scope: ${surface.scope}` : "";
+      lines.push(`- \`${surface.id}\` — ${surface.status}${interfaceText}${scopeText}`);
+    }
+  }
+
+  lines.push("", "## What do you depend on?", "");
+  if (!status.dependsOn || status.dependsOn.length === 0) {
+    lines.push("Not declared.");
+  } else {
+    for (const dependency of status.dependsOn) {
+      const evidence = typeof dependency.evidence === "string" ? ` — evidence: \`${dependency.evidence}\`` : "";
+      lines.push(`- \`${dependency.repository}\` — ${dependency.relation}${evidence}`);
+    }
+  }
+
+  lines.push("", "## What remains human-held?", "");
+  if (!status.humanHeld || status.humanHeld.length === 0) {
+    lines.push("Not declared.");
+  } else {
+    for (const held of status.humanHeld) {
+      lines.push(`- ${held}`);
+    }
+  }
+
+  lines.push("", "## Where may another project safely touch you?", "");
+  if (!status.touchpoints || status.touchpoints.length === 0) {
+    lines.push("Not declared.");
+  } else {
+    for (const touchpoint of status.touchpoints) {
+      const interfaceText = touchpoint.interface ? ` — interface: \`${touchpoint.interface}\`` : "";
+      lines.push(`- [${touchpoint.access}] \`${touchpoint.id}\` (${touchpoint.kind})${interfaceText}`);
+    }
+  }
+
+  lines.push("", "## Re-entry landmarks", "");
+  if (!status.reentry || Object.keys(status.reentry).length === 0) {
+    lines.push("Not declared.");
+  } else {
+    for (const key of REENTRY_KEYS) {
+      const path = status.reentry[key];
+      if (path !== undefined) {
+        lines.push(`- ${key}: \`${path}\``);
+      }
+    }
+  }
+
+  lines.push("", "## Non-claims", "");
+  if (status.nonClaims.length === 0) {
+    lines.push("None declared.");
+  } else {
+    for (const nonClaim of status.nonClaims) {
+      lines.push(`- ${nonClaim}`);
+    }
+  }
+
+  lines.push("");
+  return lines.join("\n");
+}
+
 function validateExecutableSurface(value: unknown): ExecutableSurface[] {
   if (!Array.isArray(value)) {
     throw new Error("status.executableSurface must be an array");
