@@ -1,0 +1,90 @@
+{
+  "schema": "static-collective.room-protocol.v0",
+  "kind": "repository-entry-projection",
+  "source": {
+    "path": "PROJECT_STATUS.json",
+    "sha256": "1db312725915cf2507bb1c75ebee646dd9a017532ef6f60143ee5a40252ee757",
+    "declaredAsOf": "2026-08-21",
+    "declaredObservedMainCommit": "91f7f96805d4e868e35b8d0c75dc5f0671cb494a"
+  },
+  "limits": {
+    "projectionGrantsAuthority": false,
+    "actualAuthorityDetermination": "unavailable",
+    "projectionDeterminesConstitution": false,
+    "navigationGrantsPermission": false,
+    "observationFreshness": "not-established"
+  },
+  "declaration": {
+    "identity": {
+      "project": "TranchNode adversarial Room specimen",
+      "repository": "the-static-collective/tranchnode",
+      "phase": "unreachable witness treatment",
+      "declaredAuthorityLocus": "project-owned repository"
+    },
+    "proofClaims": [
+      {
+        "id": "deliberately-absent-v0",
+        "declaredStatus": "landed",
+        "witnesses": [
+          "fixtures/room-protocol-v0/unreachable-witness/absent.ts"
+        ]
+      }
+    ],
+    "relationshipClaims": [],
+    "humanHeld": {
+      "availability": "unavailable",
+      "claims": []
+    },
+    "navigationPointers": [
+      {
+        "id": "fixture-status",
+        "kind": "read",
+        "declaredPosture": "inspect",
+        "interface": "PROJECT_STATUS.json",
+        "witnesses": [
+          "fixtures/room-protocol-v0/unreachable-witness/PROJECT_STATUS.json"
+        ]
+      }
+    ],
+    "reentry": {
+      "status": "fixtures/room-protocol-v0/unreachable-witness/PROJECT_STATUS.json"
+    },
+    "nonClaims": [
+      "an unreachable witness does not make a declaration false"
+    ]
+  },
+  "observation": {
+    "procedure": "repository-path-lstat/v0",
+    "scope": "declared-repository-paths-only",
+    "results": [
+      {
+        "claimRef": "reentry:status",
+        "path": "fixtures/room-protocol-v0/unreachable-witness/PROJECT_STATUS.json",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "proof:deliberately-absent-v0",
+        "path": "fixtures/room-protocol-v0/unreachable-witness/absent.ts",
+        "reachability": "unreachable",
+        "reason": "path-entry-not-found"
+      },
+      {
+        "claimRef": "navigation:fixture-status",
+        "path": "fixtures/room-protocol-v0/unreachable-witness/PROJECT_STATUS.json",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      }
+    ]
+  },
+  "discrepancies": [
+    {
+      "kind": "declared-witness-unreachable",
+      "claimRef": "proof:deliberately-absent-v0",
+      "path": "fixtures/room-protocol-v0/unreachable-witness/absent.ts",
+      "declared": "witness-path",
+      "observed": "unreachable",
+      "disposition": "unresolved"
+    }
+  ]
+}

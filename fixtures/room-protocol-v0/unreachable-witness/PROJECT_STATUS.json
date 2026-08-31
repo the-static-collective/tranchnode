@@ -1,0 +1,33 @@
+{
+  "schema": "static-collective.project-status.v1",
+  "asOf": "2026-08-21",
+  "repository": "the-static-collective/tranchnode",
+  "defaultBranch": "main",
+  "project": "TranchNode adversarial Room specimen",
+  "state": "candidate",
+  "phase": "unreachable witness treatment",
+  "canonicalAuthority": "project-owned repository",
+  "observedMainCommit": "91f7f96805d4e868e35b8d0c75dc5f0671cb494a",
+  "executableSurface": [
+    {
+      "id": "deliberately-absent-v0",
+      "status": "landed",
+      "witnesses": ["fixtures/room-protocol-v0/unreachable-witness/absent.ts"]
+    }
+  ],
+  "nonClaims": [
+    "an unreachable witness does not make a declaration false"
+  ],
+  "touchpoints": [
+    {
+      "id": "fixture-status",
+      "kind": "read",
+      "posture": "inspect",
+      "interface": "PROJECT_STATUS.json",
+      "witnesses": ["fixtures/room-protocol-v0/unreachable-witness/PROJECT_STATUS.json"]
+    }
+  ],
+  "reentry": {
+    "status": "fixtures/room-protocol-v0/unreachable-witness/PROJECT_STATUS.json"
+  }
+}

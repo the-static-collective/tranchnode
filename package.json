@@ -4,9 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "tsc --noEmit && node --test --import tsx test/**/*.test.ts",
+    "check": "tsc --noEmit && npm run room:check && node --test --import tsx test/**/*.test.ts",
     "test": "node --test --import tsx test/**/*.test.ts",
-    "intent-stroke:stdio": "node --import tsx scripts/intent-stroke-stdio.ts"
+    "intent-stroke:stdio": "node --import tsx scripts/intent-stroke-stdio.ts",
+    "room:check": "node --import tsx scripts/room-check.ts",
+    "room:render": "node --import tsx scripts/room-render.ts"
   },
   "dependencies": {
     "canonicalize": "^2.1.0"

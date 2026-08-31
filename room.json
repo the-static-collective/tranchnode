@@ -1,0 +1,282 @@
+{
+  "schema": "static-collective.room-protocol.v0",
+  "kind": "repository-entry-projection",
+  "source": {
+    "path": "PROJECT_STATUS.json",
+    "sha256": "db4592e20e74ca62a6c77065327ccc241841197c1ae14d3b4e6487212e8c1ebc",
+    "declaredAsOf": "2026-08-20",
+    "declaredObservedMainCommit": "91f7f96805d4e868e35b8d0c75dc5f0671cb494a"
+  },
+  "limits": {
+    "projectionGrantsAuthority": false,
+    "actualAuthorityDetermination": "unavailable",
+    "projectionDeterminesConstitution": false,
+    "navigationGrantsPermission": false,
+    "observationFreshness": "not-established"
+  },
+  "declaration": {
+    "identity": {
+      "project": "TranchNode",
+      "repository": "the-static-collective/tranchnode",
+      "phase": "Intent Stroke v0.2 process boundary + Continuity Spine v0.1",
+      "declaredAuthorityLocus": "project-owned repository"
+    },
+    "proofClaims": [
+      {
+        "id": "residual-v0.1",
+        "declaredStatus": "landed",
+        "interface": "TypeScript library/tests",
+        "witnesses": [
+          "src/residual.ts",
+          "test/residual.test.ts"
+        ]
+      },
+      {
+        "id": "intent-stroke-decoder-v0.1",
+        "declaredStatus": "landed",
+        "evidence": {
+          "commit": "efc75f6228a2d9c16475378d0dc382a48bf762c8",
+          "pullRequest": 41
+        },
+        "witnesses": [
+          "src/intent-stroke.ts",
+          "test/intent-stroke.test.ts"
+        ]
+      },
+      {
+        "id": "intent-stroke-stdio-v0.1",
+        "declaredStatus": "landed",
+        "evidence": {
+          "commit": "a3dc7fa5155df93641f4f116eac1464b10342849",
+          "pullRequest": 50
+        },
+        "witnesses": [
+          "scripts/intent-stroke-stdio.ts",
+          "test/intent-stroke-stdio.test.ts"
+        ]
+      },
+      {
+        "id": "intent-stroke-stdio-v0.2-raw-points",
+        "declaredStatus": "landed",
+        "interface": "npm run intent-stroke:stdio",
+        "evidence": {
+          "commit": "bf886c0b4938a1444a79afb7a7b384e91b5d5197",
+          "pullRequest": 54
+        },
+        "witnesses": [
+          "scripts/intent-stroke-stdio.ts",
+          "test/intent-stroke-stdio.test.ts"
+        ]
+      },
+      {
+        "id": "continuity-spine-v0.1",
+        "declaredStatus": "landed",
+        "interface": "pure TypeScript transition evaluator + pinned Intent Stroke v0.1-to-v0.2 specimen",
+        "evidence": {
+          "commit": "ca32f69d63cfd1ef0e8ae70c73186bbe46968f9d",
+          "pullRequest": 58
+        },
+        "witnesses": [
+          "src/continuity-spine.ts",
+          "test/continuity-spine.test.ts"
+        ]
+      }
+    ],
+    "relationshipClaims": [
+      {
+        "repository": "the-static-collective/project0",
+        "relation": "compatibility-obligation",
+        "direction": "outbound-declaration",
+        "reciprocityDetermination": "not-made",
+        "evidence": "COMPATIBILITY.md",
+        "witnesses": [
+          "COMPATIBILITY.md"
+        ]
+      }
+    ],
+    "humanHeld": {
+      "availability": "unavailable",
+      "claims": []
+    },
+    "navigationPointers": [
+      {
+        "id": "project-status",
+        "kind": "read",
+        "declaredPosture": "inspect",
+        "interface": "PROJECT_STATUS.json",
+        "witnesses": [
+          "PROJECT_STATUS.json"
+        ]
+      },
+      {
+        "id": "compatibility-map",
+        "kind": "read",
+        "declaredPosture": "inspect",
+        "interface": "COMPATIBILITY.md",
+        "witnesses": [
+          "COMPATIBILITY.md"
+        ]
+      },
+      {
+        "id": "intent-stroke-stdio",
+        "kind": "executable",
+        "declaredPosture": "invoke-under-local-rules",
+        "interface": "npm run intent-stroke:stdio",
+        "witnesses": [
+          "scripts/intent-stroke-stdio.ts"
+        ]
+      },
+      {
+        "id": "decoded-traversal",
+        "kind": "gate",
+        "declaredPosture": "proposal-only",
+        "interface": "src/intent-stroke.ts",
+        "witnesses": [
+          "src/intent-stroke.ts"
+        ]
+      },
+      {
+        "id": "direct-structure-write",
+        "kind": "gate",
+        "declaredPosture": "closed",
+        "interface": "ATTENTION_TESTIMONY_RECOGNITION.md",
+        "witnesses": [
+          "ATTENTION_TESTIMONY_RECOGNITION.md"
+        ]
+      }
+    ],
+    "reentry": {
+      "readme": "README.md",
+      "status": "PROJECT_STATUS.json",
+      "docs": "docs/"
+    },
+    "nonClaims": [
+      "retrieval is not authority",
+      "decoded intent does not authorize traversal",
+      "raw pointer transport does not transfer caller authority",
+      "Continuity Spine describes and refuses staged transitions; it does not execute them or promote proposed futures into present state",
+      "witnessed transfer is required before lawful shedding"
+    ]
+  },
+  "observation": {
+    "procedure": "repository-path-lstat/v0",
+    "scope": "declared-repository-paths-only",
+    "results": [
+      {
+        "claimRef": "reentry:readme",
+        "path": "README.md",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "reentry:status",
+        "path": "PROJECT_STATUS.json",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "reentry:docs",
+        "path": "docs/",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "proof:residual-v0.1",
+        "path": "src/residual.ts",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "proof:residual-v0.1",
+        "path": "test/residual.test.ts",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "proof:intent-stroke-decoder-v0.1",
+        "path": "src/intent-stroke.ts",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "proof:intent-stroke-decoder-v0.1",
+        "path": "test/intent-stroke.test.ts",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "proof:intent-stroke-stdio-v0.1",
+        "path": "scripts/intent-stroke-stdio.ts",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "proof:intent-stroke-stdio-v0.1",
+        "path": "test/intent-stroke-stdio.test.ts",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "proof:intent-stroke-stdio-v0.2-raw-points",
+        "path": "scripts/intent-stroke-stdio.ts",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "proof:intent-stroke-stdio-v0.2-raw-points",
+        "path": "test/intent-stroke-stdio.test.ts",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "proof:continuity-spine-v0.1",
+        "path": "src/continuity-spine.ts",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "proof:continuity-spine-v0.1",
+        "path": "test/continuity-spine.test.ts",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "relationship:the-static-collective/project0:compatibility-obligation",
+        "path": "COMPATIBILITY.md",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "navigation:project-status",
+        "path": "PROJECT_STATUS.json",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "navigation:compatibility-map",
+        "path": "COMPATIBILITY.md",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "navigation:intent-stroke-stdio",
+        "path": "scripts/intent-stroke-stdio.ts",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "navigation:decoded-traversal",
+        "path": "src/intent-stroke.ts",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      },
+      {
+        "claimRef": "navigation:direct-structure-write",
+        "path": "ATTENTION_TESTIMONY_RECOGNITION.md",
+        "reachability": "reachable",
+        "reason": "path-entry-found"
+      }
+    ]
+  },
+  "discrepancies": []
+}
