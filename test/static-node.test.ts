@@ -128,3 +128,13 @@ test("kernel rejects a claimed verified child whose verification did not pass", 
     /INVALID_STATIC_NODE_ATTEMPT/,
   );
 });
+
+test("Workmark mint refuses a receipt body tampered after its identity was born", () => {
+  const receipt = createStaticNodeAttemptReceipt(verifiedInput());
+  receipt.parent.parentSha = "3333333333333333333333333333333333333333";
+
+  assert.throws(
+    () => createStaticNodeWorkmark(receipt),
+    /INVALID_STATIC_NODE_RECEIPT/,
+  );
+});
