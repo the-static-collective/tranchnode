@@ -14,7 +14,7 @@
     {"id": "intent-stroke-stdio-v0.1", "status": "landed", "evidence": {"commit": "a3dc7fa5155df93641f4f116eac1464b10342849", "pullRequest": 50}},
     {"id": "intent-stroke-stdio-v0.2-raw-points", "status": "landed", "interface": "npm run intent-stroke:stdio", "evidence": {"commit": "bf886c0b4938a1444a79afb7a7b384e91b5d5197", "pullRequest": 54}},
     {"id": "continuity-spine-v0.1", "status": "landed", "interface": "pure TypeScript transition evaluator + pinned Intent Stroke v0.1-to-v0.2 specimen", "evidence": {"commit": "ca32f69d63cfd1ef0e8ae70c73186bbe46968f9d", "pullRequest": 58}},
-    {"id": "static-node-001", "status": "experimental-candidate", "interface": "npm run static-node:001; exact clean parent -> isolated child -> declared build/verify -> receipt -> optional Workmark -> HOLD", "evidence": {"pullRequest": 73, "greenHead": "d8c9afeea61f95089e44bb1a9e16c2116c8f4e5a", "workflowRun": 134}}
+    {"id": "static-node-001", "status": "experimental-candidate", "interface": "npm run static-node:001; exact clean parent -> isolated child -> declared build/verify -> receipt -> optional Workmark -> HOLD", "evidence": {"pullRequest": 73, "greenCodeHead": "31873a6bcd19e512e6d7061b2cf4ec430efd686c", "workflowRun": 139}}
   ],
   "nonClaims": [
     "retrieval is not authority",
