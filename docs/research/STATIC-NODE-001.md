@@ -88,6 +88,19 @@ The same hostile suite freezes:
 - promotion-like CLI verbs are refused as unknown options;
 - success and failure remain `HOLD`, never promotion.
 
+### Receipt-integrity RED -> GREEN
+
+- RED `4965e85963ec5af5f9574e8c7d9b1c5a900e685d`: hostile test mutates the parent ancestry inside an already-born receipt while retaining the old receipt hash; `check` run #138 failed because the Workmark mint still trusted that stale self-identity.
+- GREEN `31873a6bcd19e512e6d7061b2cf4ec430efd686c`: Workmark mint now recomputes and verifies the exact attempt receipt identity before minting; `check` run #139 passed the full repository proof.
+
+This freezes the additional law:
+
+```text
+RECEIPT SELF-IDENTITY MUST BE REVERIFIED BEFORE DERIVED VALUE IS MINTED
+```
+
+A caller may not mutate ancestry or delta evidence after receipt birth and continue using the old receipt identity as if nothing changed.
+
 ## Authority boundary
 
 No scheduler, daemon, autonomous task selection, agent loop, merge path, deployment path, restart path, economic policy, reputation score, Dogram dependency, or promotion authority is created by this research slice.
