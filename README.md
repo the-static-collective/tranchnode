@@ -29,11 +29,14 @@ It includes:
 - **Intent Stroke v0.1** traversal decoding with deterministic candidate/ambiguity evidence;
 - a bounded stdio process adapter for Intent Stroke;
 - **Intent Stroke stdio v0.2**, which accepts raw pointer points and binds them to the donor-owned canonical field layout before decoding;
-- **Continuity Spine v0.1**, a pure staged-transformation evaluator that keeps future attractors proposal-only, requires invariant-preserving overlap and witnessed responsibility transfer, and permits shedding only after the receiving carrier demonstrably bears the dependency.
+- **Continuity Spine v0.1**, a pure staged-transformation evaluator that keeps future attractors proposal-only, requires invariant-preserving overlap and witnessed responsibility transfer, and permits shedding only after the receiving carrier demonstrably bears the dependency;
+- **STATIC-NODE-001**, an experimental local parent → isolated child → receipt → optional Workmark → HOLD proof that deliberately contains no promotion authority.
 
 The process seam deliberately carries observation, not crossing authority. A decoded gesture may expose a candidate route; it does not authorize the destination or silently choose a crossing.
 
 Continuity Spine likewise describes and refuses transitions; it does not execute them. Its first pinned specimen treats the Intent Stroke v0.1 → v0.2 change as a staged handoff rather than rewriting the older carrier out of history.
+
+STATIC-NODE-001 is intentionally narrower than an autonomous maintainer. It can create one child worktree from an exact clean parent `HEAD`, run one explicitly declared build command and one explicitly declared verification command in that child, emit receipts, and stop at `HOLD`. A verified child may receive a non-authoritative Workmark; it is never merged, deployed, or promoted by this tool.
 
 Run the complete repository proof:
 
@@ -47,6 +50,19 @@ Run the bounded Intent Stroke process seam:
 ```bash
 npm run intent-stroke:stdio
 ```
+
+Run the experimental STATIC-NODE-001 local seam:
+
+```bash
+npm run static-node:001 -- \
+  --repo /absolute/path/to/clean/repo \
+  --task-id example-001 \
+  --build "<explicit operator command>" \
+  --verify "<explicit operator command>" \
+  --output /absolute/path/outside/parent/and/child
+```
+
+STATIC-NODE-001 executes the operator-supplied shell commands directly. It is a local developer tool, **not a sandbox**, and it does not discover tasks or commands autonomously.
 
 Machine-readable snapshot: [`PROJECT_STATUS.json`](PROJECT_STATUS.json).
 
@@ -74,6 +90,6 @@ Applications are replaceable interfaces. Retrieval proposes relevant material. M
 
 ## Status
 
-TranchNode is under active development. The repository contains both adopted architectural law and bounded executable proofs. Its process-facing proof turns raw human traversal input into deterministic, inspectable candidate evidence while leaving destination authority outside the decoder; its Continuity Spine proof now separately demonstrates staged transformation without promoting desired futures into present fact.
+TranchNode is under active development. The repository contains both adopted architectural law and bounded executable proofs. Its process-facing proof turns raw human traversal input into deterministic, inspectable candidate evidence while leaving destination authority outside the decoder; its Continuity Spine proof separately demonstrates staged transformation without promoting desired futures into present fact; STATIC-NODE-001 now tests one real isolated child build while fixing the result at HOLD rather than promotion.
 
 Historical proposals should be read through their inheritance and supersession links rather than assumed to be live integration choices.
