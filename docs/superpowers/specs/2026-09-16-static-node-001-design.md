@@ -224,13 +224,15 @@ Required fields:
 - `child`: branch name and worktree path;
 - `build`: declared command, exit code, started/finished timestamps;
 - `verification`: declared command, status `not_run | failed | passed`, optional exit code;
-- `delta`: changed tracked paths, untracked paths, canonical patch SHA-256;
+- `delta`: changed tracked paths, untracked paths, patch SHA-256 address;
 - `result`;
 - `disposition: HOLD`;
 - `promotionAuthorized: false`;
-- `receiptSha256` computed from the canonical receipt body excluding the digest field itself.
+- `receiptHash`, derived from the exact receipt body before `receiptHash` is attached.
 
 Environment variables are not copied wholesale into the receipt. v0.1 records only the process platform, Node version, and Git version as bounded execution-environment evidence.
+
+Timestamps are occurrence evidence. Therefore two separate executions are allowed to have different receipt identities even when they begin from the same parent and produce the same patch. Determinism means **the same complete normalized receipt body addresses to the same hash**, not that two different executions impersonate one occurrence.
 
 ### Workmark
 
@@ -248,32 +250,35 @@ Required fields:
 - `taskId`;
 - `parentSha`;
 - `childBranch`;
-- `attemptReceiptSha256`;
-- `deltaSha256`;
+- `attemptReceiptHash`;
+- `deltaHash`;
 - `verificationCommand`;
 - `verificationStatus: passed`;
-- `bornAt`;
+- `bornAt` copied from the verified attempt completion time;
 - `authority: none`;
 - `economicMeaning: none`;
 - `promotionAuthorized: false`.
 
-`workmarkId` is content-derived from the stable birth body. It is not a mutable score and does not change when later history says the contribution was useful, obsolete, repaired, reverted, challenged, or superseded.
+`workmarkId` is derived from the normalized Workmark birth body before `workmarkId` is attached. It is not a mutable score and does not change when later history says the contribution was useful, obsolete, repaired, reverted, challenged, or superseded.
 
 Later evidence may point *to* the Workmark. It may not rewrite the Workmark's birth record.
 
-## Canonical hashing boundary
+## Addressing boundary
 
-Do not introduce a new project-wide canonical-addressing scheme.
+STATIC-NODE-001 must reuse TranchNode's existing `addressJson()` strict validation and JCS/SHA-256 addressing implementation from `src/residual.ts` for structured receipt and Workmark identities.
 
-For STATIC-NODE-001 only, receipt hashing uses a deliberately local stable JSON encoding:
+It must **not** introduce another JSON canonicalizer or imply Project 0 domain-address equivalence. TranchNode's existing documented Project 0 addressing incompatibility remains unchanged.
 
-- recursively sort object keys;
-- preserve array order;
-- UTF-8;
-- no whitespace;
-- SHA-256 hex digest.
+The raw Git patch is byte evidence rather than a JSON object and is addressed with the existing `sha256(bytes)` helper.
 
-This local encoder is private to the experimental module and MUST NOT be exported as TranchNode canonical identity infrastructure. If Project 0 later supplies an adopted canonical-addressing version suitable for these receipts, a later version may replace this experimental encoding explicitly.
+Therefore the implementation has exactly two existing addressing routes:
+
+```text
+structured body -> addressJson(body).hash
+raw patch bytes -> sha256(bytes)
+```
+
+No new addressing primitive is introduced.
 
 ## Delta measurement
 
@@ -308,7 +313,7 @@ Tests must freeze at least these refusals:
 4. build failure produces an attempt receipt, skips VERIFY, mints no Workmark;
 5. verification failure produces an attempt receipt and mints no Workmark;
 6. verification success mints exactly one Workmark;
-7. same frozen attempt body produces the same receipt/Workmark identities;
+7. the same complete normalized receipt or Workmark birth body produces the same address;
 8. changed parent SHA changes Workmark identity even when patch bytes match;
 9. changed delta changes Workmark identity;
 10. child process commands run in the child path, never the parent path;
@@ -405,7 +410,7 @@ STATIC-NODE-001 is proven only when all are true:
 - temporary-repository integration test GREEN;
 - existing TranchNode `npm run check` GREEN;
 - exact final branch head recorded;
-- attempt receipt deterministic under frozen inputs;
+- normalized receipt and Workmark birth bodies reproduce their exact addresses;
 - verified child emits one Workmark;
 - failed child emits no Workmark;
 - parent exact HEAD and bytes remain unchanged;
