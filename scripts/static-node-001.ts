@@ -120,6 +120,9 @@ async function main(): Promise<void> {
 
   const topLevel = await realpath(gitText(repo, "rev-parse", "--show-toplevel"));
   if (topLevel !== repo) die("--repo must name the Git worktree root");
+  if (pathInside(repo, output)) {
+    die("Receipt output path must be outside the parent checkout");
+  }
 
   const parentSha = gitText(repo, "rev-parse", "HEAD");
   const parentStatus = gitText(repo, "status", "--porcelain=v1", "--untracked-files=all");
