@@ -95,6 +95,10 @@ function fail(): never {
   throw new Error("INVALID_STATIC_NODE_ATTEMPT");
 }
 
+function failReceipt(): never {
+  throw new Error("INVALID_STATIC_NODE_RECEIPT");
+}
+
 function requiredString(value: string): string {
   if (typeof value !== "string" || value.trim().length === 0) fail();
   return value;
@@ -195,6 +199,14 @@ function validateResult(
   fail();
 }
 
+function verifyReceiptIdentity(receipt: StaticNodeAttemptReceipt): void {
+  if (receipt.schema !== ATTEMPT_SCHEMA || !SHA256.test(receipt.receiptSha256)) {
+    failReceipt();
+  }
+  const { receiptSha256, ...body } = receipt;
+  if (addressJson(body).hash !== receiptSha256) failReceipt();
+}
+
 export function createStaticNodeAttemptReceipt(
   input: StaticNodeAttemptInput,
 ): StaticNodeAttemptReceipt {
@@ -239,13 +251,14 @@ export function createStaticNodeWorkmark(
   receipt: StaticNodeAttemptReceipt,
 ): StaticNodeWorkmark | null {
   if (receipt.result !== "verified_child") return null;
+  verifyReceiptIdentity(receipt);
   if (
     receipt.verification.status !== "passed"
     || receipt.verification.exitCode !== 0
     || receipt.verification.finishedAt === undefined
     || receipt.disposition !== "HOLD"
     || receipt.promotionAuthorized !== false
-  ) fail();
+  ) failReceipt();
 
   const birthBody = {
     schema: WORKMARK_SCHEMA,
