@@ -1,0 +1,63 @@
+{
+  "schema": "body.surface/v0",
+  "organ": "tranchnode",
+  "owner": "the-static-collective/tranchnode",
+  "publication": {
+    "status": "owner-published",
+    "standard": "static-collective/body-surface/v0",
+    "scope": "interface-declaration"
+  },
+  "provides": [
+    {
+      "kind": "intent-stroke-projection",
+      "protocol": "tranchnode.intent-stroke",
+      "version": "v0.2"
+    }
+  ],
+  "needs": [],
+  "interfaces": [
+    {
+      "name": "intent-stroke-out",
+      "direction": "emit",
+      "kind": "intent-stroke-projection",
+      "protocol": "tranchnode.intent-stroke",
+      "version": "v0.2"
+    }
+  ],
+  "measure": {
+    "declared": [
+      {
+        "dimension": "process-seam",
+        "value": "intent-stroke-stdio-v0.2",
+        "unit": "protocol"
+      },
+      {
+        "dimension": "authority-mode",
+        "value": "observation-not-crossing-authority",
+        "unit": "state"
+      }
+    ],
+    "observed": []
+  },
+  "receipts": [
+    {
+      "kind": "owner-contract",
+      "coordinate": "README.md"
+    }
+  ],
+  "residual_fog": [
+    "Intent Stroke v0.2 is declared as the current bounded process-facing seam; Continuity Spine and other internal proofs are not promoted into generic body interfaces."
+  ],
+  "non_authorities": [
+    "decoded route != destination authority",
+    "projection != adoption",
+    "surface != continuity authority"
+  ],
+  "evidence": [
+    {
+      "kind": "owner-readme",
+      "coordinate": "README.md"
+    }
+  ],
+  "authority": "none"
+}
