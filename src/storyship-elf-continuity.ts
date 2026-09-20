@@ -82,7 +82,7 @@ export function proposeStoryshipElfContinuity(
   }
   const proposal: StoryshipContinuityProposalV0 = {
     schema: "tranchnode/storyship-elf-continuity-proposal/v0",
-    sourceEvidenceId: evidence_id,
+    sourceEvidenceId: evidence_id as string,
     sourceOwner: "the-static-collective/STORYSHIP",
     originOccurrenceId: e.origin_occurrence_id as string,
     originReceiptRef: e.origin_receipt_sha256 as string,
