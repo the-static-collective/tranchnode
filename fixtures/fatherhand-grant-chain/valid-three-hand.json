@@ -1,0 +1,84 @@
+{
+  "evaluatedAt": "2026-10-06T14:15:00Z",
+  "required": {
+    "capability": "declare_build_intent",
+    "scopeRefs": ["scope:alpha"],
+    "purposeId": "purpose:alpha:terminal"
+  },
+  "terminalGrantId": "grant:C",
+  "grants": [
+    {
+      "schema": "tranchnode/fatherhand-grant/v0.1",
+      "id": "grant:A",
+      "parentGrantId": null,
+      "fatherhandId": "fatherhand:alpha",
+      "grantorId": "hand:root",
+      "granteeId": "hand:A",
+      "capabilities": ["declare_build_intent", "observe"],
+      "scopeRefs": ["scope:alpha", "scope:beta"],
+      "purpose": {
+        "purposeId": "purpose:alpha:root",
+        "parentPurposeId": null,
+        "relation": "origin"
+      },
+      "transferable": true,
+      "delegableCapabilities": ["declare_build_intent", "observe"],
+      "delegableScopeRefs": ["scope:alpha", "scope:beta"],
+      "retainedCapabilities": ["observe"],
+      "extinguishments": [],
+      "issuedAt": "2026-10-01T00:00:00Z",
+      "expiresAt": "2026-12-31T00:00:00Z",
+      "seal": "seal:A",
+      "rootCapacityBasis": "entrusted",
+      "rootCapacityBasisRef": "basis:alpha:entrustment"
+    },
+    {
+      "schema": "tranchnode/fatherhand-grant/v0.1",
+      "id": "grant:B",
+      "parentGrantId": "grant:A",
+      "fatherhandId": "fatherhand:alpha",
+      "grantorId": "hand:A",
+      "granteeId": "hand:B",
+      "capabilities": ["declare_build_intent"],
+      "scopeRefs": ["scope:alpha"],
+      "purpose": {
+        "purposeId": "purpose:alpha:delegated",
+        "parentPurposeId": "purpose:alpha:root",
+        "relation": "preserves"
+      },
+      "transferable": true,
+      "delegableCapabilities": ["declare_build_intent"],
+      "delegableScopeRefs": ["scope:alpha"],
+      "retainedCapabilities": [],
+      "extinguishments": [],
+      "issuedAt": "2026-10-02T00:00:00Z",
+      "expiresAt": "2026-11-30T00:00:00Z",
+      "parentSeal": "seal:A",
+      "seal": "seal:B"
+    },
+    {
+      "schema": "tranchnode/fatherhand-grant/v0.1",
+      "id": "grant:C",
+      "parentGrantId": "grant:B",
+      "fatherhandId": "fatherhand:alpha",
+      "grantorId": "hand:B",
+      "granteeId": "hand:C",
+      "capabilities": ["declare_build_intent"],
+      "scopeRefs": ["scope:alpha"],
+      "purpose": {
+        "purposeId": "purpose:alpha:terminal",
+        "parentPurposeId": "purpose:alpha:delegated",
+        "relation": "narrows"
+      },
+      "transferable": false,
+      "delegableCapabilities": [],
+      "delegableScopeRefs": [],
+      "retainedCapabilities": ["declare_build_intent"],
+      "extinguishments": [],
+      "issuedAt": "2026-10-03T00:00:00Z",
+      "expiresAt": "2026-11-15T00:00:00Z",
+      "parentSeal": "seal:B",
+      "seal": "seal:C"
+    }
+  ]
+}
