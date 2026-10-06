@@ -19,3 +19,8 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm run check
+      - name: Verify deterministic Fatherhand grant chain
+        run: |
+          npm run --silent fatherhand-001 > /tmp/fatherhand-1.json
+          npm run --silent fatherhand-001 > /tmp/fatherhand-2.json
+          cmp /tmp/fatherhand-1.json /tmp/fatherhand-2.json
