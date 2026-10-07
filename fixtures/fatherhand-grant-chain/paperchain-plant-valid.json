@@ -1,0 +1,113 @@
+{
+  "schema": "tranchnode/fatherhand-paperchain-plant-request/v0.1",
+  "seedId": "paperchain-seed:1111111111111111111111111111111111111111111111111111111111111111",
+  "heldCrossingId": "relatte-crossing-v0:2222222222222222222222222222222222222222222222222222222222222222",
+  "terminalGrantId": "grant:paperchain:C",
+  "evaluatedAt": "2026-10-07T07:00:00Z",
+  "grants": [
+    {
+      "schema": "tranchnode/fatherhand-grant/v0.1",
+      "id": "grant:paperchain:A",
+      "parentGrantId": null,
+      "fatherhandId": "fatherhand:paperchain:root",
+      "grantorId": "hand:root",
+      "granteeId": "hand:A",
+      "capabilities": [
+        "paperchain.inspect",
+        "paperchain.plant"
+      ],
+      "scopeRefs": [
+        "paperchain-seed:1111111111111111111111111111111111111111111111111111111111111111",
+        "relatte-crossing-v0:2222222222222222222222222222222222222222222222222222222222222222"
+      ],
+      "purpose": {
+        "purposeId": "purpose:paperchain:germination",
+        "parentPurposeId": null,
+        "relation": "origin"
+      },
+      "transferable": true,
+      "delegableCapabilities": [
+        "paperchain.inspect",
+        "paperchain.plant"
+      ],
+      "delegableScopeRefs": [
+        "paperchain-seed:1111111111111111111111111111111111111111111111111111111111111111",
+        "relatte-crossing-v0:2222222222222222222222222222222222222222222222222222222222222222"
+      ],
+      "retainedCapabilities": [
+        "paperchain.inspect"
+      ],
+      "extinguishments": [],
+      "issuedAt": "2026-10-07T06:00:00Z",
+      "expiresAt": "2026-12-31T00:00:00Z",
+      "seal": "seal:paperchain:A",
+      "rootCapacityBasis": "consented",
+      "rootCapacityBasisRef": "basis:paperchain:operator-consent-001"
+    },
+    {
+      "schema": "tranchnode/fatherhand-grant/v0.1",
+      "id": "grant:paperchain:B",
+      "parentGrantId": "grant:paperchain:A",
+      "fatherhandId": "fatherhand:paperchain:root",
+      "grantorId": "hand:A",
+      "granteeId": "hand:B",
+      "capabilities": [
+        "paperchain.plant"
+      ],
+      "scopeRefs": [
+        "paperchain-seed:1111111111111111111111111111111111111111111111111111111111111111",
+        "relatte-crossing-v0:2222222222222222222222222222222222222222222222222222222222222222"
+      ],
+      "purpose": {
+        "purposeId": "purpose:paperchain:germination",
+        "parentPurposeId": "purpose:paperchain:germination",
+        "relation": "identical"
+      },
+      "transferable": true,
+      "delegableCapabilities": [
+        "paperchain.plant"
+      ],
+      "delegableScopeRefs": [
+        "paperchain-seed:1111111111111111111111111111111111111111111111111111111111111111",
+        "relatte-crossing-v0:2222222222222222222222222222222222222222222222222222222222222222"
+      ],
+      "retainedCapabilities": [],
+      "extinguishments": [],
+      "issuedAt": "2026-10-07T06:10:00Z",
+      "expiresAt": "2026-11-30T00:00:00Z",
+      "parentSeal": "seal:paperchain:A",
+      "seal": "seal:paperchain:B"
+    },
+    {
+      "schema": "tranchnode/fatherhand-grant/v0.1",
+      "id": "grant:paperchain:C",
+      "parentGrantId": "grant:paperchain:B",
+      "fatherhandId": "fatherhand:paperchain:root",
+      "grantorId": "hand:B",
+      "granteeId": "hand:C",
+      "capabilities": [
+        "paperchain.plant"
+      ],
+      "scopeRefs": [
+        "paperchain-seed:1111111111111111111111111111111111111111111111111111111111111111",
+        "relatte-crossing-v0:2222222222222222222222222222222222222222222222222222222222222222"
+      ],
+      "purpose": {
+        "purposeId": "purpose:paperchain:germination",
+        "parentPurposeId": "purpose:paperchain:germination",
+        "relation": "preserves"
+      },
+      "transferable": false,
+      "delegableCapabilities": [],
+      "delegableScopeRefs": [],
+      "retainedCapabilities": [
+        "paperchain.plant"
+      ],
+      "extinguishments": [],
+      "issuedAt": "2026-10-07T06:20:00Z",
+      "expiresAt": "2026-11-15T00:00:00Z",
+      "parentSeal": "seal:paperchain:B",
+      "seal": "seal:paperchain:C"
+    }
+  ]
+}
