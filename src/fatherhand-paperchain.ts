@@ -36,10 +36,7 @@ function nonEmpty(value: unknown, code: string): string {
 }
 
 export function paperchainPlantScopeRefs(seedId: string, heldCrossingId: string): string[] {
-  return [
-    `paperchain-seed:${seedId}`,
-    `relatte-crossing:${heldCrossingId}`,
-  ].sort((a, b) => a.localeCompare(b));
+  return [seedId, heldCrossingId].sort((a, b) => a.localeCompare(b));
 }
 
 export function makeFatherhandPaperchainPlantWitness(
