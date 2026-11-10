@@ -3,12 +3,13 @@ import {rankPeers,nextSuggestedPeer} from './routing.mjs';
 import {CollectiveMesh} from './network.mjs';
 import {randomSecret,validRelayURL,validRoom} from './net-protocol.mjs';
 
-export function bindNetwork({state,refresh,setStatus,el}){
+export function bindNetwork({state,refresh,setStatus,el,recordFeedback}){
  const $=id=>document.getElementById(id);let mesh=null;
  const short=s=>(s||'').replace('node:','').slice(0,14);
  const info=(text,bad=false)=>setStatus(text,bad);
  const attempted=new Map();let ranked=[];
- const qkey=()=>JSON.stringify([$('question-from').value.trim(),$('question-to').value.trim()]);
+ const threadTag=()=>{const t=state.threads?.get(state.networkQuestionThreadId);return t&&t.question.from===$('question-from').value.trim()&&t.question.to===$('question-to').value.trim()?t.id:null;};
+ const qkey=()=>JSON.stringify([$('question-from').value.trim(),$('question-to').value.trim(),threadTag()]);
  const asked=()=>attempted.get(qkey())||new Set();
  function explainChosen(){
   const p=ranked.find(x=>x.session===$('routing-peer').value);
@@ -29,7 +30,7 @@ export function bindNetwork({state,refresh,setStatus,el}){
  async function suggest(){
   if(!mesh)throw Error('Join a room first');
   await auditImportedSources(state.nodes);
-  ranked=rankPeers({nodes:state.nodes,peers:mesh.snapshots(),from:$('question-from').value,to:$('question-to').value});
+  ranked=rankPeers({nodes:state.nodes,peers:mesh.snapshots(),from:$('question-from').value,to:$('question-to').value,feedback:state.feedback});
   renderRank();
  }
  function remember(sessions){
@@ -73,7 +74,7 @@ export function bindNetwork({state,refresh,setStatus,el}){
  }
  function incomingEvidence(evt){$('evidence-inbox').querySelector('p.muted')?.remove();const row=el('div','inquiry-entry');row.append(el('strong',null,evt.claims.length+' signed assertion(s) from '+short(evt.issuer)),
   el('p','muted','Transport authenticated and signature verified. Review and admit explicitly; nothing automatically enters your evidence ledger.'));
-  const button=el('button','secondary','INSPECT AND ADMIT');button.onclick=()=>{$('inbox').value=JSON.stringify(evt.bundle);$('preview').click();row.remove();document.getElementById('in-preview').scrollIntoView({block:'center',behavior:'smooth'});};
+  const button=el('button','secondary','INSPECT AND ADMIT');button.onclick=()=>{state.stagedNetwork=evt;$('inbox').value=JSON.stringify(evt.bundle);$('preview').click();row.remove();document.getElementById('in-preview').scrollIntoView({block:'center',behavior:'smooth'});};
   row.append(button);$('evidence-inbox').prepend(row);info('New signed evidence received. Review it to admit.');}
  async function join(){try{
   const room=roomInput.value.trim(),url=relayInput.value.trim();if(!validRoom(room)||!validRelayURL(url))throw Error('Use a generated room token and a secure wss:// relay (ws://localhost permitted).');
@@ -84,8 +85,9 @@ export function bindNetwork({state,refresh,setStatus,el}){
    if(event.type==='peers')renderPeers(event.peers);
    if(event.type==='joined'){setConnected(true);info('Joined an invite-only discovery room. No evidence disclosed.');}
    if(event.type==='inquiry')incomingQuestion(event);
-   if(event.type==='evidence')incomingEvidence(event);
-   if(event.type==='declined')info('A peer declined to disclose evidence.');
+   if(event.type==='evidence'){recordFeedback({type:'received',requestId:event.requestId,peerIssuer:event.issuer,question:event.question,threadId:event.threadId});incomingEvidence(event);}
+   if(event.type==='inquiry-sent')for(const r of event.requests)recordFeedback({type:'sent',requestId:r.requestId,peerIssuer:r.peerIssuer,question:r.question,threadId:r.threadId});
+   if(event.type==='declined'){recordFeedback({type:'declined',requestId:event.requestId,peerIssuer:event.issuer,question:event.question,threadId:event.threadId});info('A peer declined. No lack of expertise is inferred.');}
    if(event.type==='relay-closed'){setConnected(false);renderPeers([]);info('Relay connection closed; local memory remains available.',true);}
    if(event.type==='error')info(event.message,true);
   }});
@@ -103,7 +105,7 @@ export function bindNetwork({state,refresh,setStatus,el}){
   if(!mesh)throw Error('Join a room first');
   const session=$('routing-peer').value;
   if(!ranked.find(p=>p.session===session))throw Error('Recalculate suggestions for active peers');
-  const count=mesh.ask($('question-from').value,$('question-to').value,{sessions:[session]});
+  const count=mesh.ask($('question-from').value,$('question-to').value,{sessions:[session],threadId:threadTag()});
   remember([session]);explainChosen();
   info('Sent question endpoints to '+count+' selected peer. No other peer received this inquiry.');
  }catch(e){info(e.message,true);}};
@@ -116,7 +118,7 @@ export function bindNetwork({state,refresh,setStatus,el}){
  $('ask-room').onclick=()=>{try{
   if(!mesh)throw Error('Join a room first');
   const targets=mesh.snapshots().filter(p=>p.approved&&p.connected).map(p=>p.session);
-  const count=mesh.ask($('question-from').value,$('question-to').value);
+  const count=mesh.ask($('question-from').value,$('question-to').value,{threadId:threadTag()});
   remember(targets);
   info('MANUAL BROADCAST: question endpoints disclosed to '+count+' approved peer(s).');
  }catch(e){info(e.message,true);}};
