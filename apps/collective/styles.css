@@ -61,3 +61,17 @@ main{max-width:1150px;margin:auto;padding:0 22px 40px}.hero{padding:58px 0 48px;
 .experiment-details summary{cursor:pointer;color:#c5e5bd;font-size:.8rem}
 .experiment-details p{border-top:1px solid #364f45;padding:8px 0;margin:8px 0}
 @media(max-width:760px){.experiment-list,.experiment-controls{grid-template-columns:1fr}.experiment-controls .button-row{grid-column:1}.experiment-controls .button-row button{flex:1}}
+
+/* COLLECTIVE-009 — explicit expectation / affordance controls and conditional policy */
+.adaptive-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:13px;margin:23px 0}
+.adaptive-inputs label{display:grid;gap:6px;color:#b8d5bc;font-size:.62rem;letter-spacing:.09em;font-weight:700}
+.adaptive-inputs input{background:#f1f6e8;color:#1e382d;border:1px solid #86a99a;border-radius:5px;padding:11px;min-width:0;width:100%;font-size:.94rem}
+.adaptive-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0}
+.adaptive-card{background:#192f28;border:1px solid #638b76;border-radius:7px;padding:18px;overflow-wrap:anywhere}
+.adaptive-card>strong{color:#dcef89;font-size:.89rem}
+.adaptive-card p{font-size:.81rem}.adaptive-card .muted{color:#bdd2c4}
+.adaptive-card details{border-top:1px solid #486e5a;padding-top:10px;margin:11px 0}
+.adaptive-card summary{cursor:pointer;font-size:.81rem;color:#cfecbc}
+.adaptive-card button{margin-top:12px}
+.adaptive-alert{border-left:3px solid #dcef89;padding:9px 15px;background:#29483a;font-size:.83rem;color:#f0f5e1}
+@media(max-width:760px){.adaptive-results{grid-template-columns:1fr}}

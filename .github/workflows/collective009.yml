@@ -1,0 +1,41 @@
+name: COLLECTIVE-009 discovery dividend and adaptive strategies
+on:
+  push:
+    branches:
+      - experiment/collective-009-affordance-adaptive-research
+  pull_request:
+    paths:
+      - 'apps/collective/**'
+      - 'test/collective009-*'
+      - '.github/workflows/collective009.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  adaptive-inquiry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and offline provenance
+        run: |
+          for file in apps/collective/{adaptive-strategy,adaptive-worker,adaptive-receipts,adaptive-ui,app,store}.mjs; do node --check "$file"; done
+          node --check apps/collective/sw.js
+          node -e "const fs=require('fs'),s=fs.readFileSync('apps/collective/sw.js','utf8');for(const mod of ['adaptive-strategy.mjs','adaptive-ui.mjs','adaptive-receipts.mjs','adaptive-worker.mjs'])if(!s.includes(mod))throw Error('No offline precache: '+mod)"
+      - name: Test adaptive planning, source-echo bounds, evidence staleness and falsifiers
+        run: node --test test/collective009-policy.test.mjs test/collective009-receipts.test.mjs
+      - name: Regress all earlier local research semantics
+        run: node --test test/collective008-planner.test.mjs test/collective007-inquiry.test.mjs test/collective007-worker.test.mjs test/collective006-threads.test.mjs test/collective006-feedback.test.mjs test/collective005-routing.test.mjs test/collective004-network.test.mjs test/collective-app.test.mjs
+      - name: Freeze equal-information scripted policy controls
+        run: node test/collective009-benchmark.mjs collective009-benchmark.json
+      - name: Preserve code, falsifiers and synthetic evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: COLLECTIVE-009-ADAPTIVE-APERTURE-RESEARCH
+          path: |
+            collective009-benchmark.json
+            apps/collective/COLLECTIVE-009.md
+            test/collective009-*.mjs
