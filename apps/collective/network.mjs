@@ -101,16 +101,29 @@ export class CollectiveMesh {
   const raw=JSON.stringify({schema:NET_SCHEMA,...message});
   if(raw.length>65000)throw Error('Packet exceeds limit');p.channel.send(raw);
  }
- ask(from,to){const q=validateQuestion(from,to);let sent=0;
-  for(const [id,request] of this.inquiries)if(Date.now()>request.expires)this.inquiries.delete(id);
-  if(this.inquiries.size>=32)throw Error('Too many pending inquiries');
-  for(const [id,request] of this.inquiries)if(Date.now()>request.expires)this.inquiries.delete(id);
-  if(this.inquiries.size>=32)throw Error('Too many pending inquiries');
-  for(const [session,p] of this.peers){if(!p.approved||p.channel?.readyState!=='open')continue;
+ ask(from,to,{sessions=null}={}){
+  const q=validateQuestion(from,to);
+  for(const [id,entry] of this.inquiries)if(Date.now()>entry.expires)this.inquiries.delete(id);
+  if(sessions!==null&&(!Array.isArray(sessions)||sessions.length<1||sessions.length>8
+    ||new Set(sessions).size!==sessions.length||sessions.some(x=>typeof x!=='string')))
+    throw Error('Select 1–8 distinct peer sessions');
+  // All-peer fanout remains available only for an explicitly labeled manual button.
+  const targets=sessions??[...this.peers].filter(([,p])=>p.approved&&p.channel?.readyState==='open').map(([id])=>id);
+  if(!targets.length)throw Error('Approve a connected authenticated peer first');
+  if(this.inquiries.size+targets.length>32)throw Error('Too many pending inquiries');
+  // Validate all recipients before transmitting to prevent partial disclosure.
+  for(const session of targets){const p=this.peers.get(session);
+   if(!p?.approved||!p.issuer||p.channel?.readyState!=='open')
+    throw Error('Selected peer not approved or connected');
+  }
+  let sent=0;
+  for(const session of targets){
    const id=randomSecret();this.inquiries.set(id,{session,expires:Date.now()+5*60*1000});
-   this.transmit(session,{kind:'ask',id,...q});sent++;}
-  if(!sent)throw Error('Approve a connected authenticated peer first');
-  this.emit('inquiry-sent',{count:sent});return sent;
+   try{this.transmit(session,{kind:'ask',id,...q});sent++;}
+   catch(e){this.inquiries.delete(id);throw e;}
+  }
+  this.emit('inquiry-sent',{count:sent,mode:sessions===null?'manual-all':'selected'});
+  return sent;
  }
  async reply(session,requestId,selectedIds,nodes){const p=this.peers.get(session);if(!p?.approved)throw Error('Peer not approved');
   const bundle=await makeBundle(this.ident,nodes,selectedIds);
