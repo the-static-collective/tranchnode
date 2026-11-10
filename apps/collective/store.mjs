@@ -8,9 +8,10 @@ import {auditResolutionReceipts,MAX_RESOLUTIONS} from "./calibration.mjs";
 import {auditTemporalReceipts,MAX_TEMPORAL_EVENTS} from "./temporal.mjs";
 import {replayDependencies,DEPENDENCY_CAP} from "./dependency-delta.mjs";
 import {auditTrajectoryReceipts,TRAJECTORY_RUN_CAP} from "./trajectories.mjs";
+import {auditRegimeReceipts,REGIME_RUN_CAP} from "./regime-forecast.mjs";
 
 const DB_NAME="tranch-collective-003";
-const VERSION=9;
+const VERSION=10;
 
 function request(r) {return new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 function finished(t) {return new Promise((resolve,reject)=>{t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error||new Error("Transaction aborted"));});}
@@ -30,6 +31,7 @@ export async function openStore() {
     if (!db.objectStoreNames.contains("temporal_annotations")) db.createObjectStore("temporal_annotations",{keyPath:"id"});
     if (!db.objectStoreNames.contains("dependency_events")) db.createObjectStore("dependency_events",{keyPath:"sequence"});
     if (!db.objectStoreNames.contains("trajectory_scans")) db.createObjectStore("trajectory_scans",{keyPath:"id"});
+    if (!db.objectStoreNames.contains("regime_scans")) db.createObjectStore("regime_scans",{keyPath:"id"});
   };
   const db=await request(open);
   async function getIdentity() {
@@ -164,8 +166,19 @@ export async function openStore() {
     const tx=db.transaction('trajectory_scans','readwrite');
     tx.objectStore('trajectory_scans').add(receipt);await finished(tx);return receipt.id;
   }
+  async function getRegimeReceipts(scope){
+    const rows=await request(db.transaction('regime_scans','readonly').objectStore('regime_scans').getAll());
+    await auditRegimeReceipts(rows,scope);return rows;
+  }
+  async function recordRegimeReceipt(record,scope){
+    const previous=await getRegimeReceipts(scope);
+    if(previous.length>=REGIME_RUN_CAP)throw Error('Regime history at capacity; no automatic deletion');
+    await auditRegimeReceipts([...previous,record],scope);
+    const tx=db.transaction('regime_scans','readwrite');tx.objectStore('regime_scans').add(record);
+    await finished(tx);return record.id;
+  }
   return {db,getIdentity,getEvents,commit,getThreadEvents,commitThreads,getFeedback,recordFeedback,
-      getTemporalRecords,recordTemporalRecord,getDependencyEvents,recordDependencyEvent,getTrajectoryReceipts,recordTrajectoryReceipt,
+      getTemporalRecords,recordTemporalRecord,getDependencyEvents,recordDependencyEvent,getTrajectoryReceipts,recordTrajectoryReceipt,getRegimeReceipts,recordRegimeReceipt,
       getInquiryRuns,recordInquiryRun,getInquiryBudgets,setInquiryBudget,
       getExperimentPlans,recordExperimentPlan,getAdaptivePlans,recordAdaptivePlan,
       getResolutionReceipts,recordResolutionReceipt};
