@@ -1,15 +1,26 @@
 import {answerPacket, append, makeBundle, makeNode, receive, replay, route, statement, verifyBundle} from "./kernel.mjs";
 import {openStore} from "./store.mjs";
+import {bindThreads} from './thread-ui.mjs';
+import {feedbackReceipt,validateFeedbackLog,relevanceOfAdmission} from './feedback.mjs';
+import {localFrontier} from './routing.mjs';
 import {bindNetwork} from "./network-ui.mjs";
 
 const $=id=>document.getElementById(id);
-const state={store:null,ident:null,scope:null,events:[],nodes:new Map(),staged:null,lastAnswer:null};
+const state={store:null,ident:null,scope:null,events:[],nodes:new Map(),staged:null,stagedNetwork:null,lastAnswer:null,
+ threadEvents:[],threads:new Map(),threadUI:null,threadReports:[],networkQuestionThreadId:null,feedback:[]};
+let feedbackQueue=Promise.resolve();
+function recordFeedback(data){
+ feedbackQueue=feedbackQueue.then(async()=>{const event=await feedbackReceipt(data);await state.store.recordFeedback(event);
+  state.feedback=await state.store.getFeedback();}).catch(e=>{setStatus('Research feedback held: '+e.message,true);});
+ return feedbackQueue;
+}
 const short=id=>id?.replace(/^node:|^sha256:/,"").slice(0,12)||"—";
 function el(tag,cls,text) {const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
 function setStatus(message,error=false) {$("status").textContent=message;$("status").className=error?"status bad":"status";}
 async function refresh() {
   state.events=await state.store.getEvents();
   state.nodes=(await replay(state.events,state.scope)).nodes;
+  if(state.threadUI)await state.threadUI.refresh();
   $("claim-list").replaceChildren();
   const own=[...state.nodes.values()].filter(n=>n.kind==="claim"&&n.authorId===state.ident.id);
   const received=[...state.nodes.values()].filter(n=>n.kind==="source");
@@ -80,15 +91,25 @@ async function preview() {
     $("in-preview").append(list);
     $("admit").disabled=false;
     setStatus("Packet verified. Review source statements before admitting.");
-  }catch(e){state.staged=null;$("admit").disabled=true;$("in-preview").textContent="";setStatus("Packet refused: "+e.message,true);}
+  }catch(e){state.staged=null;state.stagedNetwork=null;$("admit").disabled=true;$("in-preview").textContent="";setStatus("Packet refused: "+e.message,true);}
 }
 async function admit(){
   try{
     if(!state.staged)throw new Error("No verified bundle staged");
+    const context=state.stagedNetwork;
+    const before=context?route(state.nodes,context.question.from,context.question.to):null;
+    const beforeFrontier=context?localFrontier(state.nodes,context.question.from):null;
     const result=await receive(state.events,state.scope,state.ident.id,state.staged);
     if(result.accepted) await state.store.commit(state.events,result.events,state.scope);
-    state.staged=null;$("admit").disabled=true;$("inbox").value="";$("in-preview").textContent="";
-    await refresh();setStatus(result.duplicate?"Already imported; not counted twice.":"Admitted "+result.accepted+" signed source assertion(s). They remain testimony, not established fact.");
+    state.staged=null;state.stagedNetwork=null;$("admit").disabled=true;$("inbox").value="";$("in-preview").textContent="";
+    await refresh();
+    if(context&&result.accepted){
+      const after=route(state.nodes,context.question.from,context.question.to);
+      const relevant=relevanceOfAdmission({before,after,beforeFrontier,afterFrontier:localFrontier(state.nodes,context.question.from)});
+      await recordFeedback({type:'admitted',requestId:context.requestId,peerIssuer:context.issuer,
+        question:context.question,threadId:context.threadId,relevant,acceptedCount:result.accepted});
+    }
+    setStatus(result.duplicate?"Already imported; not counted twice.":"Admitted "+result.accepted+" signed source assertion(s). Only locally observed relevance can inform routing; statements remain unverified.");
   }catch(e){setStatus(e.message,true);}
 }
 async function investigate(event) {
@@ -118,11 +139,11 @@ async function start(){
   $("share").addEventListener("click",share);
   $("preview").addEventListener("click",preview);
   $("admit").addEventListener("click",admit);
-  $("inbox").addEventListener("input",()=>{state.staged=null;$("admit").disabled=true;});
+  $("inbox").addEventListener("input",()=>{state.staged=null;state.stagedNetwork=null;$("admit").disabled=true;});
   $("packet-file").addEventListener("change",async e=>{
     const file=e.target.files?.[0];if(!file)return;
     if(file.size>65536){setStatus("The selected file exceeds 64 KB.",true);return;}
-    $("inbox").value=await file.text();state.staged=null;$("admit").disabled=true;
+    $("inbox").value=await file.text();state.staged=null;state.stagedNetwork=null;$("admit").disabled=true;
   });
   $("question-form").addEventListener("submit",investigate);
   $("download-answer").addEventListener("click",()=>{
@@ -132,8 +153,10 @@ async function start(){
     try{await navigator.clipboard.writeText(state.ident.id);setStatus("Signing key fingerprint copied.");}
     catch(e){setStatus("Clipboard unavailable; select the fingerprint to copy manually.",true);}
   });
+  state.feedback=await validateFeedbackLog(await state.store.getFeedback());
+  state.threadUI=bindThreads({state,setStatus,el});
   await refresh();
-  bindNetwork({state,refresh,setStatus,el});
+  bindNetwork({state,refresh,setStatus,el,recordFeedback});
   $("boot").hidden=true;$("workspace").hidden=false;
   setStatus("Local-first node ready. Your private signing key stays in this browser's storage.");
   if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});
