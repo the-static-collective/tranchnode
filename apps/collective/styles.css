@@ -89,3 +89,11 @@ main{max-width:1150px;margin:auto;padding:0 22px 40px}.hero{padding:58px 0 48px;
 .calibration-results{background:#1a342a;border:1px solid #4c7059;border-radius:6px;padding:13px 19px;color:#f1f9e9;margin:18px 0}
 .calibration-results p{margin:9px 0;font-size:.82rem}.calibration-results .calibration-summary{color:#e0f0aa;font-weight:700}
 @media(max-width:760px){.calibration-form{grid-template-columns:1fr}.calibration-optin{align-items:flex-start}.calibration-tag-choice{display:grid!important}.calibration-form .calibration-wide{grid-column:1}}
+
+/* COLLECTIVE-011 — temporal horizon */
+.temporal-count{display:flex;gap:13px;align-items:center;margin-top:17px}.temporal-count strong{font-size:2.1rem;color:#dcef89}
+.temporal-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0}.temporal-form label{min-width:0}
+.temporal-form .button-row{grid-column:1/-1}.temporal-check-controls{display:contents}.temporal-check-controls[hidden]{display:none}
+.temporal-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-height:520px;overflow-y:auto}.temporal-card{border:1px solid #527c65;background:#1a3029;padding:14px;border-radius:6px;overflow-wrap:anywhere}
+.temporal-card strong{color:#e7f2cd;font-size:.82rem}.temporal-card p{margin:6px 0}.temporal-card .muted{color:#bfd2c4}
+@media(max-width:760px){.temporal-form,.temporal-list{grid-template-columns:1fr}}

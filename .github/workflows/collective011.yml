@@ -1,0 +1,39 @@
+name: COLLECTIVE-011 presumed delta / time-aware research
+on:
+  push:
+    branches:
+      - experiment/collective-011-presumed-delta
+  pull_request:
+    paths:
+      - 'apps/collective/**'
+      - 'test/collective011-*'
+      - '.github/workflows/collective011.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  temporal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check syntax and mobile PWA temporal modules
+        run: |
+          for name in temporal temporal-ui adaptive-ui app store; do node --check "apps/collective/$name.mjs"; done
+          node --check apps/collective/sw.js
+          node -e "const fs=require('fs');const sw=fs.readFileSync('apps/collective/sw.js','utf8');for(const f of ['temporal.mjs','temporal-ui.mjs'])if(!sw.includes(f))throw Error('Offline worker not cached: '+f);const ui=fs.readFileSync('apps/collective/index.html','utf8');for(const f of ['temporal-form','temporal-list','temporal-check-reference'])if(!ui.includes(f))throw Error('Missing temporal UI: '+f)"
+      - name: Change hazard and provenance falsifiers
+        run: node --test test/collective011-temporal.test.mjs
+      - name: Previous collective regression suites
+        run: node --test test/collective010-calibration.test.mjs test/collective009-policy.test.mjs test/collective009-receipts.test.mjs test/collective008-planner.test.mjs test/collective007-inquiry.test.mjs test/collective007-worker.test.mjs test/collective006-threads.test.mjs test/collective006-feedback.test.mjs test/collective005-routing.test.mjs test/collective004-network.test.mjs test/collective-app.test.mjs
+      - name: Explicitly synthetic matched and counterexample benchmark
+        run: node test/collective011-benchmark.mjs > collective011-benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: COLLECTIVE-011-PRESUMED-DELTA
+          path: |
+            collective011-benchmark.json
+            apps/collective/COLLECTIVE-011.md

@@ -4,6 +4,7 @@ import {planFreshness} from './experiment-receipts.mjs';
 import {makeAdaptiveReceipt,adaptiveFreshness} from './adaptive-receipts.mjs';
 import {ADAPTIVE_SCHEMA,strategyChange,MAX_HISTORY} from './adaptive-strategy.mjs';
 import {calibratedProfiles} from './calibration.mjs';
+import {temporalProjection,strategyTimeReview} from './temporal.mjs';
 export function bindAdaptiveUI({state,setStatus,el}){
  const $=id=>document.getElementById(id);
  let plans=[],previous=null,busy=false,sourcePlans=[],research=[];
@@ -55,7 +56,12 @@ export function bindAdaptiveUI({state,setStatus,el}){
        ? 'STALE_RESOLUTION_EVIDENCE' : sourceFresh;
   $('adaptive-status').textContent=fresh.replaceAll('_',' ')+' · '+policy.status.replaceAll('_',' ')+' · '+policy.creditsSpent+'/'+policy.creditsLimit+' route probes · '+policy.questionCount+' considered';
   if(fresh!=='CURRENT_SNAPSHOT')$('adaptive-alert').textContent='Evidence or a hypothesis changed. Prior strategy is stale; run current thread investigations and planner again. No action is taken automatically.';
-  else $('adaptive-alert').textContent=policy.recommendation?('Candidate: '+policy.recommendation.from+' → '+policy.recommendation.to+' · estimated 2-step net gain '+policy.recommendation.estimatedTwoStepNetGain):'Abstained: modeled inquiry cost outweighs possible progress.';
+  else {
+   const clock=state.temporalProjection;
+   const review=clock?strategyTimeReview(clock):null;
+   const guidance=policy.recommendation?('Candidate: '+policy.recommendation.from+' → '+policy.recommendation.to+' · estimated 2-step net gain '+policy.recommendation.estimatedTwoStepNetGain):'Abstained: modeled inquiry cost outweighs possible progress.';
+   $('adaptive-alert').textContent=guidance+(review?.needsReview?' · TEMPORAL CAUTION: '+review.affectedNodeIds.length+' recorded relation(s) are unchecked, flagged changed, or aged past assumed risk threshold. Current ledger ≠ current world.':'');
+  }
   if(!policy.alternatives?.length){$('adaptive-candidates').append(el('p','muted','No reachable candidate was eligible under this model.'));return;}
   for(const [i,item] of policy.alternatives.slice(0,5).entries()){
    const card=el('article','adaptive-card');
@@ -87,6 +93,8 @@ export function bindAdaptiveUI({state,setStatus,el}){
  async function run(){if(busy)return;busy=true;$('adaptive-run').disabled=true;
   try{
    await auditImportedSources(state.nodes);
+   state.temporalRecords=await state.store.getTemporalRecords(state.scope);
+   state.temporalProjection=temporalProjection(state.nodes,state.temporalRecords,{now:Date.now()});
    sourcePlans=await state.store.getExperimentPlans(state.scope);research=await state.store.getInquiryRuns(state.scope);
    const source=latestSourcePlan();if(!source)throw Error('Run current What-If inquiries and the Aperture planner first');
    const nodes=[...state.nodes.values()].filter(n=>['claim','source'].includes(n.kind)).map(n=>({

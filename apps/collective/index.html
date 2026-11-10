@@ -167,8 +167,28 @@
       <div id="calibration-output" class="calibration-results" aria-live="polite"></div>
       <p class="muted">The chronological Brier score is a proper scoring rule: lower is better. Poor scores, concept drift, and too few distinct groups are visible. Evaluations use earlier cases only; no results are automatically inserted into your world evidence. Exports may disclose reference metadata.</p>
     </section>
+    <section class="threads-panel" id="temporal-horizon">
+      <div class="network-head"><p class="eyebrow bright">10 / PRESUMED DELTA — TEMPORAL HORIZON</p>
+        <h2>What might have changed since we last checked?</h2>
+        <p>The world continues to move even when MOTIF's evidence ledger doesn't. Assign an illustrative volatility class to each recorded relation. More elapsed time increases modeled chance of at least one relevant change, without turning an assertion into falsehood. Imported testimony has no verified-time anchor merely because it was received today.</p></div>
+      <div class="temporal-count"><strong id="temporal-count">0</strong><span class="muted">RECORDED RELATIONS</span></div>
+      <p id="temporal-overview" class="muted" role="status" aria-live="polite"></p>
+      <form id="temporal-form" class="form temporal-form">
+        <label>RELATION TO ASSESS <select id="temporal-node" required></select></label>
+        <label>VOLATILITY CLASS (YOUR ASSUMPTION) <select id="temporal-profile" required></select></label>
+        <label>ACTION <select id="temporal-action"><option value="classify">Classify only — do not reset aging clock</option><option value="check">Record actual recheck — requires reference</option></select></label>
+        <label>EXPLANATION (AT LEAST EIGHT CHARACTERS) <input id="temporal-reason" required minlength="8" maxlength="320" placeholder="Why this kind of relation changes at this rate"></label>
+        <div id="temporal-check-controls" class="temporal-check-controls" hidden>
+          <label>WHAT DID YOUR CHECK FIND? <select id="temporal-check-result"><option value="unchanged">Unchanged — verified again to the extent of the described check</option><option value="changed">Changed — observed relation needs separate updating</option><option value="inconclusive">Inconclusive — age remains unresolved</option></select></label>
+          <label>INDEPENDENT CHECK OR DOCUMENT REFERENCE <input id="temporal-check-reference" maxlength="320" placeholder="Inspection ID, photo filename, dated source"></label>
+        </div>
+        <div class="button-row"><button id="temporal-submit" type="submit">RECORD LOCAL TEMPORAL ASSESSMENT</button><button id="temporal-export" class="secondary" type="button" disabled>EXPORT TIME AUDIT</button></div>
+      </form>
+      <div id="temporal-list" class="temporal-list" aria-live="polite"></div>
+      <p class="muted">Mathematical model: integrated hazard H=ln(2)·[age/scale+acceleration·(age/scale)²/2]; chance of at least one modeled change = 1−exp(−H). Scale defaults are illustrative, not calibrated, and cannot certify whether a claim remains true. Mathematical definitions may be explicitly marked invariant; contingent worldly assertions should not.</p>
+    </section>
     <section class="network-panel" id="network">
-      <div class="network-head"><p class="eyebrow bright">10 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
+      <div class="network-head"><p class="eyebrow bright">11 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
       <p>Use an invite-only discovery room to connect directly by WebRTC. The signaling relay sees network metadata but not evidence. No private claims are shared automatically.</p></div>
       <div class="network-controls">
         <label>WEBSOCKET SIGNALING RELAY <input id="relay-url" placeholder="wss://your-relay.example/signal" autocorrect="off" autocomplete="off" spellcheck="false"></label>

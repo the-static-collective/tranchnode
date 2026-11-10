@@ -5,9 +5,10 @@ import {replayInquiryReceipts,MAX_RUNS,MAX_ALLOCATION} from "./inquiry-receipts.
 import {replayPlanReceipts,MAX_PLAN_RECEIPTS} from "./experiment-receipts.mjs";
 import {replayAdaptiveReceipts,MAX_ADAPTIVE_RECEIPTS} from "./adaptive-receipts.mjs";
 import {auditResolutionReceipts,MAX_RESOLUTIONS} from "./calibration.mjs";
+import {auditTemporalReceipts,MAX_TEMPORAL_EVENTS} from "./temporal.mjs";
 
 const DB_NAME="tranch-collective-003";
-const VERSION=6;
+const VERSION=7;
 
 function request(r) {return new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 function finished(t) {return new Promise((resolve,reject)=>{t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error||new Error("Transaction aborted"));});}
@@ -24,6 +25,7 @@ export async function openStore() {
     if (!db.objectStoreNames.contains("experiment_plans")) db.createObjectStore("experiment_plans",{keyPath:"id"});
     if (!db.objectStoreNames.contains("adaptive_plans")) db.createObjectStore("adaptive_plans",{keyPath:"id"});
     if (!db.objectStoreNames.contains("resolution_checks")) db.createObjectStore("resolution_checks",{keyPath:"id"});
+    if (!db.objectStoreNames.contains("temporal_annotations")) db.createObjectStore("temporal_annotations",{keyPath:"id"});
   };
   const db=await request(open);
   async function getIdentity() {
@@ -125,7 +127,19 @@ export async function openStore() {
     const tx=db.transaction('resolution_checks','readwrite');tx.objectStore('resolution_checks').add(receipt);
     await finished(tx);return receipt.id;
   }
+  async function getTemporalRecords(scope){
+    const records=await request(db.transaction('temporal_annotations','readonly').objectStore('temporal_annotations').getAll());
+    await auditTemporalReceipts(records,scope);return records;
+  }
+  async function recordTemporalRecord(receipt,scope,nodes){
+    const current=await getTemporalRecords(scope);
+    if(current.length>=MAX_TEMPORAL_EVENTS)throw Error('Temporal annotation history at capacity');
+    await auditTemporalReceipts([...current,receipt],scope,nodes);
+    const tx=db.transaction('temporal_annotations','readwrite');tx.objectStore('temporal_annotations').add(receipt);
+    await finished(tx);return receipt.id;
+  }
   return {db,getIdentity,getEvents,commit,getThreadEvents,commitThreads,getFeedback,recordFeedback,
+      getTemporalRecords,recordTemporalRecord,
       getInquiryRuns,recordInquiryRun,getInquiryBudgets,setInquiryBudget,
       getExperimentPlans,recordExperimentPlan,getAdaptivePlans,recordAdaptivePlan,
       getResolutionReceipts,recordResolutionReceipt};
