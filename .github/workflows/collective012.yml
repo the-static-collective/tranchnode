@@ -1,0 +1,30 @@
+name: COLLECTIVE-012 shared change horizon
+on:
+  push:
+    branches:
+      - experiment/collective-012-shared-change-horizon
+  pull_request:
+    paths:
+      - 'apps/collective/**'
+      - 'test/collective012-*'
+      - '.github/workflows/collective012.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  collective012:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify app module syntax and offline bundle
+        run: |
+          for name in dependency-delta dependency-ui app temporal-ui store; do node --check "apps/collective/$name.mjs"; done
+          node --check apps/collective/sw.js
+          node -e "const fs=require('fs');const s=fs.readFileSync('apps/collective/sw.js','utf8');for(const x of ['dependency-delta.mjs','dependency-ui.mjs'])if(!s.includes(x))throw Error('missing cache '+x)"
+      - name: Changed-world review tests
+        run: node --test test/collective012-dependency.test.mjs
+      - name: Prior temporal and calibration tests
+        run: node --test test/collective011-temporal.test.mjs test/collective010-calibration.test.mjs test/collective009-policy.test.mjs test/collective008-planner.test.mjs test/collective007-inquiry.test.mjs test/collective006-threads.test.mjs

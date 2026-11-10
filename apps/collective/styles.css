@@ -97,3 +97,5 @@ main{max-width:1150px;margin:auto;padding:0 22px 40px}.hero{padding:58px 0 48px;
 .temporal-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-height:520px;overflow-y:auto}.temporal-card{border:1px solid #527c65;background:#1a3029;padding:14px;border-radius:6px;overflow-wrap:anywhere}
 .temporal-card strong{color:#e7f2cd;font-size:.82rem}.temporal-card p{margin:6px 0}.temporal-card .muted{color:#bfd2c4}
 @media(max-width:760px){.temporal-form,.temporal-list{grid-template-columns:1fr}}
+
+/* 012 linked-change review */.dependency-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:16px 0}.dependency-form label{display:grid;gap:6px}.dependency-form input,.dependency-form select{padding:10px;width:100%;min-width:0;border-radius:5px}.dependency-form label:last-of-type,.dependency-form button{grid-column:1/-1}.dependency-item{padding:13px;background:#19332a;border:1px solid #507661;border-radius:6px;margin:7px 0;overflow-wrap:anywhere}.dependency-item button{margin-top:10px}@media(max-width:700px){.dependency-form{grid-template-columns:1fr}}

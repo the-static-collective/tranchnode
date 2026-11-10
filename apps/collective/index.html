@@ -213,6 +213,25 @@
       <div class="network-inbox"><div><h3>Questions requesting testimony</h3><div id="inquiries"><p class="muted">No unanswered inquiries.</p></div></div>
         <div><h3>Evidence received for review</h3><div id="evidence-inbox"><p class="muted">No new responses.</p></div></div></div>
     </section>
+
+    <section class="threads-panel" id="shared-change">
+      <div class="network-head"><p class="eyebrow bright">12 / SHARED-CHANGE HORIZON</p>
+      <h2>When one thing changes, what else should be checked?</h2>
+      <p>Declare possible shared causes or dependencies. A reported change may raise review urgency; it never proves another claim false.</p></div>
+      <p id="dependency-overview" class="muted" role="status"></p>
+      <form id="dependency-form" class="form dependency-form">
+        <label>UPSTREAM CLAIM <select id="dependency-from" required></select></label>
+        <label>POSSIBLY AFFECTED CLAIM <select id="dependency-to" required></select></label>
+        <label>RELATION <select id="dependency-kind"><option value="depends_on">Directional dependency</option><option value="shared_context">Shared context (both directions)</option></select></label>
+        <label>REVIEW WEIGHT — NOT PROBABILITY <select id="dependency-strength"><option value="weak">Weak</option><option value="medium" selected>Medium</option><option value="strong">Strong</option></select></label>
+        <label>WHY WOULD THEY CHANGE TOGETHER? <input id="dependency-reason" minlength="8" maxlength="240" required></label>
+        <button type="submit" id="dependency-add">DECLARE POSSIBLE RELATION</button>
+      </form>
+      <h3>Declared links</h3><div id="dependency-links"></div>
+      <h3>Possible downstream rechecks</h3><div id="dependency-review-list"></div>
+      <p class="muted" id="dependency-threads"></p>
+      <button type="button" id="dependency-export" class="secondary">EXPORT REVIEW — NO FACT UPDATES</button>
+    </section>
     <section class="ledger-panel">
       <div><p class="eyebrow">LOCAL MEMORY / EVIDENCE</p><h2>Sources in this field</h2><div id="source-list"></div></div>
       <div><p class="eyebrow">IMMUTABLE SEQUENCE</p><h2>Latest accepted events</h2><ol id="log"></ol></div>
