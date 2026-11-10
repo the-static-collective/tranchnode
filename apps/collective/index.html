@@ -15,7 +15,7 @@
 <header class="topbar">
   <div class="mark" aria-hidden="true"><i></i><i></i><i></i></div>
   <div><div class="eyebrow">STATIC COLLECTIVE / FIELD LAB</div><div class="wordmark">TRANCH<span>NODE</span></div></div>
-  <span class="top-chip">006 · WHAT-IF FIELDS</span>
+  <span class="top-chip">007 · INQUIRY FOREST</span>
 </header>
 <main>
   <section class="hero">
@@ -100,8 +100,18 @@
       </div>
       <div class="thread-comparison-section"><h3>Side-by-side counterfactuals</h3><p class="muted">Results are recomputed against the present local evidence. A conditional path is not evidence the hypothetical premise is real.</p><div id="thread-comparison" class="thread-comparison" aria-live="polite"></div></div>
     </section>
+    <section class="threads-panel" id="inquiry-lab">
+      <div class="network-head"><p class="eyebrow bright">06 / THE INVESTIGATIVE FOREST</p><h2>Let multiple questions investigate.</h2>
+       <p>Run independent, budgeted research workers for every open What-If thread. Test the effect of removing assumptions, generate missing-link experiments and counterexample requests. Three browser workers can run simultaneously; no research hypothesis becomes observed fact and no peer is contacted automatically.</p></div>
+      <div class="button-row"><button id="inquiry-run" type="button">INVESTIGATE ALL OPEN THREADS <span>↗</span></button><button id="inquiry-export" class="secondary" type="button" disabled>EXPORT RESEARCH RECEIPTS</button></div>
+      <p id="inquiry-progress" class="muted" aria-live="polite">No autonomous background work. Start investigations explicitly.</p>
+      <h3>Independent thread budgets</h3><div id="inquiry-thread-summary" class="investigation-grid" aria-live="polite"><p class="muted">No threads configured yet.</p></div>
+      <h3>Most recent investigative outcomes</h3><div id="inquiry-results" class="investigation-grid" aria-live="polite"></div>
+      <h3>Cross-thread echoes · ideas, not evidence</h3><div id="inquiry-cross-links" aria-live="polite"></div>
+      <p class="muted">Workers use a bounded classical graph reachability method and counterfactual perturbations, not an LLM. A question becoming promising is not evidence of its answer. Even a supported path remains conditional on recorded assertions.</p>
+    </section>
     <section class="network-panel" id="network">
-      <div class="network-head"><p class="eyebrow bright">06 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
+      <div class="network-head"><p class="eyebrow bright">07 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
       <p>Use an invite-only discovery room to connect directly by WebRTC. The signaling relay sees network metadata but not evidence. No private claims are shared automatically.</p></div>
       <div class="network-controls">
         <label>WEBSOCKET SIGNALING RELAY <input id="relay-url" placeholder="wss://your-relay.example/signal" autocorrect="off" autocomplete="off" spellcheck="false"></label>
@@ -113,7 +123,7 @@
       <h3>Room participants</h3><div id="peer-list" aria-live="polite"></div>
       <p class="network-explain">Connect to a discovered peer, inspect their signed-key fingerprint, and explicitly approve the session. Compare fingerprints separately if you need confidence about who controls a key. Each side must approve before exchanging questions or evidence.</p>
       <div class="routing-card">
-        <p class="eyebrow bright">07 / LOCAL QUESTION ROUTER</p>
+        <p class="eyebrow bright">08 / LOCAL QUESTION ROUTER</p>
         <h3>Ask where the evidence points.</h3>
         <p>Suggestions use only testimony previously admitted on this device and approved peers. Unknown peers remain candidates. Ranking does not contact anyone. Sending requires your explicit click.</p>
         <button type="button" id="suggest-peer" class="secondary">SUGGEST A PEER (LOCAL ONLY)</button>
