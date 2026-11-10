@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#142b29">
   <meta name="description" content="An offline-first, proof-carrying collective intelligence experiment.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; connect-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; connect-src 'self' ws: wss:">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="./icon.svg">
   <link rel="stylesheet" href="./styles.css">
@@ -15,14 +15,14 @@
 <header class="topbar">
   <div class="mark" aria-hidden="true"><i></i><i></i><i></i></div>
   <div><div class="eyebrow">STATIC COLLECTIVE / FIELD LAB</div><div class="wordmark">TRANCH<span>NODE</span></div></div>
-  <span class="top-chip">003 · OFFLINE FIRST</span>
+  <span class="top-chip">004 · LIVING NETWORK</span>
 </header>
 <main>
   <section class="hero">
     <p class="eyebrow bright">MOTIF · COLLECTIVE INTELLIGENCE</p>
     <h1>One node. A wider field.</h1>
-    <p>A small, independently operated witness. Keep your own assertions. Exchange only what you choose. Investigate what the combined evidence supports.</p>
-    <div class="hero-meta"><span>LOCAL MEMORY</span><span>·</span><span>SIGNED TESTIMONY</span><span>·</span><span>VISIBLE UNCERTAINTY</span></div>
+    <p>A small, independently operated witness. Keep your own assertions. Discover collaborators inside a private invitation room, exchange questions over encrypted direct connections, and inspect the evidence you choose to share.</p>
+    <div class="hero-meta"><span>LOCAL MEMORY</span><span>·</span><span>DIRECT PEERS</span><span>·</span><span>SIGNED TESTIMONY</span><span>·</span><span>VISIBLE UNCERTAINTY</span></div>
   </section>
   <p class="status" id="status" role="status" aria-live="polite">Initializing local node…</p>
   <p id="boot">Creating or opening your locally held identity and evidence ledger…</p>
@@ -70,13 +70,31 @@
         <button type="button" id="download-answer" class="secondary" disabled>EXPORT PROOF PACKET</button>
       </section>
     </div>
+
+    <section class="network-panel" id="network">
+      <div class="network-head"><p class="eyebrow bright">05 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
+      <p>Use an invite-only discovery room to connect directly by WebRTC. The signaling relay sees network metadata but not evidence. No private claims are shared automatically.</p></div>
+      <div class="network-controls">
+        <label>WEBSOCKET SIGNALING RELAY <input id="relay-url" placeholder="wss://your-relay.example/signal" autocorrect="off" autocomplete="off" spellcheck="false"></label>
+        <label>OPTIONAL STUN SERVICE — PROVIDER CAN SEE YOUR IP <input id="ice-url" value="stun:stun.cloudflare.com:3478" placeholder="stun:your-provider:3478" autocomplete="off" spellcheck="false"></label>
+        <label>SECRET ROOM CAPABILITY <input id="room-code" placeholder="Create a room or paste an invite" autocorrect="off" autocomplete="off" spellcheck="false"></label>
+        <div class="button-row"><button id="new-room" type="button">CREATE ROOM</button><button id="join-room" class="secondary" type="button">JOIN ROOM</button>
+          <button id="copy-invite" class="secondary" type="button" disabled>COPY INVITE LINK</button><button id="leave-room" class="secondary" type="button" disabled>LEAVE</button></div>
+      </div>
+      <h3>Room participants</h3><div id="peer-list" aria-live="polite"></div>
+      <p class="network-explain">Connect to a discovered peer, inspect their signed-key fingerprint, and explicitly approve the session. Compare fingerprints separately if you need confidence about who controls a key. Each side must approve before exchanging questions or evidence.</p>
+      <div class="network-actions"><button type="button" id="ask-room">ASK APPROVED PEERS ABOUT THE PATH ABOVE <span>↗</span></button>
+        <span class="muted">Only the start/destination labels are sent; peers decide whether to answer.</span></div>
+      <div class="network-inbox"><div><h3>Questions requesting testimony</h3><div id="inquiries"><p class="muted">No unanswered inquiries.</p></div></div>
+        <div><h3>Evidence received for review</h3><div id="evidence-inbox"><p class="muted">No new responses.</p></div></div></div>
+    </section>
     <section class="ledger-panel">
       <div><p class="eyebrow">LOCAL MEMORY / EVIDENCE</p><h2>Sources in this field</h2><div id="source-list"></div></div>
       <div><p class="eyebrow">IMMUTABLE SEQUENCE</p><h2>Latest accepted events</h2><ol id="log"></ol></div>
     </section>
     <section class="warning">
       <strong>RESEARCH-ONLY FIELD NODE</strong>
-      <p>This is a local-first installable prototype, not an open peer-to-peer network or an authority for factual claims. Communication uses deliberately shared files, not automatic discovery. Public-key signatures prove possession of a signing key—not the truth of claims or a human's identity. Do not enter confidential or sensitive information. Browser storage can be lost if app data is cleared.</p>
+      <p>This is an experimental local-first app with optional invitation-scoped WebRTC connections, not an open network or an authority for factual claims. It requires a separately deployed signaling relay and may require a TURN service on restricted mobile networks. Public-key signatures prove possession of a signing key—not the truth of claims or a human's identity. Do not enter confidential or sensitive information. Browser storage can be lost if app data is cleared.</p>
     </section>
   </div>
 </main>
