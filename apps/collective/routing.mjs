@@ -3,6 +3,7 @@
  * Past disclosures are hints, not verified knowledge or future permissions.
  */
 import {validateQuestion} from './net-protocol.mjs';
+import {peerFeedback} from './feedback.mjs';
 
 export function localFrontier(nodes,start){
  if(!(nodes instanceof Map)||typeof start!=='string'||!start.trim()||start.length>90)throw Error('Invalid local evidence or start');
@@ -28,7 +29,7 @@ export function localFrontier(nodes,start){
  }
  return reached;
 }
-export function rankPeers({nodes,peers,from,to}){
+export function rankPeers({nodes,peers,from,to,feedback=[]}){
  const q=validateQuestion(from,to);
  if(!(nodes instanceof Map)||!Array.isArray(peers))throw Error('Local source and peer snapshots required');
  const reached=localFrontier(nodes,q.from), prior=new Map();
@@ -50,9 +51,13 @@ export function rankPeers({nodes,peers,from,to}){
    if(s.to===q.to){score+=3;reasons.add('Previously shared a link arriving at the destination');}
    if(s.from===q.to){score++;reasons.add('Previously shared a link leaving the destination');}
   }
-  ranked.push({session:p.session,issuer:p.issuer,score:Math.min(score,40),
+  const learning=peerFeedback({events:feedback,peerIssuer:p.issuer,from:q.from,to:q.to});
+  const baseScore=Math.min(score,40),adjustment=learning.adjustment;
+  if(learning.observedAdmitted)reasons.add('Local learning from '+learning.observedAdmitted+' reviewed, admitted outcome(s)');
+  ranked.push({session:p.session,issuer:p.issuer,score:baseScore+adjustment,
+   baseScore,feedbackAdjustment:adjustment,feedbackOutcomes:learning.observedAdmitted,
    priorSourceCount:seen.size,reason:reasons.size?[...reasons].join('; '):
-    'Unknown relevance: no historical links to the question'});
+    'Unknown relevance: no historical links or admitted outcomes for this question'});
  }
  ranked.sort((a,b)=>b.score-a.score||a.issuer.localeCompare(b.issuer)||a.session.localeCompare(b.session));
  return ranked;

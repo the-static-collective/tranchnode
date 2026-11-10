@@ -86,11 +86,11 @@ export class CollectiveMesh {
    this.inquiries.delete(m.id);
    const proof=await verifyBundle(m.bundle);
    if(proof.issuer!==p.issuer)throw Error('Claim issuer does not match peer key');
-   this.emit('evidence',{session,issuer:p.issuer,requestId:m.id,bundle:m.bundle,claims:proof.claims});
+   this.emit('evidence',{session,issuer:p.issuer,requestId:m.id,bundle:m.bundle,claims:proof.claims,question:expected.question,threadId:expected.threadId});
   }else if(m.kind==='declined'){
    const expected=this.inquiries.get(m.id);
    if(!expected||expected.session!==session)throw Error('Unsolicited refusal');
-   this.inquiries.delete(m.id);this.emit('declined',{session,issuer:p.issuer,requestId:m.id});
+   this.inquiries.delete(m.id);this.emit('declined',{session,issuer:p.issuer,requestId:m.id,question:expected.question,threadId:expected.threadId});
   }else throw Error('Unknown message type');
  }
  approve(session){const p=this.peers.get(session);
@@ -101,8 +101,9 @@ export class CollectiveMesh {
   const raw=JSON.stringify({schema:NET_SCHEMA,...message});
   if(raw.length>65000)throw Error('Packet exceeds limit');p.channel.send(raw);
  }
- ask(from,to,{sessions=null}={}){
+ ask(from,to,{sessions=null,threadId=null}={}){
   const q=validateQuestion(from,to);
+  if(threadId!==null&&!(typeof threadId==='string'&&/^thread:[0-9a-f]{64}$/.test(threadId)))throw Error('Invalid hypothetical thread reference');
   for(const [id,entry] of this.inquiries)if(Date.now()>entry.expires)this.inquiries.delete(id);
   if(sessions!==null&&(!Array.isArray(sessions)||sessions.length<1||sessions.length>8
     ||new Set(sessions).size!==sessions.length||sessions.some(x=>typeof x!=='string')))
@@ -116,13 +117,13 @@ export class CollectiveMesh {
    if(!p?.approved||!p.issuer||p.channel?.readyState!=='open')
     throw Error('Selected peer not approved or connected');
   }
-  let sent=0;
+  let sent=0;const requests=[];
   for(const session of targets){
-   const id=randomSecret();this.inquiries.set(id,{session,expires:Date.now()+5*60*1000});
-   try{this.transmit(session,{kind:'ask',id,...q});sent++;}
+   const id=randomSecret();this.inquiries.set(id,{session,expires:Date.now()+5*60*1000,question:q,threadId});
+   try{this.transmit(session,{kind:'ask',id,...q});sent++;requests.push({requestId:id,session,peerIssuer:this.peers.get(session).issuer,question:q,threadId});}
    catch(e){this.inquiries.delete(id);throw e;}
   }
-  this.emit('inquiry-sent',{count:sent,mode:sessions===null?'manual-all':'selected'});
+  this.emit('inquiry-sent',{count:sent,mode:sessions===null?'manual-all':'selected',requests});
   return sent;
  }
  async reply(session,requestId,selectedIds,nodes){const p=this.peers.get(session);if(!p?.approved)throw Error('Peer not approved');
