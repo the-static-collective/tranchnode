@@ -126,7 +126,7 @@ export function bindInquiries({state,setStatus,el}){
    $('inquiry-progress').textContent=outcome.results.length+' worker report(s) recorded, peak concurrency '+outcome.maxActive+'.';
    notify('Bounded investigations completed. Candidates remain research questions; no peer was contacted.');
   }catch(e){$('inquiry-progress').textContent='Investigation held: '+e.message;notify(e.message,true);}
-  finally{busy=false;await refresh();}
+  finally{busy=false;await refresh();if(state.experimentUI)await state.experimentUI.refresh();}
  }
  $('inquiry-run').onclick=investigate;
  $('inquiry-export').onclick=()=>{

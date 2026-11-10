@@ -2,9 +2,10 @@ import {identity, replay} from "./kernel.mjs";
 import {replayThreads} from "./threads.mjs";
 import {validateFeedbackLog} from "./feedback.mjs";
 import {replayInquiryReceipts,MAX_RUNS,MAX_ALLOCATION} from "./inquiry-receipts.mjs";
+import {replayPlanReceipts,MAX_PLAN_RECEIPTS} from "./experiment-receipts.mjs";
 
 const DB_NAME="tranch-collective-003";
-const VERSION=3;
+const VERSION=4;
 
 function request(r) {return new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 function finished(t) {return new Promise((resolve,reject)=>{t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error||new Error("Transaction aborted"));});}
@@ -18,6 +19,7 @@ export async function openStore() {
     if (!db.objectStoreNames.contains("feedback")) db.createObjectStore("feedback",{keyPath:"id"});
     if (!db.objectStoreNames.contains("inquiry_runs")) db.createObjectStore("inquiry_runs",{keyPath:"id"});
     if (!db.objectStoreNames.contains("inquiry_budget")) db.createObjectStore("inquiry_budget",{keyPath:"threadId"});
+    if (!db.objectStoreNames.contains("experiment_plans")) db.createObjectStore("experiment_plans",{keyPath:"id"});
   };
   const db=await request(open);
   async function getIdentity() {
@@ -84,6 +86,20 @@ export async function openStore() {
     const tx=db.transaction('inquiry_budget','readwrite');
     tx.objectStore('inquiry_budget').put({threadId,allocation});await finished(tx);
   }
+  async function getExperimentPlans(scope){
+    const records=await request(db.transaction('experiment_plans','readonly').objectStore('experiment_plans').getAll());
+    await replayPlanReceipts(records,scope);
+    return records;
+  }
+  async function recordExperimentPlan(receipt,scope){
+    const records=await getExperimentPlans(scope);
+    if(records.length>=MAX_PLAN_RECEIPTS)throw Error('Plan history full; no automatic pruning of research');
+    await replayPlanReceipts([...records,receipt],scope);
+    const tx=db.transaction('experiment_plans','readwrite');
+    tx.objectStore('experiment_plans').add(receipt);
+    await finished(tx);return receipt.id;
+  }
   return {db,getIdentity,getEvents,commit,getThreadEvents,commitThreads,getFeedback,recordFeedback,
-      getInquiryRuns,recordInquiryRun,getInquiryBudgets,setInquiryBudget};
+      getInquiryRuns,recordInquiryRun,getInquiryBudgets,setInquiryBudget,
+      getExperimentPlans,recordExperimentPlan};
 }

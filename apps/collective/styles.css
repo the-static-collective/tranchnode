@@ -46,3 +46,18 @@ main{max-width:1150px;margin:auto;padding:0 22px 40px}.hero{padding:58px 0 48px;
 .inquiry-candidate>span{font-size:.78rem}.inquiry-candidate button{flex-shrink:0;font-size:.65rem;border-color:#91b39f;color:#e7f2e3}
 #inquiry-lab h3{margin-top:24px}#inquiry-lab .muted{color:#b7cbbf}#inquiry-cross-links{border-left:2px solid #617b65;padding-left:12px}
 @media(max-width:620px){.inquiry-candidate{flex-wrap:wrap}.inquiry-candidate button{width:100%}}
+
+/* COLLECTIVE-008 — transparent, local-only experimental value-of-question menu. */
+.experiment-controls{display:grid;grid-template-columns:minmax(0,210px) 1fr;gap:14px;margin:22px 0 12px;align-items:end}
+.experiment-controls .button-row{grid-column:1/-1;justify-content:flex-start;margin:0}
+.experiment-controls .button-row button{flex:0 1 auto}
+.experiment-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}
+.experiment-card{background:#172b26;border:1px solid #5e8270;border-radius:7px;padding:17px;color:#e7f4e5;min-width:0}
+.experiment-card strong{display:block;color:#dcef89;overflow-wrap:anywhere}
+.experiment-card p{font-size:.8rem}
+.experiment-card .muted{color:#c1d5c8;display:block}
+.experiment-card button{margin-top:13px;background:#34624f;color:#f8fff5;border-color:#779d85}
+.experiment-details{border-top:1px solid #476a58;margin-top:12px;padding-top:10px}
+.experiment-details summary{cursor:pointer;color:#c5e5bd;font-size:.8rem}
+.experiment-details p{border-top:1px solid #364f45;padding:8px 0;margin:8px 0}
+@media(max-width:760px){.experiment-list,.experiment-controls{grid-template-columns:1fr}.experiment-controls .button-row{grid-column:1}.experiment-controls .button-row button{flex:1}}

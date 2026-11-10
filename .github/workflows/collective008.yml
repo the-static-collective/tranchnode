@@ -1,0 +1,43 @@
+name: COLLECTIVE-008 aperture experiment selection
+on:
+  push:
+    branches:
+      - experiment/collective-008-aperture-experiment-selection
+  pull_request:
+    paths:
+      - 'apps/collective/**'
+      - 'test/collective008-*'
+      - '.github/workflows/collective008.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  aperture-planner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check planner and application syntax
+        run: |
+          for file in apps/collective/{experiment-planner,experiment-receipts,experiment-worker,experiment-ui,inquiry-ui,app,store}.mjs; do node --check "$file"; done
+          node --check apps/collective/sw.js
+      - name: Run new selection, provenance, budget, staleness and falsification tests
+        run: node --test test/collective008-planner.test.mjs
+      - name: Preserve cumulative research semantics
+        run: node --test test/collective007-inquiry.test.mjs test/collective007-worker.test.mjs test/collective006-threads.test.mjs test/collective006-feedback.test.mjs test/collective005-routing.test.mjs test/collective004-network.test.mjs test/collective-app.test.mjs
+      - name: Freeze fair-comparator synthetic stress cases
+        run: node test/collective008-benchmark.mjs collective008-benchmark.json
+      - name: Check offline worker inclusion
+        run: |
+          node -e "const fs=require('fs'),text=fs.readFileSync('apps/collective/sw.js','utf8');for(const file of ['experiment-planner.mjs','experiment-worker.mjs','experiment-ui.mjs','experiment-receipts.mjs'])if(!text.includes(file))throw Error('Missing offline module '+file)"
+      - name: Archive research evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: COLLECTIVE-008-APERTURE-RESULTS
+          path: |
+            collective008-benchmark.json
+            apps/collective/COLLECTIVE-008.md
+            test/collective008-*.mjs
