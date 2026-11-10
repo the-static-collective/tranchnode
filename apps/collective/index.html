@@ -136,6 +136,9 @@
         <label>NEW QUESTION DOOR VALUE (0–6)<input id="adaptive-aperture" type="number" min="0" max="6" step="0.25" value="1"></label>
         <label>MAX ROUTE PROBES (24–30,000)<input id="adaptive-credits" type="number" min="24" max="30000" step="100" value="20000"></label>
       </div>
+      <label class="calibration-optin"><input type="checkbox" id="adaptive-use-checks"> USE INDEPENDENTLY CHECKED-OUTCOME ESTIMATES (OPT IN; 8 DISTINCT DECLARED CASE GROUPS REQUIRED)</label>
+      <label class="calibration-tag-choice">QUESTION FAMILY FOR OUTCOME ESTIMATES <input id="adaptive-calibration-tag" value="general" maxlength="32" autocomplete="off" spellcheck="false"></label>
+      <p class="muted">The check references are provided by you; software cannot certify that a measurement, oracle, or external document is independent or correct. They replace modeled testimony probabilities only with explicit opt-in, never factual claims.</p>
       <div class="button-row"><button id="adaptive-run" type="button" disabled>FIND ADAPTIVE TWO-STEP STRATEGY <span>↗</span></button>
         <button id="adaptive-export" class="secondary" type="button" disabled>EXPORT STRATEGY RECEIPT</button></div>
       <p id="adaptive-progress" class="muted" aria-live="polite">First investigate open threads and generate a current Aperture proposal above.</p>
@@ -144,8 +147,28 @@
       <div id="adaptive-candidates" class="adaptive-results" aria-live="polite"></div>
       <p class="muted">The planner measures *possible conditional paths* and *potentially reachable future questions* only. Its support probabilities describe testimony assumptions, not objective truth; repeated statements from one signing key do not become independent confirmation. No message is sent automatically.</p>
     </section>
+    <section class="threads-panel" id="calibration-lab">
+      <div class="network-head"><p class="eyebrow bright">09 / OUTCOME CALIBRATION — THE CRUCIBLE</p>
+        <h2>Was MOTIF's prediction actually right?</h2>
+        <p>Record a *separately checked* experimental outcome with a reference. Keep it outside the accepted evidence graph. Repeat testimony, agreement from several bots, and signed keys never establish ground truth. Measure next-time forecasts against chronological, previously unseen results.</p></div>
+      <div class="calibration-count"><strong id="calibration-count">0</strong><span class="muted">REFERENCE-LINKED RESOLUTION RECORDS</span></div>
+      <form id="calibration-record-form" class="form calibration-form">
+        <label>CASE IDENTIFIER <input id="calibration-case" required maxlength="80" placeholder="case:yard-east-01"></label>
+        <label>INDEPENDENCE GROUP <input id="calibration-group" required maxlength="80" placeholder="batch:yard-inspection" title="Correlated or repeated cases belong in one shared group; one group counts once."></label>
+        <label>QUESTION FAMILY <input id="calibration-tag" required maxlength="32" value="general" placeholder="general"></label>
+        <label>QUESTION FROM <input id="calibration-from" required maxlength="90" placeholder="Cage panels"></label>
+        <label>QUESTION TO <input id="calibration-to" required maxlength="90" placeholder="Dog fence"></label>
+        <label>CHECKED OUTCOME <select id="calibration-outcome"><option value="supports">Connection supported by separate check</option><option value="denies">Connection denied by separate check</option><option value="inconclusive">Unable to resolve</option></select></label>
+        <label>HOW WAS IT CHECKED? <select id="calibration-method"><option value="independent_measurement">Independent measurement / trial</option><option value="documented_third_party">Published or documented external source</option><option value="sealed_benchmark">Previously sealed benchmark label</option></select></label>
+        <label class="calibration-wide">CHECK REFERENCE (NOT AUTOMATICALLY VERIFIED) <input id="calibration-reference" required maxlength="320" placeholder="Document DOI, inspection record ID, or precommitted benchmark key"></label>
+        <label class="calibration-wide calibration-declaration"><input id="calibration-declared" type="checkbox" required> I independently checked this outcome against the named reference; it was not inferred from peer agreement or from MOTIF's own prediction. My declaration is not software verification.</label>
+        <div class="button-row calibration-wide"><button type="submit">RECORD CHECK — LOCAL RESEARCH ONLY</button><button type="button" id="calibration-export" class="secondary" disabled>EXPORT RESOLUTION HISTORY</button></div>
+      </form>
+      <div id="calibration-output" class="calibration-results" aria-live="polite"></div>
+      <p class="muted">The chronological Brier score is a proper scoring rule: lower is better. Poor scores, concept drift, and too few distinct groups are visible. Evaluations use earlier cases only; no results are automatically inserted into your world evidence. Exports may disclose reference metadata.</p>
+    </section>
     <section class="network-panel" id="network">
-      <div class="network-head"><p class="eyebrow bright">09 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
+      <div class="network-head"><p class="eyebrow bright">10 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
       <p>Use an invite-only discovery room to connect directly by WebRTC. The signaling relay sees network metadata but not evidence. No private claims are shared automatically.</p></div>
       <div class="network-controls">
         <label>WEBSOCKET SIGNALING RELAY <input id="relay-url" placeholder="wss://your-relay.example/signal" autocorrect="off" autocomplete="off" spellcheck="false"></label>

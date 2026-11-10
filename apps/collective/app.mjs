@@ -4,13 +4,14 @@ import {bindThreads} from './thread-ui.mjs';
 import {bindInquiries} from './inquiry-ui.mjs';
 import {bindExperimentUI} from './experiment-ui.mjs';
 import {bindAdaptiveUI} from './adaptive-ui.mjs';
+import {bindCalibrationUI} from './calibration-ui.mjs';
 import {feedbackReceipt,validateFeedbackLog,relevanceOfAdmission} from './feedback.mjs';
 import {localFrontier} from './routing.mjs';
 import {bindNetwork} from "./network-ui.mjs";
 
 const $=id=>document.getElementById(id);
 const state={store:null,ident:null,scope:null,events:[],nodes:new Map(),staged:null,stagedNetwork:null,lastAnswer:null,
- threadEvents:[],threads:new Map(),threadUI:null,inquiryUI:null,experimentUI:null,adaptiveUI:null,threadReports:[],networkQuestionThreadId:null,feedback:[]};
+ threadEvents:[],threads:new Map(),threadUI:null,inquiryUI:null,experimentUI:null,adaptiveUI:null,calibrationUI:null,calibrationRecords:[],calibrationHead:null,threadReports:[],networkQuestionThreadId:null,feedback:[]};
 let feedbackQueue=Promise.resolve();
 function recordFeedback(data){
  feedbackQueue=feedbackQueue.then(async()=>{const event=await feedbackReceipt(data);await state.store.recordFeedback(event);
@@ -27,6 +28,7 @@ async function refresh() {
   if(state.inquiryUI)await state.inquiryUI.refresh();
   if(state.experimentUI)await state.experimentUI.refresh();
   if(state.adaptiveUI)await state.adaptiveUI.refresh();
+  if(state.calibrationUI)await state.calibrationUI.refresh();
   $("claim-list").replaceChildren();
   const own=[...state.nodes.values()].filter(n=>n.kind==="claim"&&n.authorId===state.ident.id);
   const received=[...state.nodes.values()].filter(n=>n.kind==="source");
@@ -166,9 +168,11 @@ async function start(){
   state.inquiryUI=bindInquiries({state,setStatus,el});
   state.experimentUI=bindExperimentUI({state,setStatus,el});
   state.adaptiveUI=bindAdaptiveUI({state,setStatus,el});
+  state.calibrationUI=bindCalibrationUI({state,setStatus,el});
   await state.inquiryUI.refresh();
   await state.experimentUI.refresh();
   await state.adaptiveUI.refresh();
+  await state.calibrationUI.refresh();
   $("boot").hidden=true;$("workspace").hidden=false;
   setStatus("Local-first node ready. Your private signing key stays in this browser's storage.");
   if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});
