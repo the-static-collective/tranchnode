@@ -110,8 +110,23 @@
       <h3>Cross-thread echoes · ideas, not evidence</h3><div id="inquiry-cross-links" aria-live="polite"></div>
       <p class="muted">Workers use a bounded classical graph reachability method and counterfactual perturbations, not an LLM. A question becoming promising is not evidence of its answer. Even a supported path remains conditional on recorded assertions.</p>
     </section>
+    <section class="threads-panel" id="experiment-lab">
+      <div class="network-head"><p class="eyebrow bright">07 / APERTURE STRATEGY LAB</p><h2>Which question opens the most doors?</h2>
+        <p>Compare the potential consequences of answering a candidate question YES versus NO across current What-If threads. Rank questions that might change the most conclusions, without confusing possibility with evidence.</p></div>
+      <div class="experiment-controls">
+        <label>LOCAL COUNTERFACTUAL INFERENCE CREDITS (2–512)
+          <input id="experiment-budget" type="number" value="128" min="2" max="512" step="2" aria-label="Local planner credit budget"></label>
+        <span id="experiment-count" class="muted">No current investigations.</span>
+        <div class="button-row"><button id="experiment-run" type="button" disabled>CHOOSE THE NEXT EXPERIMENT <span>↗</span></button>
+          <button id="experiment-export" class="secondary" type="button" disabled>EXPORT PLANNING RECEIPT</button></div>
+      </div>
+      <p id="experiment-progress" class="muted" aria-live="polite">Run the investigators above first. This planner operates locally only.</p>
+      <p id="experiment-status" class="muted" aria-live="polite"></p>
+      <div id="experiment-candidates" class="experiment-list" aria-live="polite"></div>
+      <p class="muted">A binary test has at most 1 bit of joint answer information. The planner's cross-thread score is a <strong>heuristic</strong>, not a validated probability or demonstrated intelligence gain. No peer is contacted and no hypothesis is promoted into observed history.</p>
+    </section>
     <section class="network-panel" id="network">
-      <div class="network-head"><p class="eyebrow bright">07 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
+      <div class="network-head"><p class="eyebrow bright">08 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
       <p>Use an invite-only discovery room to connect directly by WebRTC. The signaling relay sees network metadata but not evidence. No private claims are shared automatically.</p></div>
       <div class="network-controls">
         <label>WEBSOCKET SIGNALING RELAY <input id="relay-url" placeholder="wss://your-relay.example/signal" autocorrect="off" autocomplete="off" spellcheck="false"></label>
