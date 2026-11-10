@@ -1,0 +1,38 @@
+name: COLLECTIVE-004 invite-only P2P evidence network
+on:
+  push:
+    branches: [experiment/collective-004-invite-only-living-network]
+  pull_request:
+    paths:
+      - 'apps/collective/**'
+      - 'relay/collective004/**'
+      - 'test/collective004-network.test.mjs'
+      - '.github/workflows/collective004.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-protocol-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: JavaScript syntax and signed witness protocol
+        run: |
+          node --check apps/collective/app.mjs
+          node --check apps/collective/network.mjs
+          node --check apps/collective/net-protocol.mjs
+          node --check apps/collective/network-ui.mjs
+          node --test test/collective004-network.test.mjs
+  relay-isolation-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r relay/collective004/requirements.txt pytest pytest-asyncio
+      - name: Test authorized signaling, room isolation and fail closed
+        run: python -m pytest -q relay/collective004/test_server.py
