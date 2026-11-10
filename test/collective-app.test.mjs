@@ -117,6 +117,21 @@ test("canonical JSON rejects unsafe precision and deliberate JSON confusion",asy
   assert.equal(await sha({a:1,b:2}),await sha({b:2,a:1}));
 });
 
+test("re-entry refuses a fully rehashed ledger containing forged signed content",async()=>{
+  const a=await setup(),b=await setup();
+  const id=await add(b,"B","C");
+  await exchange(a,b,[id]);
+  const forged=structuredClone(a.events);
+  const n=forged[0].operation.node;
+  n.content.envelope.payload.claims[0].statement.to="FALSE";
+  const {id:discardNodeId,...nodeBody}=n;
+  n.id=await sha(nodeBody);
+  const {id:discardEventId,...eventBody}=forged[0];
+  forged[0].id=await sha(eventBody);
+  await replay(forged,a.scope);
+  await assert.rejects(answerPacket(forged,a.scope,"B","C"),/Invalid signature/);
+});
+
 test("no supported conclusion does not fabricate a claim",async()=>{
   const a=await setup();
   await add(a,"A","B");
