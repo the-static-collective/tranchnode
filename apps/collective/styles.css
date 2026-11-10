@@ -110,3 +110,13 @@ main{max-width:1150px;margin:auto;padding:0 22px 40px}.hero{padding:58px 0 48px;
 .trajectory-card{background:#192c27;border:1px solid #608270;padding:16px;border-radius:7px;overflow-wrap:anywhere}
 .trajectory-card strong{color:#dcef89}.trajectory-card p{margin:8px 0}
 @media(max-width:760px){.trajectory-controls,#trajectory-pair-controls{grid-template-columns:1fr}}
+
+/* COLLECTIVE-014: research-only market-inspired temporal regime patterns. */
+.regime-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:22px 0}
+.regime-controls label{display:grid;gap:7px;font-size:.7rem;letter-spacing:.08em;color:#bfdbc8}
+.regime-controls select{padding:10px;min-height:44px;width:100%;border:1px solid #8baa98;background:#f5f8ee;color:#183c2b;border-radius:5px}
+.regime-controls .button-row{grid-column:1/-1;margin-top:2px}.regime-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.regime-card{background:#172c28;border:1px solid #5a8271;border-radius:7px;padding:17px;min-width:0;overflow-wrap:anywhere}
+.regime-card strong{display:block;color:#ddeda8;font-size:.88rem}.regime-card p{font-size:.8rem;margin:9px 0}.regime-card small{color:#b0cbbc}
+.regime-card button{margin-top:11px}.regime-card .warn{color:#ffd3a6}
+@media(max-width:760px){.regime-controls,.regime-results{grid-template-columns:1fr}.regime-controls .button-row{grid-column:1}}
