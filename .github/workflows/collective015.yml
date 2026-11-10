@@ -1,0 +1,36 @@
+name: COLLECTIVE-015 weak-signal temporal aperture
+on:
+  push:
+    branches: [experiment/collective-015-weak-signal-aperture]
+  pull_request:
+    paths:
+      - 'apps/collective/**'
+      - 'test/collective015-*'
+      - '.github/workflows/collective015.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  early-warning:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify source syntax and offline app wiring
+        run: |
+          for f in early-warning early-warning-ui app store regime-forecast regime-ui; do node --check "apps/collective/$f.mjs"; done
+          node --check apps/collective/sw.js
+          node -e "const fs=require('fs');const sw=fs.readFileSync('apps/collective/sw.js','utf8');const html=fs.readFileSync('apps/collective/index.html','utf8');for(const f of ['early-warning.mjs','early-warning-ui.mjs'])if(!sw.includes(f))throw Error('Missing offline dependency '+f);for(const id of ['warning-run','warning-target','warning-sources','warning-results','warning-export'])if(!html.includes('id=\"'+id+'\"'))throw Error('Missing UI control '+id)"
+      - name: Existing and new Node regression suites
+        run: node --test test/*.test.mjs
+      - name: Reproducible author-designed synthetic controls
+        run: node test/collective015-benchmark.mjs > collective015-benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: COLLECTIVE-015-WEAK-SIGNAL-APERTURE
+          path: |
+            collective015-benchmark.json
+            apps/collective/COLLECTIVE-015.md

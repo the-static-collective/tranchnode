@@ -216,53 +216,69 @@
 
     <section class="threads-panel" id="shared-change">
       <div class="network-head"><p class="eyebrow bright">12 / SHARED-CHANGE HORIZON</p>
-      <h2>When one thing changes, what else should be checked?</h2>
-      <p>Declare possible shared causes or dependencies. A reported change may raise review urgency; it never proves another claim false.</p></div>
+        <h2>When one thing changes, what else needs checking?</h2>
+        <p>Declare *possible* dependencies between recorded statements. A separately reported change can raise recheck urgency in related statements, without asserting that they have changed or multiplying one observation into many.</p></div>
       <p id="dependency-overview" class="muted" role="status"></p>
       <form id="dependency-form" class="form dependency-form">
-        <label>UPSTREAM CLAIM <select id="dependency-from" required></select></label>
-        <label>POSSIBLY AFFECTED CLAIM <select id="dependency-to" required></select></label>
-        <label>RELATION <select id="dependency-kind"><option value="depends_on">Directional dependency</option><option value="shared_context">Shared context (both directions)</option></select></label>
-        <label>REVIEW WEIGHT — NOT PROBABILITY <select id="dependency-strength"><option value="weak">Weak</option><option value="medium" selected>Medium</option><option value="strong">Strong</option></select></label>
-        <label>WHY WOULD THEY CHANGE TOGETHER? <input id="dependency-reason" minlength="8" maxlength="240" required></label>
-        <button type="submit" id="dependency-add">DECLARE POSSIBLE RELATION</button>
+        <label>CHANGE SOURCE <select id="dependency-from" required></select></label>
+        <label>POSSIBLY AFFECTED STATEMENT <select id="dependency-to" required></select></label>
+        <label>RELATION TYPE <select id="dependency-kind"><option value="depends_on">Directional dependence</option><option value="shared_context">Shared context (both directions)</option></select></label>
+        <label>REVIEW URGENCY (NOT PROBABILITY) <select id="dependency-strength"><option value="weak">Weak / 0.30</option><option value="medium" selected>Medium / 0.60</option><option value="strong">Strong / 0.85</option></select></label>
+        <label class="dependency-reason">WHY MIGHT CHANGE PROPAGATE? <input id="dependency-reason" required minlength="8" maxlength="240" placeholder="E.g. service availability depends on whether the location operates"></label>
+        <button type="submit" id="dependency-add">DECLARE POSSIBLE RELATIONSHIP</button>
       </form>
-      <h3>Declared links</h3><div id="dependency-links"></div>
-      <h3>Possible downstream rechecks</h3><div id="dependency-review-list"></div>
-      <p class="muted" id="dependency-threads"></p>
-      <button type="button" id="dependency-export" class="secondary">EXPORT REVIEW — NO FACT UPDATES</button>
+      <h3>Declared relationships</h3><div id="dependency-links" class="dependency-links"></div>
+      <h3>Current recheck candidates</h3><div id="dependency-review-list" class="dependency-reviews"></div>
+      <p id="dependency-threads" class="muted"></p>
+      <button id="dependency-export" type="button" class="secondary">EXPORT RESEARCH REVIEW — NO FACT PROMOTION</button>
     </section>
     <section class="threads-panel" id="trajectory-lab">
-      <div class="network-head"><p class="eyebrow bright">09 / TEMPORAL TRAJECTORIES</p>
+      <div class="network-head"><p class="eyebrow bright">09 / TRAJECTORIES · REPORTED CHECKS</p>
         <h2>What tends to change next?</h2>
-        <p>Investigate separately dated check reports. Their ordering is NOT the ordering of actual events. Missing rechecks are unknown, not unchanged. No action is automatic.</p>
-      </div>
+        <p>Compare time-ordered check reports to discover provisional lead–lag patterns. A later *check* is not necessarily a later *world event*. Missing rechecks are censored, not evidence of stability. Nothing is sent or made factual.</p></div>
       <p id="trajectory-overview" class="muted" role="status"></p>
       <div class="trajectory-controls">
-        <label>SEARCH MODE <select id="trajectory-mode"><option value="all">Explore up to 24 source relations</option><option value="pair">Explore one directed pair</option></select></label>
-        <label>FOLLOW-UP WINDOW IN DAYS <input type="number" id="trajectory-window" min="1" max="365" value="14"></label>
+        <label>SEARCH MODE <select id="trajectory-mode"><option value="all">Scan up to 24 current source relations</option><option value="pair">Examine one directed pair</option></select></label>
+        <label>FOLLOW-UP WINDOW (1–365 DAYS) <input type="number" id="trajectory-window" min="1" max="365" value="14"></label>
         <div id="trajectory-pair-controls" hidden>
-          <label>EARLIER CHANGE REPORT <select id="trajectory-from"></select></label>
-          <label>LATER CHANGE REPORT <select id="trajectory-to"></select></label>
+          <label>EARLIER CHECK REPORT <select id="trajectory-from"></select></label>
+          <label>LATER CHECK REPORT <select id="trajectory-to"></select></label>
         </div>
-        <div class="button-row"><button id="trajectory-run" type="button">COMPARE CHECK TRAJECTORIES</button>
-          <button id="trajectory-export" type="button" class="secondary" disabled>EXPORT CHECKED RESEARCH</button></div>
+        <div class="button-row"><button type="button" id="trajectory-run">COMPARE TEMPORAL TRAJECTORIES</button>
+          <button type="button" id="trajectory-export" class="secondary" disabled>EXPORT SOURCED ANALYSIS</button></div>
       </div>
-      <p id="trajectory-progress" class="muted" aria-live="polite">No prediction without checked history.</p>
-      <div class="trajectory-results" id="trajectory-results"></div>
+      <p id="trajectory-progress" class="muted" aria-live="polite">Research only. No pattern inferred until sufficient checked history exists.</p>
+      <div id="trajectory-results" class="trajectory-results"></div>
     </section>
     <section class="threads-panel" id="regime-lab">
       <div class="network-head"><p class="eyebrow bright">10 / TRAJECTORIES OF TRAJECTORIES</p>
         <h2>Is the pattern itself changing?</h2>
-        <p>Borrowing market-forecast methods for real-world check reports: momentum, acceleration, volatility clustering, possible periodicity and chronological holdout testing. No trading or automatic facts.</p></div>
+        <p>Market-prediction methods, reinterpreted for real-world recheck reports: momentum of reported changes, second differences, volatility clustering, candidate periodicity, and chronological out-of-sample forecasting. No stock prices, trading, automatic fact updates, or external requests.</p></div>
       <p id="regime-overview" class="muted"></p>
       <div class="regime-controls">
         <label>TIME BUCKET <select id="regime-bin"><option value="1">1 day</option><option value="7" selected>7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></label>
-        <label>PURGED HISTORY GAP <select id="regime-gap"><option value="0">0 buckets</option><option value="1" selected>1 bucket</option><option value="2">2 buckets</option><option value="4">4 buckets</option></select></label>
-        <div class="button-row"><button id="regime-run" type="button">INVESTIGATE CHANGE REGIMES</button><button id="regime-export" class="secondary" type="button" disabled>EXPORT ANALYSIS</button></div>
+        <label>PURGED HISTORY GAP <select id="regime-gap"><option value="0">0 time buckets</option><option value="1" selected>1 time bucket</option><option value="2">2 time buckets</option><option value="4">4 time buckets</option></select></label>
+        <div class="button-row"><button id="regime-run" type="button">INVESTIGATE CHANGE REGIMES</button><button id="regime-export" class="secondary" disabled type="button">EXPORT ANALYSIS</button></div>
       </div>
-      <p id="regime-progress" class="muted" aria-live="polite">Ready for manually authorized analysis.</p>
+      <p id="regime-progress" class="muted" aria-live="polite">Ready for human-authorized temporal analysis.</p>
       <div id="regime-results" class="regime-results"></div>
+    </section>
+    <section class="threads-panel" id="warning-lab">
+      <div class="network-head"><p class="eyebrow bright">11 / EARLY-WARNING APERTURE</p>
+        <h2>Can several weak signals warn of a transition?</h2>
+        <p>Compare a combined relationship-aware forecast with simpler chronologically tested baselines. Select a target and 2–4 possible indicators; these are operator-declared check reports, not market prices or verified change-onset times.</p>
+      </div>
+      <p id="warning-overview" class="muted"></p>
+      <div class="warning-controls">
+        <label>TARGET RELATION <select id="warning-target"></select></label>
+        <label>INDICATOR RELATIONS (CTRL / LONG-PRESS TO SELECT 2–4) <select id="warning-sources" multiple size="5"></select></label>
+        <label>CALENDAR CHECK BIN <select id="warning-bin"><option value="1">1 day</option><option value="7" selected>7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></label>
+        <label>FORECAST HORIZON <select id="warning-lead"><option value="1" selected>1 checked bin ahead</option><option value="2">2 bins</option><option value="3">3 bins</option><option value="4">4 bins</option></select></label>
+        <label>TRAINING EMBARGO <select id="warning-gap"><option value="1" selected>1 bin</option><option value="2">2 bins</option><option value="3">3 bins</option><option value="4">4 bins</option></select></label>
+        <div class="button-row"><button id="warning-run" type="button">COMPARE WEAK-SIGNAL FORECASTS</button><button id="warning-export" class="secondary" type="button" disabled>EXPORT RESEARCH</button></div>
+      </div>
+      <p id="warning-progress" class="muted" aria-live="polite">No warnings without an explicit analysis. No autonomous requests.</p>
+      <div id="warning-results" class="regime-results"></div>
     </section>
     <section class="ledger-panel">
       <div><p class="eyebrow">LOCAL MEMORY / EVIDENCE</p><h2>Sources in this field</h2><div id="source-list"></div></div>
