@@ -6,12 +6,10 @@ import {replayPlanReceipts,MAX_PLAN_RECEIPTS} from "./experiment-receipts.mjs";
 import {replayAdaptiveReceipts,MAX_ADAPTIVE_RECEIPTS} from "./adaptive-receipts.mjs";
 import {auditResolutionReceipts,MAX_RESOLUTIONS} from "./calibration.mjs";
 import {auditTemporalReceipts,MAX_TEMPORAL_EVENTS} from "./temporal.mjs";
-import {replayDependencies,DEPENDENCY_CAP} from "./dependency-delta.mjs";
-import {auditTrajectoryReceipts,TRAJECTORY_RUN_CAP} from "./trajectories.mjs";
-import {auditRegimeReceipts,REGIME_RUN_CAP} from "./regime-forecast.mjs";
+import {auditEarlyReceipts,EARLY_RUN_CAP} from "./early-warning.mjs";
 
 const DB_NAME="tranch-collective-003";
-const VERSION=10;
+const VERSION=11;
 
 function request(r) {return new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 function finished(t) {return new Promise((resolve,reject)=>{t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error||new Error("Transaction aborted"));});}
@@ -32,6 +30,7 @@ export async function openStore() {
     if (!db.objectStoreNames.contains("dependency_events")) db.createObjectStore("dependency_events",{keyPath:"sequence"});
     if (!db.objectStoreNames.contains("trajectory_scans")) db.createObjectStore("trajectory_scans",{keyPath:"id"});
     if (!db.objectStoreNames.contains("regime_scans")) db.createObjectStore("regime_scans",{keyPath:"id"});
+    if (!db.objectStoreNames.contains("early_warnings")) db.createObjectStore("early_warnings",{keyPath:"id"});
   };
   const db=await request(open);
   async function getIdentity() {
@@ -145,13 +144,13 @@ export async function openStore() {
     await finished(tx);return receipt.id;
   }
   async function getDependencyEvents(scope,nodes=null){
-    const records=await request(db.transaction('dependency_events','readonly').objectStore('dependency_events').getAll());
-    await replayDependencies(records,scope,nodes);return records;
+    const events=await request(db.transaction('dependency_events','readonly').objectStore('dependency_events').getAll());
+    await replayDependencies(events,scope,nodes);return events;
   }
   async function recordDependencyEvent(event,scope,nodes){
-    const old=await getDependencyEvents(scope,nodes);
-    if(old.length>=DEPENDENCY_CAP)throw Error('Dependency event cap reached');
-    await replayDependencies([...old,event],scope,nodes);
+    const current=await getDependencyEvents(scope,nodes);
+    if(current.length>=DEPENDENCY_CAP)throw Error('Dependency research record cap reached');
+    await replayDependencies([...current,event],scope,nodes);
     const tx=db.transaction('dependency_events','readwrite');
     tx.objectStore('dependency_events').add(event);await finished(tx);return event.id;
   }
@@ -159,12 +158,12 @@ export async function openStore() {
     const rows=await request(db.transaction('trajectory_scans','readonly').objectStore('trajectory_scans').getAll());
     await auditTrajectoryReceipts(rows,scope);return rows;
   }
-  async function recordTrajectoryReceipt(receipt,scope){
-    const rows=await getTrajectoryReceipts(scope);
-    if(rows.length>=TRAJECTORY_RUN_CAP)throw Error('Trajectory research history at capacity');
-    await auditTrajectoryReceipts([...rows,receipt],scope);
+  async function recordTrajectoryReceipt(record,scope){
+    const previous=await getTrajectoryReceipts(scope);
+    if(previous.length>=TRAJECTORY_RUN_CAP)throw Error('Research trajectory history at capacity');
+    await auditTrajectoryReceipts([...previous,record],scope);
     const tx=db.transaction('trajectory_scans','readwrite');
-    tx.objectStore('trajectory_scans').add(receipt);await finished(tx);return receipt.id;
+    tx.objectStore('trajectory_scans').add(record);await finished(tx);return record.id;
   }
   async function getRegimeReceipts(scope){
     const rows=await request(db.transaction('regime_scans','readonly').objectStore('regime_scans').getAll());
@@ -177,7 +176,18 @@ export async function openStore() {
     const tx=db.transaction('regime_scans','readwrite');tx.objectStore('regime_scans').add(record);
     await finished(tx);return record.id;
   }
-  return {db,getIdentity,getEvents,commit,getThreadEvents,commitThreads,getFeedback,recordFeedback,
+  async function getEarlyWarningReceipts(scope){
+    const rows=await request(db.transaction('early_warnings','readonly').objectStore('early_warnings').getAll());
+    await auditEarlyReceipts(rows,scope);return rows;
+  }
+  async function recordEarlyWarningReceipt(receipt,scope){
+    const old=await getEarlyWarningReceipts(scope);
+    if(old.length>=EARLY_RUN_CAP)throw Error('Early-warning research history cap reached');
+    await auditEarlyReceipts([...old,receipt],scope);
+    const tx=db.transaction('early_warnings','readwrite');tx.objectStore('early_warnings').add(receipt);await finished(tx);
+    return receipt.id;
+  }
+  return {db,getEarlyWarningReceipts,recordEarlyWarningReceipt,getIdentity,getEvents,commit,getThreadEvents,commitThreads,getFeedback,recordFeedback,
       getTemporalRecords,recordTemporalRecord,getDependencyEvents,recordDependencyEvent,getTrajectoryReceipts,recordTrajectoryReceipt,getRegimeReceipts,recordRegimeReceipt,
       getInquiryRuns,recordInquiryRun,getInquiryBudgets,setInquiryBudget,
       getExperimentPlans,recordExperimentPlan,getAdaptivePlans,recordAdaptivePlan,
