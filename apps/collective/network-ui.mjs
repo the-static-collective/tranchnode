@@ -25,6 +25,7 @@ export function bindNetwork({state,refresh,setStatus,el}){
  }
  function incomingQuestion(evt){
   $('inquiries').querySelector('p.muted')?.remove();
+  $('inquiries').querySelector('p.muted')?.remove();
   const row=el('div','inquiry-entry');const heading=el('strong',null,'Node '+short(evt.issuer)+' asks: '+evt.from+' → '+evt.to);
   row.append(heading,el('p','muted','Nothing is automatically disclosed. Select only your own assertions below; the requestor will still have to admit the response.'));
   const selects=el('div','inquiry-selects');
