@@ -232,6 +232,25 @@
       <p class="muted" id="dependency-threads"></p>
       <button type="button" id="dependency-export" class="secondary">EXPORT REVIEW — NO FACT UPDATES</button>
     </section>
+    <section class="threads-panel" id="trajectory-lab">
+      <div class="network-head"><p class="eyebrow bright">09 / TEMPORAL TRAJECTORIES</p>
+        <h2>What tends to change next?</h2>
+        <p>Investigate separately dated check reports. Their ordering is NOT the ordering of actual events. Missing rechecks are unknown, not unchanged. No action is automatic.</p>
+      </div>
+      <p id="trajectory-overview" class="muted" role="status"></p>
+      <div class="trajectory-controls">
+        <label>SEARCH MODE <select id="trajectory-mode"><option value="all">Explore up to 24 source relations</option><option value="pair">Explore one directed pair</option></select></label>
+        <label>FOLLOW-UP WINDOW IN DAYS <input type="number" id="trajectory-window" min="1" max="365" value="14"></label>
+        <div id="trajectory-pair-controls" hidden>
+          <label>EARLIER CHANGE REPORT <select id="trajectory-from"></select></label>
+          <label>LATER CHANGE REPORT <select id="trajectory-to"></select></label>
+        </div>
+        <div class="button-row"><button id="trajectory-run" type="button">COMPARE CHECK TRAJECTORIES</button>
+          <button id="trajectory-export" type="button" class="secondary" disabled>EXPORT CHECKED RESEARCH</button></div>
+      </div>
+      <p id="trajectory-progress" class="muted" aria-live="polite">No prediction without checked history.</p>
+      <div class="trajectory-results" id="trajectory-results"></div>
+    </section>
     <section class="ledger-panel">
       <div><p class="eyebrow">LOCAL MEMORY / EVIDENCE</p><h2>Sources in this field</h2><div id="source-list"></div></div>
       <div><p class="eyebrow">IMMUTABLE SEQUENCE</p><h2>Latest accepted events</h2><ol id="log"></ol></div>

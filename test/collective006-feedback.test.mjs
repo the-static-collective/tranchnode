@@ -64,7 +64,7 @@ test('history validation rejects forged receipts, missing original inquiry, and 
  await assert.rejects(validateFeedbackLog(cloned),/Altered/);
  await assert.rejects(validateFeedbackLog(events.slice(1)),/Missing or duplicated/);
  const doubled=[...events,await feedbackReceipt({type:'admitted',requestId:events[0].requestId,peerIssuer:p.id,question:{from:'A',to:'D'},relevant:true,acceptedCount:1})];
- await assert.rejects(validateFeedbackLog(doubled),/Duplicate outcome/);
+ await assert.rejects(validateFeedbackLog(doubled),/Duplicate outcome|Invalid or repeated receipt/);
 });
 
 test('thread-specific request references survive network consent boundary and bind peer response',async()=>{

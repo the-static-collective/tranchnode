@@ -58,6 +58,7 @@ export function bindTemporalUI({state,setStatus,el}){
    $('temporal-reason').value='';$('temporal-check-reference').value='';
    await refresh();
    if(state.adaptiveUI)await state.adaptiveUI.refresh();
+   if(state.trajectoryUI)await state.trajectoryUI.refresh();
    if(state.dependencyUI)await state.dependencyUI.refresh();
    setStatus(action==='check'?'Operator-declared recheck recorded. Source assertion unchanged; separately update evidence if the world changed.':'Volatility class updated. This does not reset the age clock or certify truth.');
   }catch(e){setStatus('Temporal annotation held: '+e.message,true);}

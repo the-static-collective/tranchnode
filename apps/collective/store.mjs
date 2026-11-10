@@ -7,9 +7,10 @@ import {replayAdaptiveReceipts,MAX_ADAPTIVE_RECEIPTS} from "./adaptive-receipts.
 import {auditResolutionReceipts,MAX_RESOLUTIONS} from "./calibration.mjs";
 import {auditTemporalReceipts,MAX_TEMPORAL_EVENTS} from "./temporal.mjs";
 import {replayDependencies,DEPENDENCY_CAP} from "./dependency-delta.mjs";
+import {auditTrajectoryReceipts,TRAJECTORY_RUN_CAP} from "./trajectories.mjs";
 
 const DB_NAME="tranch-collective-003";
-const VERSION=8;
+const VERSION=9;
 
 function request(r) {return new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 function finished(t) {return new Promise((resolve,reject)=>{t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error||new Error("Transaction aborted"));});}
@@ -28,6 +29,7 @@ export async function openStore() {
     if (!db.objectStoreNames.contains("resolution_checks")) db.createObjectStore("resolution_checks",{keyPath:"id"});
     if (!db.objectStoreNames.contains("temporal_annotations")) db.createObjectStore("temporal_annotations",{keyPath:"id"});
     if (!db.objectStoreNames.contains("dependency_events")) db.createObjectStore("dependency_events",{keyPath:"sequence"});
+    if (!db.objectStoreNames.contains("trajectory_scans")) db.createObjectStore("trajectory_scans",{keyPath:"id"});
   };
   const db=await request(open);
   async function getIdentity() {
@@ -151,8 +153,19 @@ export async function openStore() {
     const tx=db.transaction('dependency_events','readwrite');
     tx.objectStore('dependency_events').add(event);await finished(tx);return event.id;
   }
+  async function getTrajectoryReceipts(scope){
+    const rows=await request(db.transaction('trajectory_scans','readonly').objectStore('trajectory_scans').getAll());
+    await auditTrajectoryReceipts(rows,scope);return rows;
+  }
+  async function recordTrajectoryReceipt(receipt,scope){
+    const rows=await getTrajectoryReceipts(scope);
+    if(rows.length>=TRAJECTORY_RUN_CAP)throw Error('Trajectory research history at capacity');
+    await auditTrajectoryReceipts([...rows,receipt],scope);
+    const tx=db.transaction('trajectory_scans','readwrite');
+    tx.objectStore('trajectory_scans').add(receipt);await finished(tx);return receipt.id;
+  }
   return {db,getIdentity,getEvents,commit,getThreadEvents,commitThreads,getFeedback,recordFeedback,
-      getTemporalRecords,recordTemporalRecord,getDependencyEvents,recordDependencyEvent,
+      getTemporalRecords,recordTemporalRecord,getDependencyEvents,recordDependencyEvent,getTrajectoryReceipts,recordTrajectoryReceipt,
       getInquiryRuns,recordInquiryRun,getInquiryBudgets,setInquiryBudget,
       getExperimentPlans,recordExperimentPlan,getAdaptivePlans,recordAdaptivePlan,
       getResolutionReceipts,recordResolutionReceipt};
