@@ -37,3 +37,13 @@ jobs:
         with:
           name: COLLECTIVE005-QUESTION-ROUTING-CONTROLS
           path: collective005-benchmark.json
+
+      - name: Package complete installable node and router for field inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: COLLECTIVE005-INSTALLABLE-NODE-RESEARCH
+          path: |
+            apps/collective/
+            relay/collective004/
+            test/collective005-routing.test.mjs
+            test/collective005-benchmark.mjs
