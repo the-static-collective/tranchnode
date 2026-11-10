@@ -1,0 +1,45 @@
+name: COLLECTIVE-007 multithread investigation workers
+on:
+  push:
+    branches:
+      - experiment/collective-007-parallel-inquiry-workers
+  pull_request:
+    paths:
+      - 'apps/collective/**'
+      - 'test/collective007-*'
+      - '.github/workflows/collective007.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  worker-investigations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm all new browser modules parse
+        run: |
+          for file in apps/collective/{inquiry-engine,inquiry-worker,inquiry-ui,inquiry-receipts,app,store,thread-ui}.mjs; do node --check "$file"; done
+          node --check apps/collective/sw.js
+      - name: Test real independent worker threads, budgets, epistemic isolation
+        run: node --test test/collective007-inquiry.test.mjs test/collective007-worker.test.mjs
+      - name: Preserve preceding research behavior
+        run: node --test test/collective006-threads.test.mjs test/collective006-feedback.test.mjs test/collective005-routing.test.mjs test/collective004-network.test.mjs test/collective-app.test.mjs
+      - name: Equal-information classical reference comparison
+        run: node test/collective007-benchmark.mjs > collective007-benchmark.json
+      - name: Check bundled workers for offline install
+        run: |
+          node -e "const fs=require('fs');const text=fs.readFileSync('apps/collective/sw.js','utf8');for(const file of ['inquiry-engine.mjs','inquiry-worker.mjs','inquiry-ui.mjs','inquiry-receipts.mjs'])if(!text.includes(file))throw Error('Missing offline module '+file)"
+      - name: Archive reproducible experiments
+        uses: actions/upload-artifact@v4
+        with:
+          name: COLLECTIVE-007-INQUIRY-WORKERS-AND-RECEIPTS
+          path: |
+            collective007-benchmark.json
+            apps/collective/COLLECTIVE-007.md
+            test/collective007-*.mjs
