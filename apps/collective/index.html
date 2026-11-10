@@ -125,8 +125,27 @@
       <div id="experiment-candidates" class="experiment-list" aria-live="polite"></div>
       <p class="muted">A binary test has at most 1 bit of joint answer information. The planner's cross-thread score is a <strong>heuristic</strong>, not a validated probability or demonstrated intelligence gain. No peer is contacted and no hypothesis is promoted into observed history.</p>
     </section>
+    <section class="threads-panel" id="adaptive-lab">
+      <div class="network-head"><p class="eyebrow bright">08 / DISCOVERY DIVIDEND — TWO-STEP STRATEGY</p>
+        <h2>What question is worth asking next?</h2>
+        <p>Compare the *modeled* chance of an answer, explicit inquiry cost, and which follow-up questions would become possible. This is a two-step decision simulation, not calibrated truth prediction. A surprising admitted answer makes the old strategy stale; recompute before acting.</p></div>
+      <div class="adaptive-inputs">
+        <label>FALLBACK SUPPORT PRIOR (0–1; TWO SIGNERS OVERRIDE)<input id="adaptive-prob" type="number" min="0" max="1" step="0.05" value="0.5"></label>
+        <label>ASSUMED ANSWER CHANCE (0–1)<input id="adaptive-answerable" type="number" min="0" max="1" step="0.05" value="0.85"></label>
+        <label>QUESTION COST (MODEL UNITS)<input id="adaptive-cost" type="number" min="0" max="30" step="0.5" value="1"></label>
+        <label>NEW QUESTION DOOR VALUE (0–6)<input id="adaptive-aperture" type="number" min="0" max="6" step="0.25" value="1"></label>
+        <label>MAX ROUTE PROBES (24–30,000)<input id="adaptive-credits" type="number" min="24" max="30000" step="100" value="20000"></label>
+      </div>
+      <div class="button-row"><button id="adaptive-run" type="button" disabled>FIND ADAPTIVE TWO-STEP STRATEGY <span>↗</span></button>
+        <button id="adaptive-export" class="secondary" type="button" disabled>EXPORT STRATEGY RECEIPT</button></div>
+      <p id="adaptive-progress" class="muted" aria-live="polite">First investigate open threads and generate a current Aperture proposal above.</p>
+      <p id="adaptive-status" class="muted" aria-live="polite"></p>
+      <p id="adaptive-alert" class="adaptive-alert" role="status" aria-live="polite"></p>
+      <div id="adaptive-candidates" class="adaptive-results" aria-live="polite"></div>
+      <p class="muted">The planner measures *possible conditional paths* and *potentially reachable future questions* only. Its support probabilities describe testimony assumptions, not objective truth; repeated statements from one signing key do not become independent confirmation. No message is sent automatically.</p>
+    </section>
     <section class="network-panel" id="network">
-      <div class="network-head"><p class="eyebrow bright">08 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
+      <div class="network-head"><p class="eyebrow bright">09 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
       <p>Use an invite-only discovery room to connect directly by WebRTC. The signaling relay sees network metadata but not evidence. No private claims are shared automatically.</p></div>
       <div class="network-controls">
         <label>WEBSOCKET SIGNALING RELAY <input id="relay-url" placeholder="wss://your-relay.example/signal" autocorrect="off" autocomplete="off" spellcheck="false"></label>

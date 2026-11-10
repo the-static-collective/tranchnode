@@ -3,9 +3,10 @@ import {replayThreads} from "./threads.mjs";
 import {validateFeedbackLog} from "./feedback.mjs";
 import {replayInquiryReceipts,MAX_RUNS,MAX_ALLOCATION} from "./inquiry-receipts.mjs";
 import {replayPlanReceipts,MAX_PLAN_RECEIPTS} from "./experiment-receipts.mjs";
+import {replayAdaptiveReceipts,MAX_ADAPTIVE_RECEIPTS} from "./adaptive-receipts.mjs";
 
 const DB_NAME="tranch-collective-003";
-const VERSION=4;
+const VERSION=5;
 
 function request(r) {return new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 function finished(t) {return new Promise((resolve,reject)=>{t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error||new Error("Transaction aborted"));});}
@@ -20,6 +21,7 @@ export async function openStore() {
     if (!db.objectStoreNames.contains("inquiry_runs")) db.createObjectStore("inquiry_runs",{keyPath:"id"});
     if (!db.objectStoreNames.contains("inquiry_budget")) db.createObjectStore("inquiry_budget",{keyPath:"threadId"});
     if (!db.objectStoreNames.contains("experiment_plans")) db.createObjectStore("experiment_plans",{keyPath:"id"});
+    if (!db.objectStoreNames.contains("adaptive_plans")) db.createObjectStore("adaptive_plans",{keyPath:"id"});
   };
   const db=await request(open);
   async function getIdentity() {
@@ -99,7 +101,18 @@ export async function openStore() {
     tx.objectStore('experiment_plans').add(receipt);
     await finished(tx);return receipt.id;
   }
+  async function getAdaptivePlans(scope){
+    const records=await request(db.transaction('adaptive_plans','readonly').objectStore('adaptive_plans').getAll());
+    await replayAdaptiveReceipts(records,scope);return records;
+  }
+  async function recordAdaptivePlan(receipt,scope){
+    const records=await getAdaptivePlans(scope);
+    if(records.length>=MAX_ADAPTIVE_RECEIPTS)throw Error('Adaptive research history cap reached; nothing silently deleted');
+    await replayAdaptiveReceipts([...records,receipt],scope);
+    const tx=db.transaction('adaptive_plans','readwrite');
+    tx.objectStore('adaptive_plans').add(receipt);await finished(tx);return receipt.id;
+  }
   return {db,getIdentity,getEvents,commit,getThreadEvents,commitThreads,getFeedback,recordFeedback,
       getInquiryRuns,recordInquiryRun,getInquiryBudgets,setInquiryBudget,
-      getExperimentPlans,recordExperimentPlan};
+      getExperimentPlans,recordExperimentPlan,getAdaptivePlans,recordAdaptivePlan};
 }
