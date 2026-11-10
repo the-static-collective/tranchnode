@@ -15,14 +15,14 @@
 <header class="topbar">
   <div class="mark" aria-hidden="true"><i></i><i></i><i></i></div>
   <div><div class="eyebrow">STATIC COLLECTIVE / FIELD LAB</div><div class="wordmark">TRANCH<span>NODE</span></div></div>
-  <span class="top-chip">005 · PRIVATE ROUTING</span>
+  <span class="top-chip">006 · WHAT-IF FIELDS</span>
 </header>
 <main>
   <section class="hero">
     <p class="eyebrow bright">MOTIF · COLLECTIVE INTELLIGENCE</p>
     <h1>One node. A wider field.</h1>
     <p>A small, independently operated witness. Keep your own assertions. Discover collaborators inside a private invitation room, exchange questions over encrypted direct connections, and inspect the evidence you choose to share.</p>
-    <div class="hero-meta"><span>LOCAL MEMORY</span><span>·</span><span>DIRECT PEERS</span><span>·</span><span>SIGNED TESTIMONY</span><span>·</span><span>VISIBLE UNCERTAINTY</span></div>
+    <div class="hero-meta"><span>LOCAL MEMORY</span><span>·</span><span>PARALLEL WHAT-IFS</span><span>·</span><span>DIRECT PEERS</span><span>·</span><span>SIGNED TESTIMONY</span><span>·</span><span>VISIBLE UNCERTAINTY</span></div>
   </section>
   <p class="status" id="status" role="status" aria-live="polite">Initializing local node…</p>
   <p id="boot">Creating or opening your locally held identity and evidence ledger…</p>
@@ -71,8 +71,37 @@
       </section>
     </div>
 
+    <section class="threads-panel" id="what-if-lab">
+      <div class="network-head"><p class="eyebrow bright">05 / PARALLEL WHAT-IF WORKBENCH</p>
+        <h2>Hold several possible worlds at once.</h2>
+        <p>Open independent inquiry threads, add hypothetical relations, fork alternative futures and compare them against the same verified local source ledger. Hypotheses stay in a separate research history: they never become observed facts or travel to peers automatically.</p></div>
+      <div class="thread-create">
+        <form id="thread-create-form" class="form">
+          <label>NAME THE QUESTION <input id="thread-title" maxlength="90" required placeholder="What if we took the north route?"></label>
+          <label>FROM <input id="thread-from" maxlength="90" required placeholder="A"></label>
+          <label>TO <input id="thread-to" maxlength="90" required placeholder="D"></label>
+          <button type="submit">OPEN INDEPENDENT THREAD <span>↗</span></button>
+        </form>
+        <div class="thread-activity"><span class="eyebrow">OPEN / HELD THREADS</span><strong id="thread-count">0</strong><p class="muted">Thread histories persist offline. Each fork is pinned to its parent revision; alternatives never overwrite one another.</p></div>
+      </div>
+      <div class="thread-tools">
+        <label>ACTIVE BRANCH <select id="thread-select" disabled><option>No threads yet</option></select></label>
+        <div class="button-row"><button id="thread-fork" class="secondary" type="button" disabled>FORK THIS THREAD</button><button id="thread-hold" class="secondary" type="button" disabled>HOLD / RESUME</button><button id="thread-archive" class="secondary" type="button" disabled>ARCHIVE</button></div>
+        <h3 id="thread-active">No thread selected</h3>
+        <form id="thread-assume-form" class="form thread-assume-form">
+          <label>WHAT IF FROM <input id="hyp-from" maxlength="90" required placeholder="B"></label>
+          <label>TO <input id="hyp-to" maxlength="90" required placeholder="C"></label>
+          <label>HYPOTHESIS <select id="hyp-polarity"><option value="supports">Assume connection exists</option><option value="denies">Assume connection does not exist</option></select></label>
+          <button type="submit">ADD HYPOTHESIS TO THIS THREAD</button>
+        </form>
+        <div id="thread-assumptions" class="thread-assumptions" aria-live="polite"><p class="muted">No thread selected.</p></div>
+        <div class="button-row"><button id="thread-focus-question" type="button" class="secondary" disabled>USE THREAD QUESTION FOR PEER ROUTING</button><button id="thread-export" class="secondary" type="button" disabled>EXPORT COMPARISON</button></div>
+        <p class="muted">Using a thread's question only fills the inquiry fields below; no network message is sent until you explicitly choose whom to ask. Its assumptions are never transmitted.</p>
+      </div>
+      <div class="thread-comparison-section"><h3>Side-by-side counterfactuals</h3><p class="muted">Results are recomputed against the present local evidence. A conditional path is not evidence the hypothetical premise is real.</p><div id="thread-comparison" class="thread-comparison" aria-live="polite"></div></div>
+    </section>
     <section class="network-panel" id="network">
-      <div class="network-head"><p class="eyebrow bright">05 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
+      <div class="network-head"><p class="eyebrow bright">06 / LIVING NETWORK — OPTIONAL</p><h2>Open a doorway between nodes.</h2>
       <p>Use an invite-only discovery room to connect directly by WebRTC. The signaling relay sees network metadata but not evidence. No private claims are shared automatically.</p></div>
       <div class="network-controls">
         <label>WEBSOCKET SIGNALING RELAY <input id="relay-url" placeholder="wss://your-relay.example/signal" autocorrect="off" autocomplete="off" spellcheck="false"></label>
@@ -84,7 +113,7 @@
       <h3>Room participants</h3><div id="peer-list" aria-live="polite"></div>
       <p class="network-explain">Connect to a discovered peer, inspect their signed-key fingerprint, and explicitly approve the session. Compare fingerprints separately if you need confidence about who controls a key. Each side must approve before exchanging questions or evidence.</p>
       <div class="routing-card">
-        <p class="eyebrow bright">06 / LOCAL QUESTION ROUTER</p>
+        <p class="eyebrow bright">07 / LOCAL QUESTION ROUTER</p>
         <h3>Ask where the evidence points.</h3>
         <p>Suggestions use only testimony previously admitted on this device and approved peers. Unknown peers remain candidates. Ranking does not contact anyone. Sending requires your explicit click.</p>
         <button type="button" id="suggest-peer" class="secondary">SUGGEST A PEER (LOCAL ONLY)</button>
