@@ -1,0 +1,39 @@
+name: COLLECTIVE-005 Private Question Router
+on:
+  push:
+    branches:
+      - experiment/collective-005-private-question-routing
+  pull_request:
+    paths:
+      - 'apps/collective/**'
+      - 'test/collective005-*.mjs'
+      - '.github/workflows/collective005.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  consented-routing-falsifiers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check new app modules
+        run: |
+          node --check apps/collective/routing.mjs
+          node --check apps/collective/network.mjs
+          node --check apps/collective/network-ui.mjs
+          node --check apps/collective/app.mjs
+      - name: Network and routing regression tests
+        run: node --test test/collective004-network.test.mjs test/collective005-routing.test.mjs
+      - name: Frozen baseline comparison
+        run: node test/collective005-benchmark.mjs > collective005-benchmark.json
+      - name: Archive public results
+        uses: actions/upload-artifact@v4
+        with:
+          name: COLLECTIVE005-QUESTION-ROUTING-CONTROLS
+          path: collective005-benchmark.json
