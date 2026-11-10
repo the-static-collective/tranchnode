@@ -1,0 +1,24 @@
+name: COLLECTIVE-013 trajectory screening
+on:
+  push:
+    branches: [experiment/collective-013-temporal-trajectories]
+  pull_request:
+    paths: ['apps/collective/**','test/collective013-*','.github/workflows/collective013.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  trajectories:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node --check apps/collective/trajectories.mjs
+          node --check apps/collective/trajectory-ui.mjs
+          node --check apps/collective/app.mjs
+          node --check apps/collective/store.mjs
+          node --test test/collective013-trajectories.test.mjs
+          node --test test/collective012-dependency.test.mjs test/collective011-temporal.test.mjs
