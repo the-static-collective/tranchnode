@@ -57,6 +57,7 @@ export function bindThreads({state,setStatus,el}){
   $('thread-count').textContent=String(entries.filter(t=>t.status!=='archived').length);
   $('thread-focus-question').disabled=!selected;
   $('thread-export').disabled=!entries.length;
+  if(state.inquiryUI)await state.inquiryUI.refresh();
  }
  async function getHead(){return state.events.at(-1)?.id??null;}
  $('thread-create-form').addEventListener('submit',async e=>{
