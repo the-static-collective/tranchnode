@@ -6,9 +6,10 @@ import {replayPlanReceipts,MAX_PLAN_RECEIPTS} from "./experiment-receipts.mjs";
 import {replayAdaptiveReceipts,MAX_ADAPTIVE_RECEIPTS} from "./adaptive-receipts.mjs";
 import {auditResolutionReceipts,MAX_RESOLUTIONS} from "./calibration.mjs";
 import {auditTemporalReceipts,MAX_TEMPORAL_EVENTS} from "./temporal.mjs";
+import {replayDependencies,DEPENDENCY_CAP} from "./dependency-delta.mjs";
 
 const DB_NAME="tranch-collective-003";
-const VERSION=7;
+const VERSION=8;
 
 function request(r) {return new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 function finished(t) {return new Promise((resolve,reject)=>{t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error||new Error("Transaction aborted"));});}
@@ -26,6 +27,7 @@ export async function openStore() {
     if (!db.objectStoreNames.contains("adaptive_plans")) db.createObjectStore("adaptive_plans",{keyPath:"id"});
     if (!db.objectStoreNames.contains("resolution_checks")) db.createObjectStore("resolution_checks",{keyPath:"id"});
     if (!db.objectStoreNames.contains("temporal_annotations")) db.createObjectStore("temporal_annotations",{keyPath:"id"});
+    if (!db.objectStoreNames.contains("dependency_events")) db.createObjectStore("dependency_events",{keyPath:"sequence"});
   };
   const db=await request(open);
   async function getIdentity() {
@@ -138,8 +140,19 @@ export async function openStore() {
     const tx=db.transaction('temporal_annotations','readwrite');tx.objectStore('temporal_annotations').add(receipt);
     await finished(tx);return receipt.id;
   }
+  async function getDependencyEvents(scope,nodes=null){
+    const records=await request(db.transaction('dependency_events','readonly').objectStore('dependency_events').getAll());
+    await replayDependencies(records,scope,nodes);return records;
+  }
+  async function recordDependencyEvent(event,scope,nodes){
+    const old=await getDependencyEvents(scope,nodes);
+    if(old.length>=DEPENDENCY_CAP)throw Error('Dependency event cap reached');
+    await replayDependencies([...old,event],scope,nodes);
+    const tx=db.transaction('dependency_events','readwrite');
+    tx.objectStore('dependency_events').add(event);await finished(tx);return event.id;
+  }
   return {db,getIdentity,getEvents,commit,getThreadEvents,commitThreads,getFeedback,recordFeedback,
-      getTemporalRecords,recordTemporalRecord,
+      getTemporalRecords,recordTemporalRecord,getDependencyEvents,recordDependencyEvent,
       getInquiryRuns,recordInquiryRun,getInquiryBudgets,setInquiryBudget,
       getExperimentPlans,recordExperimentPlan,getAdaptivePlans,recordAdaptivePlan,
       getResolutionReceipts,recordResolutionReceipt};

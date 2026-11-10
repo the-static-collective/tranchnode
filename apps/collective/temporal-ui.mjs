@@ -58,6 +58,7 @@ export function bindTemporalUI({state,setStatus,el}){
    $('temporal-reason').value='';$('temporal-check-reference').value='';
    await refresh();
    if(state.adaptiveUI)await state.adaptiveUI.refresh();
+   if(state.dependencyUI)await state.dependencyUI.refresh();
    setStatus(action==='check'?'Operator-declared recheck recorded. Source assertion unchanged; separately update evidence if the world changed.':'Volatility class updated. This does not reset the age clock or certify truth.');
   }catch(e){setStatus('Temporal annotation held: '+e.message,true);}
   finally{busy=false;$('temporal-submit').disabled=!projection?.records?.length;}
@@ -69,7 +70,7 @@ export function bindTemporalUI({state,setStatus,el}){
   a.download='motif-temporal-horizon-sensitive.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),15000);
  };
  // Time can advance even if no data changes. No network or external actions.
- const timer=setInterval(()=>{if(!document.hidden&&state.nodes?.size)refresh().then(()=>state.adaptiveUI?.refresh()).catch(e=>setStatus(e.message,true));},60000);
+ const timer=setInterval(()=>{if(!document.hidden&&state.nodes?.size)refresh().then(()=>state.dependencyUI?.refresh()).then(()=>state.adaptiveUI?.refresh()).catch(e=>setStatus(e.message,true));},60000);
  window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
  $('temporal-action').dispatchEvent(new Event('change'));
  return {refresh};
