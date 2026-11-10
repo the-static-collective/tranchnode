@@ -32,7 +32,7 @@ jobs:
         run: node --test test/collective-app.test.mjs
       - name: Validate web manifest and raster icons
         run: |
-          node -e "const m=require('./apps/collective/manifest.webmanifest');" || node -e "let fs=require('fs'),m=JSON.parse(fs.readFileSync('apps/collective/manifest.webmanifest'));if(!m.icons.some(x=>x.sizes==='192x192')||!m.icons.some(x=>x.sizes==='512x512'))process.exit(1)"
+          node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('apps/collective/manifest.webmanifest','utf8'));for(const n of [192,512]){const p='apps/collective/icon-'+n+'.png';const b=fs.readFileSync(p);if(!m.icons.some(x=>x.sizes===n+'x'+n)||b.toString('hex',0,8)!=='89504e470d0a1a0a'||b.readUInt32BE(16)!==n||b.readUInt32BE(20)!==n)throw Error('missing or malformed '+p)}"
           test -s apps/collective/icon-192.png
           test -s apps/collective/icon-512.png
       - name: Upload installable static PWA folder for inspection
