@@ -19,10 +19,10 @@ export function bindCalibrationUI({state,setStatus,el}){
   $('calibration-count').textContent=String(state.calibrationRecords.length);
   output.replaceChildren();
   line('Family '+tag+' · '+fit.declaredIndependentGroups+' declared distinct checked groups · '+fit.echoRemoved+' repeated cases discounted · '+fit.conflictedGroupsHeld+' conflicting groups held.');
-  line(fit.eligible?'Estimated support if answerable: '+(fit.pYes*100).toFixed(1)+'% · estimated answerability: '+(fit.pAnswered*100).toFixed(1)+'%. Estimates are NOT externally certified.':
+  line(fit.eligible?'Estimated support if externally resolved: '+(fit.pYes*100).toFixed(1)+'% · external-check conclusiveness: '+(fit.pAnswered*100).toFixed(1)+'%. NOT a peer response rate or certified real-world truth.':
    'Calibration withheld: fewer than '+fit.minGroups+' distinct groups. Using uncalibrated planning assumptions.','calibration-summary');
   if(score.answered.evaluated){
-   line('PREQUENTIAL (past-only) score over '+score.answered.evaluated+' held-forward case(s): answerability Brier '+score.answered.modelBrier+' vs baseline '+score.answered.baselineBrier+'.');
+   line('PREQUENTIAL (past-only) score over '+score.answered.evaluated+' held-forward case(s): check-conclusiveness Brier '+score.answered.modelBrier+' vs baseline '+score.answered.baselineBrier+'.');
    if(score.supportsConditionalOnAnswer.evaluated)
     line('Support given answer: Brier '+score.supportsConditionalOnAnswer.modelBrier+' vs baseline '+score.supportsConditionalOnAnswer.baselineBrier+' across '+score.supportsConditionalOnAnswer.evaluated+' answers. LOWER is better.');
   }else line('No out-of-sample scoring yet: enter enough chronologically distinct reference-backed outcomes.');

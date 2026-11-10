@@ -46,6 +46,7 @@ test('warmup and explicit opt-in: no confidence override for insufficient cases'
  assert.equal(before.overrides,0);assert.deepEqual(before.profiles,{});
  const after=calibratedProfiles(plan,await rows(8),{now:Date.parse(at(20))});
  assert.equal(after.overrides,2);
+ assert(!('pAnswered' in after.profiles['["A","B"]'])); // independent test outcome != peer reply probability
  assert(after.fit.pYes>.5);
  assert.equal(after.fit.heldOutValidated,false);
 });

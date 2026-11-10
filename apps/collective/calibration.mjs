@@ -168,6 +168,9 @@ export function scoreChronological(records,{tag='general',minGroups=DEFAULT_MIN_
 
 /** Default mode leaves the existing testimony prior untouched. Explicit opt-in is
  * required; fewer than 8 distinct declared cases results in NO profile overrides.
+ * IMPORTANT: external-check conclusiveness is not peer response probability.
+ * Only pYes is supplied to COLLECTIVE-009; pAnswered stays a separate
+ * network/model assumption until separately measured against actual inquiries.
  */
 export function calibratedProfiles(plan,records,{tag='general',now=Date.now(),minGroups=DEFAULT_MIN_GROUPS,
   halfLifeDays=21}={}){
@@ -176,7 +179,7 @@ export function calibratedProfiles(plan,records,{tag='general',now=Date.now(),mi
  const profiles={};
  if(fit.eligible){for(const c of plan.candidates.slice(0,8)){
   statement(c.from,c.to,'supports');
-  profiles[JSON.stringify([c.from,c.to])]={pYes:fit.pYes,pAnswered:fit.pAnswered};
+  profiles[JSON.stringify([c.from,c.to])]={pYes:fit.pYes};
  }}
  return {profiles,fit,overrides:Object.keys(profiles).length,
   guarantee:'opt-in author-declared outcome estimate, not an externally certified probability'};
