@@ -1,5 +1,6 @@
 import {answerPacket, append, makeBundle, makeNode, receive, replay, route, statement, verifyBundle} from "./kernel.mjs";
 import {openStore} from "./store.mjs";
+import {bindNetwork} from "./network-ui.mjs";
 
 const $=id=>document.getElementById(id);
 const state={store:null,ident:null,scope:null,events:[],nodes:new Map(),staged:null,lastAnswer:null};
@@ -132,6 +133,7 @@ async function start(){
     catch(e){setStatus("Clipboard unavailable; select the fingerprint to copy manually.",true);}
   });
   await refresh();
+  bindNetwork({state,refresh,setStatus,el});
   $("boot").hidden=true;$("workspace").hidden=false;
   setStatus("Local-first node ready. Your private signing key stays in this browser's storage.");
   if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});
