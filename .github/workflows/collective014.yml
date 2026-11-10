@@ -1,0 +1,36 @@
+name: COLLECTIVE-014 higher-order temporal regimes
+on:
+  push:
+    branches: [experiment/collective-014-trajectories-of-trajectories]
+  pull_request:
+    paths:
+      - 'apps/collective/**'
+      - 'test/collective014-*'
+      - '.github/workflows/collective014.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regimes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check PWA syntax, offline cache, and UI
+        run: |
+          for f in app store regime-forecast regime-ui trajectories temporal; do node --check "apps/collective/$f.mjs"; done
+          node --check apps/collective/sw.js
+          node -e "const fs=require('fs');for(const x of ['regime-ui.mjs','regime-forecast.mjs'])if(!fs.readFileSync('apps/collective/sw.js','utf8').includes(x))throw Error('Missing cache '+x);for(const x of ['regime-run','regime-results','regime-export'])if(!fs.readFileSync('apps/collective/index.html','utf8').includes(x))throw Error('Missing UI '+x)"
+      - name: Run historical and new regression tests
+        run: node --test test/*.test.mjs
+      - name: Produce machine-readable synthetic benchmark
+        run: node test/collective014-benchmark.mjs > collective014-benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: COLLECTIVE-014-MARKET-INSPIRED-REGIMES
+          path: |
+            collective014-benchmark.json
+            apps/collective/COLLECTIVE-014.md

@@ -251,6 +251,19 @@
       <p id="trajectory-progress" class="muted" aria-live="polite">No prediction without checked history.</p>
       <div class="trajectory-results" id="trajectory-results"></div>
     </section>
+    <section class="threads-panel" id="regime-lab">
+      <div class="network-head"><p class="eyebrow bright">10 / TRAJECTORIES OF TRAJECTORIES</p>
+        <h2>Is the pattern itself changing?</h2>
+        <p>Borrowing market-forecast methods for real-world check reports: momentum, acceleration, volatility clustering, possible periodicity and chronological holdout testing. No trading or automatic facts.</p></div>
+      <p id="regime-overview" class="muted"></p>
+      <div class="regime-controls">
+        <label>TIME BUCKET <select id="regime-bin"><option value="1">1 day</option><option value="7" selected>7 days</option><option value="14">14 days</option><option value="30">30 days</option></select></label>
+        <label>PURGED HISTORY GAP <select id="regime-gap"><option value="0">0 buckets</option><option value="1" selected>1 bucket</option><option value="2">2 buckets</option><option value="4">4 buckets</option></select></label>
+        <div class="button-row"><button id="regime-run" type="button">INVESTIGATE CHANGE REGIMES</button><button id="regime-export" class="secondary" type="button" disabled>EXPORT ANALYSIS</button></div>
+      </div>
+      <p id="regime-progress" class="muted" aria-live="polite">Ready for manually authorized analysis.</p>
+      <div id="regime-results" class="regime-results"></div>
+    </section>
     <section class="ledger-panel">
       <div><p class="eyebrow">LOCAL MEMORY / EVIDENCE</p><h2>Sources in this field</h2><div id="source-list"></div></div>
       <div><p class="eyebrow">IMMUTABLE SEQUENCE</p><h2>Latest accepted events</h2><ol id="log"></ol></div>
