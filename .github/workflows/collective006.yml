@@ -1,0 +1,43 @@
+name: COLLECTIVE-006 scenario forests and peer feedback
+on:
+  push:
+    branches:
+      - experiment/collective-006-what-if-multithread-feedback
+  pull_request:
+    paths:
+      - 'apps/collective/**'
+      - 'test/collective006-*'
+      - '.github/workflows/collective006.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-what-if-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check app modules
+        run: |
+          for file in apps/collective/{app,kernel,store,network,network-ui,routing,threads,thread-ui,feedback,sw}.mjs; do
+            if test -f "$file"; then node --check "$file"; fi
+          done
+          node --check apps/collective/sw.js
+      - name: Test hypothetical isolation and learning receipts
+        run: node --test test/collective006-threads.test.mjs test/collective006-feedback.test.mjs
+      - name: Keep original question-routing behavior bounded
+        run: node --test test/collective005-routing.test.mjs test/collective004-network.test.mjs test/collective-app.test.mjs
+      - name: Freeze actual synthetic results
+        run: node test/collective006-benchmark.mjs > collective006-benchmark.json
+      - name: Archive research receipts
+        uses: actions/upload-artifact@v4
+        with:
+          name: COLLECTIVE-006-WHAT-IF-AND-OUTCOME-RESEARCH
+          path: |
+            collective006-benchmark.json
+            apps/collective/COLLECTIVE-006.md
