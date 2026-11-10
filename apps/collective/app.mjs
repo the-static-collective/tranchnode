@@ -8,13 +8,14 @@ import {bindCalibrationUI} from './calibration-ui.mjs';
 import {bindTemporalUI} from './temporal-ui.mjs';
 import {bindDependencyUI} from './dependency-ui.mjs';
 import {bindTrajectoryUI} from './trajectory-ui.mjs';
+import {bindRegimeUI} from './regime-ui.mjs';
 import {feedbackReceipt,validateFeedbackLog,relevanceOfAdmission} from './feedback.mjs';
 import {localFrontier} from './routing.mjs';
 import {bindNetwork} from "./network-ui.mjs";
 
 const $=id=>document.getElementById(id);
 const state={store:null,ident:null,scope:null,events:[],nodes:new Map(),staged:null,stagedNetwork:null,lastAnswer:null,
- threadEvents:[],threads:new Map(),threadUI:null,inquiryUI:null,experimentUI:null,adaptiveUI:null,calibrationUI:null,calibrationRecords:[],calibrationHead:null,temporalUI:null,temporalRecords:[],temporalProjection:null,dependencyUI:null,correlatedProjection:null,trajectoryUI:null,threadReports:[],networkQuestionThreadId:null,feedback:[]};
+ threadEvents:[],threads:new Map(),threadUI:null,inquiryUI:null,experimentUI:null,adaptiveUI:null,calibrationUI:null,calibrationRecords:[],calibrationHead:null,temporalUI:null,temporalRecords:[],temporalProjection:null,dependencyUI:null,correlatedProjection:null,trajectoryUI:null,regimeUI:null,threadReports:[],networkQuestionThreadId:null,feedback:[]};
 let feedbackQueue=Promise.resolve();
 function recordFeedback(data){
  feedbackQueue=feedbackQueue.then(async()=>{const event=await feedbackReceipt(data);await state.store.recordFeedback(event);
@@ -32,8 +33,8 @@ async function refresh() {
   if(state.experimentUI)await state.experimentUI.refresh();
   if(state.temporalUI)await state.temporalUI.refresh();
   if(state.dependencyUI)await state.dependencyUI.refresh();
-  await state.trajectoryUI.refresh();
   if(state.trajectoryUI)await state.trajectoryUI.refresh();
+  if(state.regimeUI)await state.regimeUI.refresh();
   if(state.adaptiveUI)await state.adaptiveUI.refresh();
   if(state.calibrationUI)await state.calibrationUI.refresh();
   $("claim-list").replaceChildren();
@@ -179,12 +180,15 @@ async function start(){
   state.temporalUI=bindTemporalUI({state,setStatus,el});
   state.dependencyUI=bindDependencyUI({state,setStatus,el});
   state.trajectoryUI=bindTrajectoryUI({state,setStatus,el});
+  state.regimeUI=bindRegimeUI({state,setStatus,el});
   await state.inquiryUI.refresh();
   await state.experimentUI.refresh();
   await state.adaptiveUI.refresh();
   await state.calibrationUI.refresh();
   await state.temporalUI.refresh();
   await state.dependencyUI.refresh();
+  await state.trajectoryUI.refresh();
+  await state.regimeUI.refresh();
   $("boot").hidden=true;$("workspace").hidden=false;
   setStatus("Local-first node ready. Your private signing key stays in this browser's storage.");
   if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});
