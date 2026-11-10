@@ -19,3 +19,19 @@ main{max-width:1150px;margin:auto;padding:0 22px 40px}.hero{padding:58px 0 48px;
 .routing-card label{display:grid;gap:7px;margin-top:12px;font-size:.7rem;letter-spacing:.1em;font-weight:750;color:#d6e8d1}
 .routing-card select{border-radius:5px;background:#f9f9eb;color:#213a30;border:1px solid #a9b9a9;padding:11px;min-height:44px;max-width:100%}
 .routing-card .button-row{margin-top:14px}.routing-card .muted{color:#bdcfc1}
+
+/* COLLECTIVE-006: independent research-branch field */
+.threads-panel{margin:25px 0 20px;padding:28px;border-radius:9px;background:#223a32;border:1px solid #527361;color:#f4f7ea}
+.threads-panel .network-head{max-width:780px}.threads-panel h2{font:normal clamp(1.65rem,4vw,2.55rem) ui-serif,Georgia,serif;letter-spacing:-.03em;margin:5px 0 13px}
+.threads-panel h3{font:normal 1.35rem ui-serif,Georgia,serif;margin:14px 0 9px}
+.threads-panel .network-head p:not(.eyebrow){color:#c3d4c7;font-size:.84rem}
+.thread-create{display:grid;grid-template-columns:minmax(0,1fr) 205px;gap:18px;margin:24px 0}
+.thread-create .form,.thread-assume-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:12px}
+.thread-create .form button,.thread-assume-form button{grid-column:1/-1;justify-content:center}
+.threads-panel label{display:grid;gap:7px;color:#c4decb;font-size:.69rem;font-weight:700;letter-spacing:.07em}
+.threads-panel input,.threads-panel select{width:100%;min-height:44px;background:#f7f9ef;color:#152d24;border:1px solid #9ab1a1;border-radius:4px;padding:9px;font-size:.87rem;letter-spacing:normal}
+.thread-activity{padding:20px;border:1px solid #5e8971;border-radius:7px;display:flex;flex-direction:column;justify-content:center}.thread-activity strong{font-size:3.2rem;color:#dcef89;font-family:Georgia,serif;font-weight:normal;line-height:1.1}.thread-activity .muted{color:#bed5be}
+.thread-tools{padding:20px;background:#1a3029;border:1px solid #426956;border-radius:7px}.thread-tools>.button-row{margin:15px 0}.thread-tools .button-row button,.threads-panel .secondary{color:#e3f0d9;border-color:#688c73}.threads-panel button:not(.secondary){background:#d5e983;color:#1d3026;border-color:#d5e983}.threads-panel button:hover:not(:disabled){filter:brightness(.9)}
+.thread-assumptions{margin:16px 0;max-height:260px;overflow-y:auto}.assumption-row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:9px;border-top:1px solid #4b6656;font-size:.85rem}.assumption-row button{min-height:35px;padding:7px 10px}.threads-panel .muted{color:#acc6b2}
+.thread-comparison-section{margin-top:24px}.thread-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.thread-result{padding:17px;border:1px solid #617b68;border-radius:5px;background:#172c26;min-width:0;overflow-wrap:anywhere}.thread-result strong{font-size:.88rem;color:#d5e983}.thread-result small{display:block;font-size:.65rem;margin:6px 0}.thread-result p{margin:8px 0}.thread-verdict{font-size:.77rem;font-weight:700;color:#f1e1a1}.thread-path{font:normal 1.2rem Georgia,serif;color:#e9eeda}.thread-result .warn{color:#ffd4a6}
+@media(max-width:760px){.threads-panel{padding:19px}.thread-create,.thread-comparison{grid-template-columns:1fr}.thread-create .form,.thread-assume-form{grid-template-columns:1fr}.thread-tools{padding:14px}.thread-tools .button-row{flex-wrap:wrap}.thread-tools .button-row button{flex:1}.thread-activity{padding:13px}.threads-panel h2{font-size:1.8rem}}
