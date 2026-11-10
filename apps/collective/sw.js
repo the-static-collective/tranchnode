@@ -1,5 +1,5 @@
-const VERSION="tranch-collective-003-v2";
-const ASSETS=["./","./index.html","./app.mjs","./kernel.mjs","./store.mjs","./styles.css","./manifest.webmanifest","./icon.svg","./icon-192.png","./icon-512.png"];
+const VERSION="tranch-collective-004-v1";
+const ASSETS=["./","./index.html","./app.mjs","./network.mjs","./network-ui.mjs","./net-protocol.mjs","./kernel.mjs","./store.mjs","./styles.css","./manifest.webmanifest","./icon.svg","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(VERSION).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil(caches.keys().then(names=>Promise.all(names.filter(n=>n.startsWith("tranch-collective-")&&n!==VERSION).map(n=>caches.delete(n)))).then(()=>self.clients.claim())));
 self.addEventListener("fetch",event=>{
