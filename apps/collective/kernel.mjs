@@ -163,12 +163,35 @@ export function route(nodes,start,goal) {
   }
   return {status:"UNKNOWN_INSUFFICIENT_EVIDENCE",path:[],evidenceIds:[],tensions:[]};
 }
+export async function auditImportedSources(nodes) {
+  const cache=new Map();
+  let examined=0;
+  for (const n of nodes.values()) {
+    if (n.kind!=="source") continue;
+    const {envelope,packetId,originIssuer,originalNodeId,originalScope,statement:card}=n.content;
+    let signed=cache.get(packetId);
+    if (!signed) {
+      signed=await verifyBundle(envelope);
+      cache.set(packetId,signed);
+    }
+    if (signed.packetId!==packetId || signed.issuer!==originIssuer
+      || originalScope!=="local:"+originIssuer
+      || !signed.claims.some(c=>c.sourceNodeId===originalNodeId
+              && canonical(c.statement)===canonical(card))) {
+      throw new Error("Signed source ancestry failed re-entry verification");
+    }
+    examined++;
+  }
+  return examined;
+}
 export async function answerPacket(events,scopeId,start,goal) {
   const {nodes,head}=await replay(events,scopeId);
+  const verifiedImportedCount=await auditImportedSources(nodes);
   const result=route(nodes,start,goal);
   const evidence=result.evidenceIds.map(id=>nodes.get(id));
   return {schema:"motif.collective003.answer.v1", question:{start,goal},result,
     sourceEvidence:evidence, ledgerHead:head, localScope:scopeId,
-    verification:"replayed-local-hashes-and-import-signatures-at-admission",
+    verifiedImportedSources:verifiedImportedCount,
+    verification:"replayed-local-hashes-and-reverified-all-imported-signatures-and-card-bindings",
     realWorldFactCertified:false, automaticallyAdopted:false};
 }
