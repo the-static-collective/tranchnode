@@ -1,0 +1,42 @@
+name: COLLECTIVE-003 PWA and proof exchange
+on:
+  push:
+    branches:
+      - experiment/collective-003-installable-node-pwa
+  pull_request:
+    paths:
+      - 'apps/collective/**'
+      - 'test/collective-app.test.mjs'
+      - '.github/workflows/collective-app.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof-carrying-pwa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check browser module syntax
+        run: |
+          node --check apps/collective/kernel.mjs
+          node --check apps/collective/app.mjs
+          node --check apps/collective/store.mjs
+          node --check apps/collective/sw.js
+      - name: Run distributed witness and falsification tests
+        run: node --test test/collective-app.test.mjs
+      - name: Validate web manifest and raster icons
+        run: |
+          node -e "const m=require('./apps/collective/manifest.webmanifest');" || node -e "let fs=require('fs'),m=JSON.parse(fs.readFileSync('apps/collective/manifest.webmanifest'));if(!m.icons.some(x=>x.sizes==='192x192')||!m.icons.some(x=>x.sizes==='512x512'))process.exit(1)"
+          test -s apps/collective/icon-192.png
+          test -s apps/collective/icon-512.png
+      - name: Upload installable static PWA folder for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: COLLECTIVE-003-INSTALLABLE-PWA-RESEARCH
+          path: apps/collective/
