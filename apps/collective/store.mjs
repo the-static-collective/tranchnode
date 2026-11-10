@@ -1,9 +1,10 @@
 import {identity, replay} from "./kernel.mjs";
 import {replayThreads} from "./threads.mjs";
 import {validateFeedbackLog} from "./feedback.mjs";
+import {replayInquiryReceipts,MAX_RUNS,MAX_ALLOCATION} from "./inquiry-receipts.mjs";
 
 const DB_NAME="tranch-collective-003";
-const VERSION=2;
+const VERSION=3;
 
 function request(r) {return new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 function finished(t) {return new Promise((resolve,reject)=>{t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error||new Error("Transaction aborted"));});}
@@ -15,6 +16,8 @@ export async function openStore() {
     if (!db.objectStoreNames.contains("events")) db.createObjectStore("events",{keyPath:"sequence"});
     if (!db.objectStoreNames.contains("thread_events")) db.createObjectStore("thread_events",{keyPath:"slot"});
     if (!db.objectStoreNames.contains("feedback")) db.createObjectStore("feedback",{keyPath:"id"});
+    if (!db.objectStoreNames.contains("inquiry_runs")) db.createObjectStore("inquiry_runs",{keyPath:"id"});
+    if (!db.objectStoreNames.contains("inquiry_budget")) db.createObjectStore("inquiry_budget",{keyPath:"threadId"});
   };
   const db=await request(open);
   async function getIdentity() {
@@ -63,5 +66,24 @@ export async function openStore() {
     await finished(tx);
     return event.id;
   }
-  return {db,getIdentity,getEvents,commit,getThreadEvents,commitThreads,getFeedback,recordFeedback};
+  async function getInquiryRuns(scope){
+    const runs=await request(db.transaction('inquiry_runs','readonly').objectStore('inquiry_runs').getAll());
+    await replayInquiryReceipts(runs,scope);return runs;
+  }
+  async function recordInquiryRun(receipt,scope){
+    const runs=await getInquiryRuns(scope);
+    if(runs.length>=MAX_RUNS)throw Error('Local research receipt cap reached');
+    await replayInquiryReceipts([...runs,receipt],scope);
+    const tx=db.transaction('inquiry_runs','readwrite');tx.objectStore('inquiry_runs').add(receipt);
+    await finished(tx);return receipt.id;
+  }
+  async function getInquiryBudgets(){return await request(db.transaction('inquiry_budget','readonly').objectStore('inquiry_budget').getAll());}
+  async function setInquiryBudget(threadId,allocation){
+    if(!/^thread:[0-9a-f]{64}$/.test(threadId)||!Number.isSafeInteger(allocation)
+       ||allocation<2||allocation>MAX_ALLOCATION)throw Error('Invalid thread budget setting');
+    const tx=db.transaction('inquiry_budget','readwrite');
+    tx.objectStore('inquiry_budget').put({threadId,allocation});await finished(tx);
+  }
+  return {db,getIdentity,getEvents,commit,getThreadEvents,commitThreads,getFeedback,recordFeedback,
+      getInquiryRuns,recordInquiryRun,getInquiryBudgets,setInquiryBudget};
 }
