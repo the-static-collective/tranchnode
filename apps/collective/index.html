@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#142b29">
+  <meta name="description" content="An offline-first, proof-carrying collective intelligence experiment.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; connect-src 'self'">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="stylesheet" href="./styles.css">
+  <title>TranchNode | Collective</title>
+</head>
+<body>
+<header class="topbar">
+  <div class="mark" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div><div class="eyebrow">STATIC COLLECTIVE / FIELD LAB</div><div class="wordmark">TRANCH<span>NODE</span></div></div>
+  <span class="top-chip">003 · OFFLINE FIRST</span>
+</header>
+<main>
+  <section class="hero">
+    <p class="eyebrow bright">MOTIF · COLLECTIVE INTELLIGENCE</p>
+    <h1>One node. A wider field.</h1>
+    <p>A small, independently operated witness. Keep your own assertions. Exchange only what you choose. Investigate what the combined evidence supports.</p>
+    <div class="hero-meta"><span>LOCAL MEMORY</span><span>·</span><span>SIGNED TESTIMONY</span><span>·</span><span>VISIBLE UNCERTAINTY</span></div>
+  </section>
+  <p class="status" id="status" role="status" aria-live="polite">Initializing local node…</p>
+  <p id="boot">Creating or opening your locally held identity and evidence ledger…</p>
+  <div id="workspace" hidden>
+    <section class="identity">
+      <div><p class="eyebrow">YOUR SOVEREIGN NODE</p><h2 id="fingerprint">...</h2><p class="fingerprint" id="node-id"></p><p class="muted">A signing-key fingerprint, not an independently verified person. This browser holds your private key.</p></div>
+      <button class="secondary" id="copy-id" type="button">COPY FINGERPRINT</button>
+    </section>
+    <div class="metrics" aria-label="Node activity">
+      <div><strong id="stat-local">0</strong><span>MY ASSERTIONS</span></div>
+      <div><strong id="stat-remote">0</strong><span>RECEIVED SOURCES</span></div>
+      <div><strong id="stat-events">0</strong><span>ACCEPTED EVENTS</span></div>
+    </div>
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-heading"><span class="step">01 / RECORD</span><h2>What do you know?</h2><p>Record a directed relation as an assertion. It is not automatically fact.</p></div>
+        <form id="claim-form" class="form">
+          <label>FROM <input id="from" required maxlength="90" placeholder="A · source or place"></label>
+          <label>TO <input id="to" required maxlength="90" placeholder="B · destination"></label>
+          <label>RELATION <select id="polarity"><option value="supports">Connection asserted</option><option value="denies">Connection denied</option></select></label>
+          <button type="submit">ADD TO LOCAL LEDGER <span>↗</span></button>
+        </form>
+      </section>
+      <section class="panel">
+        <div class="panel-heading"><span class="step">02 / PROJECT</span><h2>Share a fragment.</h2><p>Select only your own assertions. Export a signed, portable testimony bundle.</p></div>
+        <div class="claims" id="claim-list"></div>
+        <button id="share" type="button">EXPORT SELECTED TESTIMONY <span>↗</span></button>
+        <p id="out-preview" class="muted"></p>
+      </section>
+      <section class="panel">
+        <div class="panel-heading"><span class="step">03 / RECEIVE</span><h2>Hear another node.</h2><p>Import a received JSON bundle. Verify its cryptographic signature, inspect the statements, then admit explicitly.</p></div>
+        <label class="file-label">CHOOSE TESTIMONY FILE <input type="file" id="packet-file" accept="application/json,.json"></label>
+        <label>OR PASTE JSON <textarea id="inbox" rows="5" spellcheck="false" placeholder='{"payload":{...},"signature":"..."}'></textarea></label>
+        <div class="button-row"><button type="button" class="secondary" id="preview">VERIFY AND PREVIEW</button><button id="admit" disabled type="button">ADMIT SOURCES</button></div>
+        <div id="in-preview" class="preview" aria-live="polite"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-heading"><span class="step">04 / INVESTIGATE</span><h2>What follows?</h2><p>MOTIF's bounded reachability inquiry assembles a provenance-linked response and preserves disagreements.</p></div>
+        <form id="question-form" class="form">
+          <label>START <input id="question-from" required maxlength="90" placeholder="A"></label>
+          <label>DESTINATION <input id="question-to" required maxlength="90" placeholder="D"></label>
+          <button type="submit">INVESTIGATE PATH <span>→</span></button>
+        </form>
+        <div id="answer" class="answer" aria-live="polite"></div>
+        <button type="button" id="download-answer" class="secondary" disabled>EXPORT PROOF PACKET</button>
+      </section>
+    </div>
+    <section class="ledger-panel">
+      <div><p class="eyebrow">LOCAL MEMORY / EVIDENCE</p><h2>Sources in this field</h2><div id="source-list"></div></div>
+      <div><p class="eyebrow">IMMUTABLE SEQUENCE</p><h2>Latest accepted events</h2><ol id="log"></ol></div>
+    </section>
+    <section class="warning">
+      <strong>RESEARCH-ONLY FIELD NODE</strong>
+      <p>This is a local-first installable prototype, not an open peer-to-peer network or an authority for factual claims. Communication uses deliberately shared files, not automatic discovery. Public-key signatures prove possession of a signing key—not the truth of claims or a human's identity. Do not enter confidential or sensitive information. Browser storage can be lost if app data is cleared.</p>
+    </section>
+  </div>
+</main>
+<footer>TRANCHNODE × MOTIF <span>INDEPENDENCE · PROVENANCE · RE-ENTRY</span></footer>
+<script type="module" src="./app.mjs"></script>
+</body>
+</html>

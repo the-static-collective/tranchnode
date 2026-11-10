@@ -1,0 +1,33 @@
+name: Deploy TranchNode Collective PWA to GitHub Pages
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/collective/**'
+      - '.github/workflows/collective-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: tranch-collective-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./apps/collective
+      - id: deployment
+        uses: actions/deploy-pages@v4
