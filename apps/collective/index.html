@@ -15,7 +15,7 @@
 <header class="topbar">
   <div class="mark" aria-hidden="true"><i></i><i></i><i></i></div>
   <div><div class="eyebrow">STATIC COLLECTIVE / FIELD LAB</div><div class="wordmark">TRANCH<span>NODE</span></div></div>
-  <span class="top-chip">004 · LIVING NETWORK</span>
+  <span class="top-chip">005 · PRIVATE ROUTING</span>
 </header>
 <main>
   <section class="hero">
@@ -83,8 +83,17 @@
       </div>
       <h3>Room participants</h3><div id="peer-list" aria-live="polite"></div>
       <p class="network-explain">Connect to a discovered peer, inspect their signed-key fingerprint, and explicitly approve the session. Compare fingerprints separately if you need confidence about who controls a key. Each side must approve before exchanging questions or evidence.</p>
-      <div class="network-actions"><button type="button" id="ask-room">ASK APPROVED PEERS ABOUT THE PATH ABOVE <span>↗</span></button>
-        <span class="muted">Only the start/destination labels are sent; peers decide whether to answer.</span></div>
+      <div class="routing-card">
+        <p class="eyebrow bright">06 / LOCAL QUESTION ROUTER</p>
+        <h3>Ask where the evidence points.</h3>
+        <p>Suggestions use only testimony previously admitted on this device and approved peers. Unknown peers remain candidates. Ranking does not contact anyone. Sending requires your explicit click.</p>
+        <button type="button" id="suggest-peer" class="secondary">SUGGEST A PEER (LOCAL ONLY)</button>
+        <label>CHOOSE A PEER <select id="routing-peer" disabled aria-label="Peer selected for question"><option>No suggestion yet</option></select></label>
+        <p id="routing-explain" class="muted" aria-live="polite">No ranking has been calculated.</p>
+        <div class="button-row"><button type="button" id="ask-suggested" disabled>ASK CHOSEN PEER</button><button type="button" id="try-next" class="secondary" disabled>PREVIEW NEXT CANDIDATE</button></div>
+      </div>
+      <div class="network-actions"><button type="button" id="ask-room">ASK ALL APPROVED PEERS (MANUAL BROADCAST) <span>↗</span></button>
+        <span class="muted">Explicit broadcast: sends the start/destination labels to ALL approved peers. No evidence is disclosed automatically.</span></div>
       <div class="network-inbox"><div><h3>Questions requesting testimony</h3><div id="inquiries"><p class="muted">No unanswered inquiries.</p></div></div>
         <div><h3>Evidence received for review</h3><div id="evidence-inbox"><p class="muted">No new responses.</p></div></div></div>
     </section>
