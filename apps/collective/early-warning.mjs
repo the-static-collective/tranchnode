@@ -121,13 +121,15 @@ export function forecastEarlyWarning({records,targetNode,sourceNodes,binDays=7,l
    absenceNotNegativeEvidence:true,worldTruthCertified:false,automaticExternalActions:0};
  const last=Math.max(...indices,earliest),latestT=Math.min(last,observedEnd);
  const forecastAgeBins=observedEnd-latestT;
+ // Keep research responsive on modest phones: bound historical calendar search.
+ const historyWindowStart=Math.max(earliest,latestT-127);
  const periods=[];
  // Need >=12 calendar bins of history before an early-warning decision.
- for(let t=earliest+14;t<=latestT;t++){
+ for(let t=historyWindowStart+14;t<=latestT;t++){
   const current=signalFeatures(t,series,{sourceNodes,leadBins}),base=targetBaseline(series.get('target'),t);
   if(!current||!base)continue;
   const samples=[];
-  for(let s=earliest+12;s+leadBins<=t-gapBins;s++){
+  for(let s=historyWindowStart+12;s+leadBins<=t-gapBins;s++){
    if(!series.get('target').has(s+leadBins))continue;
    const x=signalFeatures(s,series,{sourceNodes,leadBins});if(!x)continue;
    samples.push({x:x.features,y:series.get('target').get(s+leadBins),at:s,targetAt:s+leadBins});
@@ -179,7 +181,7 @@ export function forecastEarlyWarning({records,targetNode,sourceNodes,binDays=7,l
  return {schema:EARLY_SCHEMA,status:!report?'INSUFFICIENT_HELDOUT_EVIDENCE':
   report.modelImprovementVsEWMA<0?'COMBINED_MODEL_UNDERPERFORMS':'EXPLORATORY_WARNING_AVAILABLE',
   targetNode,sourceNodes,binDays,leadBins,gapBins,asOf:new Date(now).toISOString(),forecastAgeBins,
-  lastTargetCheckedBin:latestT,predictedFutureReportBin:latestT+leadBins,
+  lastTargetCheckedBin:latestT,predictedFutureReportBin:latestT+leadBins,trainingWindowMaxCalendarBins:128,
   forecast,evaluation:report,weakSignalCount:recent?.signals.filter(s=>s.weakAlert).length??0,
   overlappingDeclaredReferencePairs:shared,provenanceReceipts:relevant.map(n=>({nodeId:n,checks:data.get(n).receiptIds,
    omittedUnknownBins:data.get(n).missing,identicalReferencesExcluded:data.get(n).echoes})),
