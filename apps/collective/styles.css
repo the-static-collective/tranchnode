@@ -35,3 +35,14 @@ main{max-width:1150px;margin:auto;padding:0 22px 40px}.hero{padding:58px 0 48px;
 .thread-assumptions{margin:16px 0;max-height:260px;overflow-y:auto}.assumption-row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:9px;border-top:1px solid #4b6656;font-size:.85rem}.assumption-row button{min-height:35px;padding:7px 10px}.threads-panel .muted{color:#acc6b2}
 .thread-comparison-section{margin-top:24px}.thread-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.thread-result{padding:17px;border:1px solid #617b68;border-radius:5px;background:#172c26;min-width:0;overflow-wrap:anywhere}.thread-result strong{font-size:.88rem;color:#d5e983}.thread-result small{display:block;font-size:.65rem;margin:6px 0}.thread-result p{margin:8px 0}.thread-verdict{font-size:.77rem;font-weight:700;color:#f1e1a1}.thread-path{font:normal 1.2rem Georgia,serif;color:#e9eeda}.thread-result .warn{color:#ffd4a6}
 @media(max-width:760px){.threads-panel{padding:19px}.thread-create,.thread-comparison{grid-template-columns:1fr}.thread-create .form,.thread-assume-form{grid-template-columns:1fr}.thread-tools{padding:14px}.thread-tools .button-row{flex-wrap:wrap}.thread-tools .button-row button{flex:1}.thread-activity{padding:13px}.threads-panel h2{font-size:1.8rem}}
+
+/* COLLECTIVE-007 bounded parallel inquiry workbench */
+.investigation-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:12px;margin:15px 0 25px}
+.investigation-row,.inquiry-result{border:1px solid #4b685f;background:#1c332e;padding:16px;border-radius:7px;display:flex;flex-direction:column;gap:8px;overflow-wrap:anywhere}
+.investigation-row strong,.inquiry-result strong{color:#f4f9e9}.investigation-row small{display:block}
+.inquiry-allowance{display:flex;gap:12px;justify-content:space-between;align-items:center;color:#afccbb;font-size:.62rem;letter-spacing:.07em}
+.inquiry-allowance input{width:75px;min-height:40px;border-radius:4px;border:1px solid #73907e;background:#eef6e6;color:#21382f;padding:8px;font-size:1rem}
+.inquiry-result p{margin:1px 0}.inquiry-candidate{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #465d50;padding-top:9px;overflow-wrap:anywhere}
+.inquiry-candidate>span{font-size:.78rem}.inquiry-candidate button{flex-shrink:0;font-size:.65rem;border-color:#91b39f;color:#e7f2e3}
+#inquiry-lab h3{margin-top:24px}#inquiry-lab .muted{color:#b7cbbf}#inquiry-cross-links{border-left:2px solid #617b65;padding-left:12px}
+@media(max-width:620px){.inquiry-candidate{flex-wrap:wrap}.inquiry-candidate button{width:100%}}
