@@ -75,3 +75,17 @@ main{max-width:1150px;margin:auto;padding:0 22px 40px}.hero{padding:58px 0 48px;
 .adaptive-card button{margin-top:12px}
 .adaptive-alert{border-left:3px solid #dcef89;padding:9px 15px;background:#29483a;font-size:.83rem;color:#f0f5e1}
 @media(max-width:760px){.adaptive-results{grid-template-columns:1fr}}
+
+/* COLLECTIVE-010 — reference-linked adjudication and prequential forecast checks */
+.calibration-optin{display:flex!important;align-items:center;gap:10px;margin:18px 0 12px;color:#dcefae!important;font-size:.74rem;line-height:1.45}
+.calibration-optin input,.calibration-declaration input{height:18px;min-height:18px;width:18px;flex:none;accent-color:#b2d37d}
+.calibration-tag-choice{display:flex!important;align-items:center;gap:12px;margin:8px 0 18px;font-size:.7rem;color:#b8d4c5!important}
+.calibration-tag-choice input{width:160px;min-height:38px;border-radius:4px;border:1px solid #759580;background:#fafbee;color:#234333;padding:9px}
+.calibration-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0 22px}
+.calibration-form label{min-width:0}.calibration-form input,.calibration-form select{background:#f7f9ef;color:#1a382b;border:1px solid #8da995;min-height:45px;padding:10px;border-radius:5px;width:100%}
+.calibration-form .calibration-wide{grid-column:1/-1}
+.calibration-form .calibration-declaration{display:flex;align-items:center;gap:13px;line-height:1.5;letter-spacing:normal;font-weight:500}
+.calibration-count{display:flex;align-items:center;gap:13px;margin-top:15px}.calibration-count strong{font:normal 2.4rem Georgia,serif;color:#dcef89}
+.calibration-results{background:#1a342a;border:1px solid #4c7059;border-radius:6px;padding:13px 19px;color:#f1f9e9;margin:18px 0}
+.calibration-results p{margin:9px 0;font-size:.82rem}.calibration-results .calibration-summary{color:#e0f0aa;font-weight:700}
+@media(max-width:760px){.calibration-form{grid-template-columns:1fr}.calibration-optin{align-items:flex-start}.calibration-tag-choice{display:grid!important}.calibration-form .calibration-wide{grid-column:1}}

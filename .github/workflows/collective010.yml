@@ -1,0 +1,41 @@
+name: COLLECTIVE-010 resolution calibration and falsification
+on:
+  push:
+    branches:
+      - experiment/collective-010-calibration-claims-not-echoes
+  pull_request:
+    paths:
+      - 'apps/collective/**'
+      - 'test/collective010-*'
+      - '.github/workflows/collective010.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax, app integration, and offline precache checks
+        run: |
+          for file in apps/collective/{calibration,calibration-ui,adaptive-ui,app,store}.mjs; do node --check "$file"; done
+          node --check apps/collective/sw.js
+          node -e "const f=require('fs').readFileSync('apps/collective/sw.js','utf8');for(const s of ['calibration.mjs','calibration-ui.mjs'])if(!f.includes(s))throw Error('Offline module missing: '+s)"
+          node -e "const f=require('fs').readFileSync('apps/collective/index.html','utf8');for(const s of ['calibration-record-form','adaptive-use-checks'])if(!f.includes(s))throw Error('User interface control missing: '+s)"
+      - name: Resolve confidence falsifiers, no leakage and source group anti-echo tests
+        run: node --test test/collective010-calibration.test.mjs
+      - name: Regression across earlier research kernels
+        run: node --test test/collective009-policy.test.mjs test/collective009-receipts.test.mjs test/collective008-planner.test.mjs test/collective007-inquiry.test.mjs test/collective007-worker.test.mjs test/collective006-threads.test.mjs test/collective006-feedback.test.mjs test/collective005-routing.test.mjs test/collective004-network.test.mjs test/collective-app.test.mjs
+      - name: Frozen synthetic Brier/log-loss and concept drift benchmark
+        run: node test/collective010-benchmark.mjs collective010-benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: COLLECTIVE-010-CALIBRATION-FALSIFIERS
+          path: |
+            collective010-benchmark.json
+            test/collective010-*.mjs
+            apps/collective/COLLECTIVE-010.md

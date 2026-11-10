@@ -4,9 +4,10 @@ import {validateFeedbackLog} from "./feedback.mjs";
 import {replayInquiryReceipts,MAX_RUNS,MAX_ALLOCATION} from "./inquiry-receipts.mjs";
 import {replayPlanReceipts,MAX_PLAN_RECEIPTS} from "./experiment-receipts.mjs";
 import {replayAdaptiveReceipts,MAX_ADAPTIVE_RECEIPTS} from "./adaptive-receipts.mjs";
+import {auditResolutionReceipts,MAX_RESOLUTIONS} from "./calibration.mjs";
 
 const DB_NAME="tranch-collective-003";
-const VERSION=5;
+const VERSION=6;
 
 function request(r) {return new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 function finished(t) {return new Promise((resolve,reject)=>{t.oncomplete=()=>resolve();t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error||new Error("Transaction aborted"));});}
@@ -22,6 +23,7 @@ export async function openStore() {
     if (!db.objectStoreNames.contains("inquiry_budget")) db.createObjectStore("inquiry_budget",{keyPath:"threadId"});
     if (!db.objectStoreNames.contains("experiment_plans")) db.createObjectStore("experiment_plans",{keyPath:"id"});
     if (!db.objectStoreNames.contains("adaptive_plans")) db.createObjectStore("adaptive_plans",{keyPath:"id"});
+    if (!db.objectStoreNames.contains("resolution_checks")) db.createObjectStore("resolution_checks",{keyPath:"id"});
   };
   const db=await request(open);
   async function getIdentity() {
@@ -112,7 +114,19 @@ export async function openStore() {
     const tx=db.transaction('adaptive_plans','readwrite');
     tx.objectStore('adaptive_plans').add(receipt);await finished(tx);return receipt.id;
   }
+  async function getResolutionReceipts(scope){
+    const records=await request(db.transaction('resolution_checks','readonly').objectStore('resolution_checks').getAll());
+    await auditResolutionReceipts(records,scope);return records.sort((a,b)=>a.at.localeCompare(b.at)||a.caseId.localeCompare(b.caseId));
+  }
+  async function recordResolutionReceipt(receipt,scope){
+    const records=await getResolutionReceipts(scope);
+    if(records.length>=MAX_RESOLUTIONS)throw Error('Resolution history is full; do not erase original checks');
+    await auditResolutionReceipts([...records,receipt],scope);
+    const tx=db.transaction('resolution_checks','readwrite');tx.objectStore('resolution_checks').add(receipt);
+    await finished(tx);return receipt.id;
+  }
   return {db,getIdentity,getEvents,commit,getThreadEvents,commitThreads,getFeedback,recordFeedback,
       getInquiryRuns,recordInquiryRun,getInquiryBudgets,setInquiryBudget,
-      getExperimentPlans,recordExperimentPlan,getAdaptivePlans,recordAdaptivePlan};
+      getExperimentPlans,recordExperimentPlan,getAdaptivePlans,recordAdaptivePlan,
+      getResolutionReceipts,recordResolutionReceipt};
 }

@@ -3,6 +3,7 @@ import {auditImportedSources} from './kernel.mjs';
 import {planFreshness} from './experiment-receipts.mjs';
 import {makeAdaptiveReceipt,adaptiveFreshness} from './adaptive-receipts.mjs';
 import {ADAPTIVE_SCHEMA,strategyChange,MAX_HISTORY} from './adaptive-strategy.mjs';
+import {calibratedProfiles} from './calibration.mjs';
 export function bindAdaptiveUI({state,setStatus,el}){
  const $=id=>document.getElementById(id);
  let plans=[],previous=null,busy=false,sourcePlans=[],research=[];
@@ -47,7 +48,11 @@ export function bindAdaptiveUI({state,setStatus,el}){
   $('adaptive-candidates').replaceChildren();
   if(!receipt){$('adaptive-candidates').append(el('p','muted','First generate a current Aperture Strategy proposal above. No model was run.'));return;}
   const policy=receipt.policy;
-  const fresh=adaptiveFreshness(receipt,{ledgerHead:head(),threads:state.threads,sourcePlans});
+  const sourceFresh=adaptiveFreshness(receipt,{ledgerHead:head(),threads:state.threads,sourcePlans});
+  const oldCal=receipt.policy?.calibrationInput;
+  const fresh=sourceFresh==='CURRENT_SNAPSHOT'&&oldCal?.enabled &&
+    JSON.stringify(oldCal.resolutionIds)!==JSON.stringify(state.calibrationRecords.map(x=>x.id))
+       ? 'STALE_RESOLUTION_EVIDENCE' : sourceFresh;
   $('adaptive-status').textContent=fresh.replaceAll('_',' ')+' · '+policy.status.replaceAll('_',' ')+' · '+policy.creditsSpent+'/'+policy.creditsLimit+' route probes · '+policy.questionCount+' considered';
   if(fresh!=='CURRENT_SNAPSHOT')$('adaptive-alert').textContent='Evidence or a hypothesis changed. Prior strategy is stale; run current thread investigations and planner again. No action is taken automatically.';
   else $('adaptive-alert').textContent=policy.recommendation?('Candidate: '+policy.recommendation.from+' → '+policy.recommendation.to+' · estimated 2-step net gain '+policy.recommendation.estimatedTwoStepNetGain):'Abstained: modeled inquiry cost outweighs possible progress.';
@@ -74,6 +79,7 @@ export function bindAdaptiveUI({state,setStatus,el}){
   plans=await state.store.getAdaptivePlans(state.scope);
   sourcePlans=await state.store.getExperimentPlans(state.scope);
   research=await state.store.getInquiryRuns(state.scope);
+  state.calibrationRecords=await state.store.getResolutionReceipts(state.scope);
   previous=plans.sort((a,b)=>a.at.localeCompare(b.at)||a.id.localeCompare(b.id)).at(-1)||null;
   $('adaptive-run').disabled=busy||!latestSourcePlan();$('adaptive-export').disabled=!previous;
   display(previous);
@@ -89,8 +95,19 @@ export function bindAdaptiveUI({state,setStatus,el}){
       defaultSupportsProbability:Number($('adaptive-prob').value),
       defaultAnsweredProbability:Number($('adaptive-answerable').value),credits:Number($('adaptive-credits').value)};
    $('adaptive-progress').textContent='Simulating two-step responses and possible follow-up experiments locally…';
+   const useChecks=$('adaptive-use-checks').checked;
+   const resolutionSnapshot=useChecks?await state.store.getResolutionReceipts(state.scope):[];
+   const checks=useChecks?calibratedProfiles(source.plan,resolutionSnapshot,{
+      tag:$('adaptive-calibration-tag').value.trim()||'general',now:Date.now()}):null;
+   if(useChecks&&!checks.fit.eligible)throw Error('Cannot enable checked-outcome model: fewer than 8 independent declared groups in the selected family.');
    const result=await work({jobs:jobsFrom(source.plan),nodes,ledgerHead:head(),experimentPlan:source.plan,
-     history:historicalTestimony(),options});
+     history:historicalTestimony(),options,profiles:checks?.profiles??{}});
+   result.calibrationInput={enabled:useChecks,tag:checks?.fit.tag??null,
+     declaredGroups:checks?.fit.declaredIndependentGroups??0,
+     note:useChecks?'User-supplied reference checks; independence NOT verified by software':'Uncalibrated default testimony assumptions',
+     resolutionIds:resolutionSnapshot.map(x=>x.id)};
+   if(useChecks&&JSON.stringify((await state.store.getResolutionReceipts(state.scope)).map(x=>x.id))!==JSON.stringify(result.calibrationInput.resolutionIds))
+     throw Error('New resolution checks arrived while strategy was running; rerun to prevent stale training assumptions');
    if(result.schema!==ADAPTIVE_SCHEMA)throw Error('Unexpected adaptive strategy result');
    const presentEvents=await state.store.getEvents();
    if((presentEvents.at(-1)?.id??null)!==result.ledgerHead)throw Error('New evidence arrived during strategy run; recompute against the current ledger');
