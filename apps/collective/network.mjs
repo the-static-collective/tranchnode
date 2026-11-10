@@ -104,6 +104,8 @@ export class CollectiveMesh {
  ask(from,to){const q=validateQuestion(from,to);let sent=0;
   for(const [id,request] of this.inquiries)if(Date.now()>request.expires)this.inquiries.delete(id);
   if(this.inquiries.size>=32)throw Error('Too many pending inquiries');
+  for(const [id,request] of this.inquiries)if(Date.now()>request.expires)this.inquiries.delete(id);
+  if(this.inquiries.size>=32)throw Error('Too many pending inquiries');
   for(const [session,p] of this.peers){if(!p.approved||p.channel?.readyState!=='open')continue;
    const id=randomSecret();this.inquiries.set(id,{session,expires:Date.now()+5*60*1000});
    this.transmit(session,{kind:'ask',id,...q});sent++;}
