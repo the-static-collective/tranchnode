@@ -1,3 +1,5 @@
+import {auditImportedSources} from './kernel.mjs';
+import {rankPeers,nextSuggestedPeer} from './routing.mjs';
 import {CollectiveMesh} from './network.mjs';
 import {randomSecret,validRelayURL,validRoom} from './net-protocol.mjs';
 
@@ -5,12 +7,42 @@ export function bindNetwork({state,refresh,setStatus,el}){
  const $=id=>document.getElementById(id);let mesh=null;
  const short=s=>(s||'').replace('node:','').slice(0,14);
  const info=(text,bad=false)=>setStatus(text,bad);
+ const attempted=new Map();let ranked=[];
+ const qkey=()=>JSON.stringify([$('question-from').value.trim(),$('question-to').value.trim()]);
+ const asked=()=>attempted.get(qkey())||new Set();
+ function explainChosen(){
+  const p=ranked.find(x=>x.session===$('routing-peer').value);
+  $('routing-explain').textContent=p?('Score '+p.score+'; '+p.reason+'. '+(asked().has(p.session)?'Already asked about this path.':'Not yet asked about this path.')+
+   ' This is evidence of prior disclosure, not a guarantee of an undisclosed answer.'):'No peer selected.';
+ }
+ function renderRank(){
+  const select=$('routing-peer');select.replaceChildren();
+  for(const p of ranked){
+   const option=el('option',null,p.issuer.replace('node:','').slice(0,14)+' · '+(p.score>0?'previous evidence':'unknown relevance')+(asked().has(p.session)?' · asked':''));
+   option.value=p.session;select.append(option);
+  }
+  select.disabled=!ranked.length;$('ask-suggested').disabled=!ranked.length;$('try-next').disabled=!ranked.length;
+  if(!ranked.length){select.append(el('option',null,'No approved peers'));$('routing-explain').textContent='No approved peers to rank.';return;}
+  const next=nextSuggestedPeer(ranked,asked());if(next)select.value=next.session;
+  explainChosen();
+ }
+ async function suggest(){
+  if(!mesh)throw Error('Join a room first');
+  await auditImportedSources(state.nodes);
+  ranked=rankPeers({nodes:state.nodes,peers:mesh.snapshots(),from:$('question-from').value,to:$('question-to').value});
+  renderRank();
+ }
+ function remember(sessions){
+  const key=qkey(),set=attempted.get(key)||new Set();
+  for(const session of sessions)set.add(session);attempted.set(key,set);
+ }
+
  const relayInput=$('relay-url'),roomInput=$('room-code');
  if(['localhost','127.0.0.1'].includes(location.hostname))relayInput.value='ws://127.0.0.1:8765/signal';
  // Fragment contains invite capability, not transmitted to the page host in HTTP requests.
  try{const encoded=new URLSearchParams(location.hash.slice(1)).get('invite');if(encoded){const invite=JSON.parse(atob(encoded.replaceAll('-','+').replaceAll('_','/')));if(validRoom(invite.room)&&validRelayURL(invite.relay)){roomInput.value=invite.room;relayInput.value=invite.relay;info('Invitation loaded. Join deliberately when ready.');}}}catch{}
  function setConnected(v){$('join-room').disabled=v;$('new-room').disabled=v;$('leave-room').disabled=!v;$('copy-invite').disabled=!v;}
- function renderPeers(peers){const list=$('peer-list');list.replaceChildren();
+ function renderPeers(peers){ranked=[];$('routing-peer').disabled=true;$('ask-suggested').disabled=true;$('try-next').disabled=true;const list=$('peer-list');list.replaceChildren();
   if(!peers.length){list.append(el('p','muted','No other nodes in this invite-only room.'));return;}
   for(const p of peers){
    const row=el('div','peer-entry');
@@ -47,7 +79,7 @@ export function bindNetwork({state,refresh,setStatus,el}){
   const room=roomInput.value.trim(),url=relayInput.value.trim();if(!validRoom(room)||!validRelayURL(url))throw Error('Use a generated room token and a secure wss:// relay (ws://localhost permitted).');
   const ice=$('ice-url').value.trim();
   if(ice&&!/^stun:[a-z0-9.-]+(?::[0-9]{1,5})?$/i.test(ice))throw Error('Only an optional stun:host:port server is accepted in this trial');
-  if(mesh)mesh.stop();
+  if(mesh)mesh.stop();attempted.clear();ranked=[];
   mesh=new CollectiveMesh({ident:state.ident,room,url,iceServers:ice?[{urls:ice}]:[],onEvent:event=>{
    if(event.type==='peers')renderPeers(event.peers);
    if(event.type==='joined'){setConnected(true);info('Joined an invite-only discovery room. No evidence disclosed.');}
@@ -65,6 +97,28 @@ export function bindNetwork({state,refresh,setStatus,el}){
  $('copy-invite').onclick=async()=>{try{const raw=btoa(JSON.stringify({room:roomInput.value.trim(),relay:relayInput.value.trim()})).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
   const address=new URL(location.href);address.hash='invite='+raw;await navigator.clipboard.writeText(address.toString());info('Private invitation link copied. Anyone holding it may join the room, so share deliberately.');
  }catch(e){info('Unable to copy invite link: '+e.message,true);}};
- $('ask-room').onclick=()=>{try{if(!mesh)throw Error('Join a room first');const count=mesh.ask($('question-from').value,$('question-to').value);info('Asked '+count+' approved peer(s). Only question endpoints were sent.');}catch(e){info(e.message,true);}};
+ $('suggest-peer').onclick=async()=>{try{await suggest();info('Ranked '+ranked.length+' approved peer(s) from verified, previously admitted evidence. Nothing sent.');}catch(e){info(e.message,true);}};
+ $('routing-peer').onchange=explainChosen;
+ $('ask-suggested').onclick=()=>{try{
+  if(!mesh)throw Error('Join a room first');
+  const session=$('routing-peer').value;
+  if(!ranked.find(p=>p.session===session))throw Error('Recalculate suggestions for active peers');
+  const count=mesh.ask($('question-from').value,$('question-to').value,{sessions:[session]});
+  remember([session]);explainChosen();
+  info('Sent question endpoints to '+count+' selected peer. No other peer received this inquiry.');
+ }catch(e){info(e.message,true);}};
+ $('try-next').onclick=()=>{try{
+  if(!ranked.length)throw Error('Request suggestions first');
+  const next=nextSuggestedPeer(ranked,asked());
+  if(!next)throw Error('Every candidate has been asked; you may manually ask again.');
+  $('routing-peer').value=next.session;explainChosen();info('Next candidate previewed. Nothing sent.');
+ }catch(e){info(e.message,true);}};
+ $('ask-room').onclick=()=>{try{
+  if(!mesh)throw Error('Join a room first');
+  const targets=mesh.snapshots().filter(p=>p.approved&&p.connected).map(p=>p.session);
+  const count=mesh.ask($('question-from').value,$('question-to').value);
+  remember(targets);
+  info('MANUAL BROADCAST: question endpoints disclosed to '+count+' approved peer(s).');
+ }catch(e){info(e.message,true);}};
  setConnected(false);renderPeers([]);
 }
